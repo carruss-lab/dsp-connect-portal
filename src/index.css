@@ -1,0 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@300;400;500&family=Instrument+Sans:wght@400;500;600&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ink:        #0A0C10;
+  --ink2:       #12151C;
+  --ink3:       #1A1E28;
+  --ink4:       #232837;
+  --line:       rgba(255,255,255,0.06);
+  --line2:      rgba(255,255,255,0.10);
+  --line3:      rgba(255,255,255,0.16);
+  --gold:       #C9A84C;
+  --gold-lt:    #E8CB7A;
+  --gold-bg:    rgba(201,168,76,0.10);
+  --gold-bg2:   rgba(201,168,76,0.18);
+  --silver:     #8B95A8;
+  --silver-lt:  #B4BDCC;
+  --text:       #E8EBF0;
+  --text2:      #9BA5B4;
+  --text3:      #5C6578;
+  --green:      #2ECC8A;
+  --green-bg:   rgba(46,204,138,0.10);
+  --red:        #E05555;
+  --red-bg:     rgba(224,85,85,0.10);
+  --blue:       #4A9EFF;
+  --blue-bg:    rgba(74,158,255,0.10);
+  --amber:      #F0A832;
+  --amber-bg:   rgba(240,168,50,0.10);
+  --r:          6px;
+  --r-lg:       10px;
+  --font-serif: 'Libre Baskerville', Georgia, serif;
+  --font-sans:  'Instrument Sans', sans-serif;
+  --font-mono:  'DM Mono', monospace;
+}
+
+html, body, #root {
+  height: 100%;
+  background: var(--ink);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+input, select, textarea, button {
+  font-family: var(--font-sans);
+  font-size: 13px;
+}
+
+input, select, textarea {
+  background: var(--ink3);
+  border: 0.5px solid var(--line3);
+  border-radius: var(--r);
+  color: var(--text);
+  padding: 8px 11px;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.15s;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px var(--gold-bg);
+}
+input::placeholder { color: var(--text3); }
+select option { background: var(--ink3); }
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--line3); border-radius: 2px; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
