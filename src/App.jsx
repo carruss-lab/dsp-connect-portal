@@ -843,7 +843,7 @@ function AdminApp({onLogout}){
   return <div style={{display:"flex",minHeight:"100vh",background:"var(--bg2)"}}>
     <Sidebar groups={navGroups} active={view} onSelect={setView} top={sideTop} bottom={sideBottom}/>
 
-    {payoutModal&&<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.4)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000}}>
+    {payoutModal&&<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:10000}}>
       <Card style={{width:480}}>
         <CardHead title="Record payout" sub={partners.find(p=>p.id===payoutModal)?.name}/>
         <div style={{padding:18}}>
@@ -1075,13 +1075,32 @@ function AdminApp({onLogout}){
     </div>}
 
     {view==="payouts"&&<div>
-      {ph("Payout Records","All recorded disbursements")}
+      {ph("Payout Records","Record and track all partner disbursements")}
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:16}}>
         <KPI label="Total paid (all time)" value={fmt$(totalPaid)} accent="blue"/>
         <KPI label="Paid this month" value={fmt$(payouts.filter(p=>{const d=new Date(p.created_at);const n=new Date();return d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear();}).reduce((s,p)=>s+(p.amount||0),0))} accent="green"/>
         <KPI label="Total records" value={payouts.length}/>
       </div>
-      {!payouts.length?<Empty icon="cash" title="No payouts recorded" sub="Record payouts from Partner Management."/>
+      <Card style={{marginBottom:14}}>
+        <CardHead title="Record a payout" sub="Click a partner to log a payment — enter amount, period, and reference number"/>
+        <div style={{padding:14,display:"flex",flexWrap:"wrap",gap:8}}>
+          {!partners.filter(p=>p.status==="Active").length
+            ?<div style={{fontSize:12,color:"var(--text3)",padding:4}}>No active partners yet.</div>
+            :partners.filter(p=>p.status==="Active").map(p=>{
+              const myA=pipeline.filter(c=>c.partner_id===p.id&&c.stage==="Active");
+              const myAUM=myA.reduce((s,c)=>s+(c.monthly_spend||0),0);
+              return <div key={p.id} onClick={()=>setPayoutModal(p.id)} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",background:"var(--bg2)",borderRadius:7,border:"0.5px solid var(--line2)",cursor:"pointer",minWidth:180}} onMouseEnter={e=>{e.currentTarget.style.background="var(--blue-bg)";e.currentTarget.style.borderColor="rgba(26,20,212,0.2)";}} onMouseLeave={e=>{e.currentTarget.style.background="var(--bg2)";e.currentTarget.style.borderColor="var(--line2)";}}>
+                <Avatar name={p.name} size={28}/>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:12,fontWeight:500}}>{p.name}</div>
+                  <div style={{fontSize:10,color:"var(--text3)"}}>Comp due: <span style={{color:"var(--green)",fontFamily:"var(--mono)",fontWeight:500}}>{fmt$(myAUM*REV_RATE)}/mo</span></div>
+                </div>
+                <i className="ti ti-chevron-right" style={{fontSize:13,color:"var(--blue)",flexShrink:0}}/>
+              </div>;
+            })}
+        </div>
+      </Card>
+      {!payouts.length?<Empty icon="cash" title="No payouts recorded yet" sub="Click a partner above to record their first payout."/>
       :<Card>
         <THead cols="1fr 1fr 1fr 1fr 1fr 1fr" labels={["Date","Partner","Period","Amount","Reference","Notes"]}/>
         {payouts.map((p,i,arr)=><div key={p.id} style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr 1fr 1fr",padding:"11px 16px",borderBottom:i<arr.length-1?"0.5px solid var(--line)":"none",alignItems:"center"}}>
