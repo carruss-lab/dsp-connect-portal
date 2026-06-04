@@ -196,12 +196,11 @@ export function Tip({ text, children }) {
       <span
         onMouseEnter={() => setShow(true)}
         onMouseLeave={() => setShow(false)}
-        style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 14, height: 14, borderRadius: "50%", background: "var(--bg3)", color: "var(--text3)", fontSize: 9, fontWeight: 700, cursor: "help", flexShrink: 0, border: "0.5px solid var(--line3)", fontFamily: "var(--font)" }}
+        style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 14, height: 14, borderRadius: "50%", background: "var(--bg3)", color: "var(--text3)", fontSize: 9, fontWeight: 700, cursor: "help", flexShrink: 0, border: "0.5px solid var(--line3)", fontFamily: "var(--font)", position: "relative", zIndex: 1 }}
       >?</span>
       {show && (
-        <span style={{ position: "absolute", bottom: "calc(100% + 6px)", left: "50%", transform: "translateX(-50%)", background: "#1A1D2E", color: "#fff", fontSize: 11, lineHeight: 1.5, padding: "7px 10px", borderRadius: 6, whiteSpace: "normal", maxWidth: 220, minWidth: 140, zIndex: 999, boxShadow: "0 4px 16px rgba(0,0,0,0.2)", pointerEvents: "none", textAlign: "left" }}>
+        <span style={{ position: "fixed", background: "#1A1D2E", color: "#fff", fontSize: 11, lineHeight: 1.5, padding: "8px 11px", borderRadius: 6, whiteSpace: "normal", maxWidth: 240, minWidth: 150, zIndex: 99999, boxShadow: "0 4px 20px rgba(0,0,0,0.25)", pointerEvents: "none", textAlign: "left", marginTop: -40, marginLeft: -100 }}>
           {text}
-          <span style={{ position: "absolute", top: "100%", left: "50%", transform: "translateX(-50%)", borderLeft: "5px solid transparent", borderRight: "5px solid transparent", borderTop: "5px solid #1A1D2E" }} />
         </span>
       )}
     </span>
