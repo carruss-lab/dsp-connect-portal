@@ -272,6 +272,12 @@ function BriefForm({type,step,setStep,newClient,setNewClient,brief,setBrief,onNe
   </Card>;
 }
 
+function THead({cols,labels}){
+  return <div style={{display:"grid",gridTemplateColumns:cols,padding:"8px 16px",borderBottom:"0.5px solid var(--line)",background:"var(--bg2)"}}>
+    {labels.map(h=><span key={h} style={S.label}>{h}</span>)}
+  </div>;
+}
+
 // ── NAV ───────────────────────────────────────────────────────────────────
 const PARTNER_NAV=[
   {section:"OVERVIEW",items:[{key:"dashboard",icon:"layout-dashboard",label:"Dashboard"}]},
@@ -996,7 +1002,6 @@ function AdminApp({onLogout}){
 
   const P=({children})=><div style={{flex:1,overflowY:"auto",padding:24}}>{children}</div>;
   const PH=({title,sub})=><div style={{marginBottom:22}}><div style={{fontFamily:"var(--font)",fontSize:20,color:"var(--text)",marginBottom:3}}>{title}</div>{sub&&<div style={{fontSize:11,color:"var(--text3)"}}>{sub}</div>}</div>;
-  const TH=({cols,labels})=><div style={{display:"grid",gridTemplateColumns:cols,padding:"8px 18px",borderBottom:"0.5px solid var(--line)",background:"var(--bg)"}}>{labels.map(h=><span key={h} style={S.label}>{h}</span>)}</div>;
 
   return <div style={{display:"flex",minHeight:"100vh",background:"var(--bg)"}}>
     <Sidebar groups={navGroups} active={view} onSelect={setView} top={sideTop} bottom={sideBottom}/>
@@ -1030,7 +1035,7 @@ function AdminApp({onLogout}){
       {partners.length===0?<Empty icon="users-group" title="No managing partners yet" sub="Create your first managing partner to get started." cta="Admit first partner →" onCta={()=>setView("admissions")}/>
       :<Card>
         <CardHead title="Partner snapshot"/>
-        <TH cols="2fr 1fr 1fr 1fr 1fr 1fr" labels={["Partner","Status","Active clients","Active AUM","Comp/mo","Paid total"]}/>
+        <THead cols="2fr 1fr 1fr 1fr 1fr 1fr" labels={["Partner","Status","Active clients","Active AUM","Comp/mo","Paid total"]}/>
         {partners.map((p,i)=>{
           const eq=calcEquity(p);
           const myActive=pipeline.filter(c=>c.partner_id===p.id&&c.stage==="Active");
@@ -1123,7 +1128,7 @@ function AdminApp({onLogout}){
             {myActive.length>0&&<>
               <div style={{...S.label,marginBottom:8}}>Active clients</div>
               <Card style={{marginBottom:16}}>
-                <TH cols="2fr 1fr 1fr" labels={["Client","Type","Monthly spend"]}/>
+                <THead cols="2fr 1fr 1fr" labels={["Client","Type","Monthly spend"]}/>
                 {myActive.map((c,i)=><div key={c.id} style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr",padding:"10px 18px",borderBottom:i<myActive.length-1?"0.5px solid var(--line)":"none",alignItems:"center"}}>
                   <span style={{fontSize:12,fontWeight:500,color:"var(--text)"}}>{c.name}</span>
                   <span style={S.pill(c.type==="brand"?"var(--blue-bg)":"var(--blue-bg)",c.type==="brand"?"var(--blue)":"var(--blue-lt)")}>{c.type}</span>
@@ -1146,7 +1151,7 @@ function AdminApp({onLogout}){
             {myPayouts.length>0&&<div style={{marginTop:16}}>
               <div style={{...S.label,marginBottom:8}}>Payout history</div>
               <Card>
-                <TH cols="1fr 1fr 1fr 1fr" labels={["Date","Period","Amount","Reference"]}/>
+                <THead cols="1fr 1fr 1fr 1fr" labels={["Date","Period","Amount","Reference"]}/>
                 {myPayouts.map((py,i)=><div key={py.id} style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",padding:"10px 18px",borderBottom:i<myPayouts.length-1?"0.5px solid var(--line)":"none",alignItems:"center",fontSize:12}}>
                   <span style={{color:"var(--text3)"}}>{fmtDate(py.created_at)}</span>
                   <span style={{color:"var(--text2)"}}>{py.period_label||"—"}</span>
@@ -1165,7 +1170,7 @@ function AdminApp({onLogout}){
       {pipeline.filter(c=>c.type===(view==="admin-brands"?"brand":"agency")).length===0
         ?<Empty icon={view==="admin-brands"?"building-skyscraper":"briefcase"} title="No clients yet" sub="Partners add clients from their dashboard."/>
         :<Card>
-          <TH cols="2fr 1fr 1fr 1fr 1fr 1fr" labels={["Name","Contact","Monthly Spend","Stage","Partner","Added"]}/>
+          <THead cols="2fr 1fr 1fr 1fr 1fr 1fr" labels={["Name","Contact","Monthly Spend","Stage","Partner","Added"]}/>
           {pipeline.filter(c=>c.type===(view==="admin-brands"?"brand":"agency")).map((c,i,arr)=><div key={c.id} style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr 1fr 1fr",padding:"12px 18px",borderBottom:i<arr.length-1?"0.5px solid var(--line)":"none",alignItems:"center"}}>
             <div><div style={{fontSize:13,fontWeight:500,color:"var(--text)"}}>{c.name}</div>{c.notes&&<div style={{fontSize:10,color:"var(--text3)"}}>{c.notes}</div>}</div>
             <div style={{fontSize:11,color:"var(--text3)"}}>{c.contact_name||"—"}</div>
@@ -1257,7 +1262,7 @@ function AdminApp({onLogout}){
       </div>
       {payouts.length===0?<Empty icon="cash" title="No payouts recorded" sub="Record payouts from Partner Management."/>
       :<Card>
-        <TH cols="1fr 1fr 1fr 1fr 1fr 1fr" labels={["Date","Partner","Period","Amount","Reference","Notes"]}/>
+        <THead cols="1fr 1fr 1fr 1fr 1fr 1fr" labels={["Date","Partner","Period","Amount","Reference","Notes"]}/>
         {payouts.map((p,i,arr)=><div key={p.id} style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr 1fr 1fr",padding:"12px 18px",borderBottom:i<arr.length-1?"0.5px solid var(--line)":"none",alignItems:"center"}}>
           <span style={{fontSize:11,color:"var(--text3)"}}>{fmtDate(p.created_at)}</span>
           <span style={{fontSize:12,fontWeight:500,color:"var(--text)"}}>{p.partner_name}</span>
