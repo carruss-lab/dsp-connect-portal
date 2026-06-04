@@ -1,7 +1,3 @@
 {
-  "buildCommand": "react-scripts build",
-  "outputDirectory": "build",
-  "framework": "create-react-app",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
-  "toolbar": { "enabled": false }
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
