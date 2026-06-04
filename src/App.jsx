@@ -280,6 +280,22 @@ function Login({onLogin}){
   </div>;
 }
 
+
+function Tip({text,children}){
+  const[show,setShow]=useState(false);
+  return <span style={{position:"relative",display:"inline-flex",alignItems:"center",gap:4}}>
+    {children}
+    <span
+      onMouseEnter={()=>setShow(true)}
+      onMouseLeave={()=>setShow(false)}
+      style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:14,height:14,borderRadius:"50%",background:"var(--bg3)",color:"var(--text3)",fontSize:9,fontWeight:700,cursor:"help",flexShrink:0,border:"0.5px solid var(--line3)",fontFamily:"var(--font)"}}>?</span>
+    {show&&<span style={{position:"absolute",bottom:"calc(100% + 6px)",left:"50%",transform:"translateX(-50%)",background:"var(--ink2,#1A1D2E)",color:"#fff",fontSize:11,lineHeight:1.5,padding:"7px 10px",borderRadius:6,whiteSpace:"pre-wrap",maxWidth:220,minWidth:120,zIndex:999,boxShadow:"0 4px 16px rgba(0,0,0,0.2)",pointerEvents:"none",textAlign:"left"}}>
+      {text}
+      <span style={{position:"absolute",top:"100%",left:"50%",transform:"translateX(-50%)",borderLeft:"5px solid transparent",borderRight:"5px solid transparent",borderTop:"5px solid #1A1D2E"}}/>
+    </span>}
+  </span>;
+}
+
 function Row({k,v}){return <div style={{display:"flex",gap:14,padding:"8px 0",borderBottom:"0.5px solid var(--line)",fontSize:13}}><span style={{...S.label,minWidth:155,flexShrink:0,paddingTop:1}}>{k}</span><span style={{color:"var(--text)"}}>{v}</span></div>;}
 
 // ── ONBOARDING ────────────────────────────────────────────────────────────────
@@ -483,11 +499,11 @@ function PartnerApp({partner,onLogout}){
     {view==="dashboard"&&<div>
       {ph("Dashboard",`${partner.vertical} · Day ${days}`)}
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:16}}>
-        <KPI label="Active AUM" value={fmtK(totalAUM)} sub={`${active.length} active clients`}/>
-        <KPI label="Monthly comp" value={fmt$(comp)} sub="10% of active AUM" accent="green"/>
-        <KPI label="Paid this month" value={fmt$(paidMonth)} accent="blue"/>
+        <KPI label={<Tip text={"Your total monthly ad spend under management across all Active clients. Only clients in Active status count toward your compensation."}>Active AUM</Tip>} value={fmtK(totalAUM)} sub={`${active.length} active clients`}/>
+        <KPI label={<Tip text={"Your monthly cash compensation — 10% of your total Active AUM. Paid monthly after DSP Connect collects from advertisers."}>Monthly comp</Tip>} value={fmt$(comp)} sub="10% of active AUM" accent="green"/>
+        <KPI label={<Tip text={"Total payouts recorded for you this month by DSP Connect admin. Check Compensation for full history."}>Paid this month</Tip>} value={fmt$(paidMonth)} accent="blue"/>
         <div style={{...S.card,padding:"16px 18px"}}>
-          <div style={{...S.label,marginBottom:8}}>Partner score</div>
+          <div style={{...S.label,marginBottom:8}}><Tip text={"Composite score 0–100 based on your AUM, number of clients, and active client count. Higher score = stronger partner standing."}>Partner score</Tip></div>
           <div style={{fontFamily:"var(--mono)",fontSize:22,fontWeight:500,color:score>=70?"var(--green)":score>=40?"var(--amber)":"var(--red)",lineHeight:1}}>{score}<span style={{fontSize:12,color:"var(--text3)",fontFamily:"var(--font)"}}>/ 100</span></div>
           <div style={{marginTop:8}}><Bar pct={score} color={score>=70?"var(--green)":score>=40?"var(--amber)":"var(--red)"}/></div>
         </div>
@@ -503,7 +519,7 @@ function PartnerApp({partner,onLogout}){
           </div>
         </Card>
         <Card>
-          <CardHead title="90-Day Acceleration" sub={`Day ${Math.min(days,90)} of 90`}/>
+          <CardHead title={<Tip text={"You have 3 windows to earn bonus equity on top of your 5% base grant. Each window has AUM targets — hit them to earn up to 10% extra. Missed windows are permanently forfeited."}>90-Day Acceleration</Tip>} sub={`Day ${Math.min(days,90)} of 90`}/>
           <div style={{padding:12}}>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:12}}>
               {[{l:"Day 1–30",done:days>30,on:days<=30,award:(D30.find(t=>(partner.day30_aum||0)>=t.aum)||{award:0}).award,max:3},
@@ -557,13 +573,13 @@ function PartnerApp({partner,onLogout}){
     </div>}
 
     {view==="pipeline"&&<div>
-      {ph("Pipeline","All clients by stage")}
+      {ph("Pipeline","All clients by stage — move a client forward using the dropdown on each card")}
       {["brand","agency"].map(type=><div key={type} style={{marginBottom:24}}>
         <div style={{...S.label,marginBottom:8}}>{type==="brand"?"Brand":"Agency"} clients <span style={{fontFamily:"var(--mono)"}}>{pipeline.filter(c=>c.type===type).length}</span></div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:8}}>
-          {STAGES.map(stage=>{const ins=pipeline.filter(c=>c.type===type&&c.stage===stage);
+          {STAGES.map(stage=>{const stageDesc={Lead:'Initial prospect — not yet submitted',"Deposit Paid":'Client has paid their deposit',Review:'Submitted to DSP Connect for review',Approved:'Approved — campaign setup in progress',Active:'Live and spending — counts toward your AUM'};const ins=pipeline.filter(c=>c.type===type&&c.stage===stage);
             return <div key={stage}>
-              <div style={{...S.label,marginBottom:5,textAlign:"center"}}>{stage} <span style={{fontFamily:"var(--mono)"}}>{ins.length}</span></div>
+              <div style={{...S.label,marginBottom:5,textAlign:"center"}}><Tip text={stageDesc[stage]}>{stage}</Tip> <span style={{fontFamily:"var(--mono)"}}>{ins.length}</span></div>
               <div style={{minHeight:50,background:"var(--bg3)",borderRadius:5,padding:5,display:"flex",flexDirection:"column",gap:4,border:"0.5px solid var(--line)"}}>
                 {ins.map(c=><div key={c.id} style={{background:"var(--bg)",border:"0.5px solid var(--line2)",borderRadius:4,padding:"7px 9px"}}>
                   <div style={{fontSize:11,fontWeight:500,marginBottom:2}}>{c.name}</div>
@@ -581,10 +597,10 @@ function PartnerApp({partner,onLogout}){
     {view==="compensation"&&<div>
       {ph("Compensation","Cash Compensation Policy (Exhibit B) · 10% of Active AUM")}
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:16}}>
-        <KPI label="Active AUM" value={fmtK(totalAUM)} sub="Monthly managed spend"/>
-        <KPI label="Monthly comp" value={fmt$(comp)} accent="green"/>
-        <KPI label="Paid this month" value={fmt$(paidMonth)} accent="blue"/>
-        <KPI label="Total paid (lifetime)" value={fmt$(paidTotal)} accent="green"/>
+        <KPI label={<Tip text={"Total monthly ad spend across all your Active clients. This is the base for your 10% compensation calculation."}>Active AUM</Tip>} value={fmtK(totalAUM)} sub="Monthly managed spend"/>
+        <KPI label={<Tip text={"10% of your Active AUM. Paid monthly after DSP Connect collects advertiser funds."}>Monthly comp</Tip>} value={fmt$(comp)} accent="green"/>
+        <KPI label={<Tip text={"Total payouts recorded for you this month by DSP Connect admin. Check Compensation for full history."}>Paid this month</Tip>} value={fmt$(paidMonth)} accent="blue"/>
+        <KPI label={<Tip text={"All payouts ever recorded on your account since your start date."}>Total paid (lifetime)</Tip>} value={fmt$(paidTotal)} accent="green"/>
       </div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
         <Card>
@@ -634,9 +650,9 @@ function PartnerApp({partner,onLogout}){
     {view==="equity"&&<div>
       {ph("Ownership","Equity Vesting, Performance & Acceleration Policy (Exhibit A)")}
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:16}}>
-        <KPI label="Ownership stake" value={`${eq.total.toFixed(2)}%`} accent="blue"/>
-        <KPI label="Vesting status" value={eq.qualifies?"Qualified":"Pending"} sub={eq.qualifies?"$5M AUM met":"$5M AUM required"} accent={eq.qualifies?"green":undefined}/>
-        <KPI label="AUM to qualify" value={eq.qualifies?"✓ Met":fmtK(Math.max(0,5000000-(partner.annual_aum||0)))} sub={eq.qualifies?"":"remaining"}/>
+        <KPI label={<Tip text={"Your current LLC membership interest percentage. Vests after 1 year if you hit $5M AUM. Maximum 15% in Year 1."}>Ownership stake</Tip>} value={`${eq.total.toFixed(2)}%`} accent="blue"/>
+        <KPI label={<Tip text={"To qualify for equity, you must reach $5M in annual AUM within your first 12 months. Until then, equity is held in reserve."}>Vesting status</Tip>} value={eq.qualifies?"Qualified":"Pending"} sub={eq.qualifies?"$5M AUM met":"$5M AUM required"} accent={eq.qualifies?"green":undefined}/>
+        <KPI label={<Tip text={"Additional annual AUM you need to reach the $5M equity qualification threshold."}>AUM to qualify</Tip>} value={eq.qualifies?"✓ Met":fmtK(Math.max(0,5000000-(partner.annual_aum||0)))} sub={eq.qualifies?"":"remaining"}/>
         <KPI label="Max equity Yr 1" value="15.00%" sub="5% base + 10% acceleration"/>
       </div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
@@ -677,7 +693,7 @@ function PartnerApp({partner,onLogout}){
 
     {view==="support"&&<div>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
-        {ph("Help Desk","Submit issues to the DSP Connect operations team")}
+        {ph("Help Desk","Submit issues to the DSP Connect operations team — we respond within 1 business day")}
         <Btn onClick={()=>setShowTicket(true)} variant="primary">+ New ticket</Btn>
       </div>
       {showTicket&&<Card style={{marginBottom:14}}>
