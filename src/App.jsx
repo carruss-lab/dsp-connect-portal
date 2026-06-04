@@ -34,11 +34,11 @@ function calcScore(p,pipeline){
   return Math.min(s,100);
 }
 function detectType(url="",hint=""){
-  if(hint==="video")return"video";
   const u=url.toLowerCase();
   if(u.includes("youtube.com")||u.includes("youtu.be"))return"youtube";
   if(u.includes("vimeo.com"))return"vimeo";
   if(u.endsWith(".pdf")||u.includes("drive.google.com"))return"pdf";
+  if(hint==="video")return"youtube";
   return hint||"link";
 }
 function getYTId(url=""){const m=url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/);return m?m[1]:null;}
