@@ -739,6 +739,7 @@ function AdminApp({onLogout}){
   const[newAnn,setNewAnn]=useState({title:"",body:"",type:"info"});
   const[showAddAnn,setShowAddAnn]=useState(false);
   const[newPayout,setNewPayout]=useState({amount:"",period_label:"",period_start:"",period_end:"",reference:"",notes:""});
+  const[previewResource,setPreviewResource]=useState(null);
   const[formErr,setFormErr]=useState("");
   const blank={name:"",legal_name:"",agency:"",email:"",password:"",vertical:VERTICALS[0],start_date:today(),monthly_spend:"",annual_aum:"",day30_aum:"",day60_aum:"",day90_aum:"",non_compete_days:"90",trailing_option:"A",status:"Pending Setup"};
   const[form,setForm]=useState(blank);
@@ -843,6 +844,7 @@ function AdminApp({onLogout}){
   return <div style={{display:"flex",minHeight:"100vh",background:"var(--bg2)"}}>
     <Sidebar groups={navGroups} active={view} onSelect={setView} top={sideTop} bottom={sideBottom}/>
 
+    {previewResource&&<ResourceEmbed resource={previewResource} onClose={()=>setPreviewResource(null)}/>}
     {payoutModal&&<div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:10000}}>
       <Card style={{width:480}}>
         <CardHead title="Record payout" sub={partners.find(p=>p.id===payoutModal)?.name}/>
