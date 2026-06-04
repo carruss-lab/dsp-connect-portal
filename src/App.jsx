@@ -99,7 +99,7 @@ function StatusBadge({s}){
   return <span style={S.pill(bg,fg)}>{s}</span>;
 }
 
-function KPI({label,value,sub,accent,mono}){
+function KPI({label,value,sub,accent}){
   return <div style={{...S.card,padding:"18px 20px"}}>
     <div style={{...S.label,marginBottom:10}}>{label}</div>
     <div style={{fontSize:24,fontWeight:500,color:accent==="green"?"var(--green)":accent==="blue"?"var(--blue-lt)":accent==="amber"?"var(--amber)":"var(--text)",fontFamily:mono||accent?"var(--mono)":"var(--font)",letterSpacing:"-0.3px",lineHeight:1}}>{value}</div>
@@ -198,6 +198,77 @@ function ResourceCard({resource,onClick}){
       </div>
     </div>
   </div>;
+}
+
+
+// ── CAMPAIGN BRIEF FORM COMPONENT ─────────────────────────────────────────
+function BriefForm({type,step,setStep,newClient,setNewClient,brief,setBrief,onNext,onSubmit,onCancel}){
+  const label=type==="brand"?"Brand client":"Agency client";
+  const B=(f)=>({value:brief[f],onChange:e=>setBrief(b=>({...b,[f]:e.target.value}))});
+
+  if(step===1)return <Card style={{marginBottom:14}}>
+    <CardHead title={`New ${label} — Step 1 of 2`} sub="Basic information"/>
+    <div style={{padding:16}}>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
+        <Field label={`${type==="brand"?"Company":"Agency"} name *`}><input value={newClient.name} onChange={e=>setNewClient(c=>({...c,name:e.target.value}))}/></Field>
+        <Field label="Contact name"><input value={newClient.contact_name} onChange={e=>setNewClient(c=>({...c,contact_name:e.target.value}))}/></Field>
+        <Field label="Contact email"><input type="email" value={newClient.email} onChange={e=>setNewClient(c=>({...c,email:e.target.value}))}/></Field>
+        <Field label="Estimated monthly spend ($)"><input type="number" value={newClient.monthly_spend} onChange={e=>setNewClient(c=>({...c,monthly_spend:e.target.value}))}/></Field>
+        <Field label="Notes" full><input value={newClient.notes} onChange={e=>setNewClient(c=>({...c,notes:e.target.value}))} placeholder="Any initial context"/></Field>
+      </div>
+      <div style={{padding:"9px 12px",background:"var(--blue-bg)",border:"0.5px solid rgba(26,20,212,0.1)",borderRadius:5,fontSize:11,color:"var(--blue)",marginBottom:12}}>
+        After basic info, you will complete a campaign brief — this gets submitted to DSP Connect for review and automatically notifies the team.
+      </div>
+      <div style={{display:"flex",gap:8}}><Btn onClick={onNext} variant="primary" disabled={!newClient.name}>Continue to campaign brief →</Btn><Btn onClick={onCancel} variant="ghost">Cancel</Btn></div>
+    </div>
+  </Card>;
+
+  return <Card style={{marginBottom:14}}>
+    <CardHead title={`Campaign Brief — ${newClient.name}`} sub="Step 2 of 2 · All fields from DSP Connect campaign intake"/>
+    <div style={{padding:16}}>
+      <div style={{marginBottom:14,padding:"9px 12px",background:"var(--bg2)",borderRadius:5,fontSize:11,color:"var(--text3)",borderLeft:"2px solid var(--blue)"}}>
+        <span style={{color:"var(--blue)",fontWeight:500}}>Note:</span> This brief goes directly to DSP Connect for review. Client is submitted as Review status and the team is notified via Slack.
+      </div>
+
+      <div style={{fontWeight:500,fontSize:12,color:"var(--text)",marginBottom:10,paddingBottom:6,borderBottom:"0.5px solid var(--line)"}}>Campaign details</div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
+        <Field label="Advertiser name"><input {...B("advertiser_name")} placeholder="Legal advertiser name"/></Field>
+        <Field label="Company category"><input {...B("company_category")} placeholder="e.g. Healthcare, Retail, Finance"/></Field>
+        <Field label="Campaign type"><select {...B("campaign_type")} style={{width:"100%"}}><option value="Managed">Managed (start at $1,000)</option><option value="Self-Service">Self-Service</option></select></Field>
+        <Field label="Total budget ($)"><input type="number" {...B("budget_total")} placeholder="0"/></Field>
+        <Field label="Start date"><input type="date" {...B("start_date")}/></Field>
+        <Field label="End date"><input type="date" {...B("end_date")}/></Field>
+        <Field label="Timezone (optional)"><input {...B("timezone")} placeholder="e.g. EST, PST, UTC"/></Field>
+        <Field label="GEO targeting"><input {...B("geo")} placeholder="Country, State, City"/></Field>
+      </div>
+
+      <div style={{fontWeight:500,fontSize:12,color:"var(--text)",marginBottom:10,paddingBottom:6,borderBottom:"0.5px solid var(--line)"}}>Campaign goals & targeting</div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
+        <Field label="Goals" full><textarea {...B("goals")} rows={3} placeholder="e.g. Lead generation, brand awareness, e-commerce, app installs…" style={{resize:"vertical"}}/></Field>
+        <Field label="KPIs" full><textarea {...B("kpis")} rows={2} placeholder="e.g. CPC target $2.50, CTR 0.3%, CPA $45…" style={{resize:"vertical"}}/></Field>
+        <Field label="Creative type"><select {...B("creative_type")} style={{width:"100%"}}><option value="">Select…</option><option>Video</option><option>Banner</option><option>Native</option><option>Video + Banner</option><option>All formats</option></select></Field>
+        <Field label="Traffic type"><select {...B("traffic_type")} style={{width:"100%"}}><option value="">Select…</option><option>In-App</option><option>Web</option><option>In-App + Web</option></select></Field>
+        <Field label="Device type"><select {...B("device_type")} style={{width:"100%"}}><option value="">Select…</option><option>PC</option><option>Phones</option><option>Tablets</option><option>Connected TV</option><option>All devices</option></select></Field>
+        <Field label="Frequency cap"><input {...B("frequency_cap")} placeholder="e.g. 3 impressions/user/day"/></Field>
+      </div>
+
+      <div style={{fontWeight:500,fontSize:12,color:"var(--text)",marginBottom:10,paddingBottom:6,borderBottom:"0.5px solid var(--line)"}}>Advanced targeting & creatives</div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
+        <Field label="Additional targeting (optional)"><input {...B("targeting")} placeholder="Age, interests, behavioral, contextual…"/></Field>
+        <Field label="Bundles / domains (optional)"><input {...B("bundles_domains")} placeholder="Specific app bundles or domains"/></Field>
+        <Field label="1st party data (optional)" full><input {...B("first_party_data")} placeholder="IP lists, ad IDs for include/exclude targeting"/></Field>
+        <Field label="Creative file link"><input {...B("creative_file_link")} placeholder="Google Drive, Dropbox, or any URL"/></Field>
+        <Field label="Tracking tags"><input {...B("tracking_tags")} placeholder="1x1 pixel, click tracker URL, landing page…"/></Field>
+        <Field label="Launch notes" full><textarea {...B("notes")} rows={2} placeholder="Any additional notes for campaign launch…" style={{resize:"vertical"}}/></Field>
+      </div>
+
+      <div style={{display:"flex",gap:8,alignItems:"center"}}>
+        <Btn onClick={()=>setStep(1)} variant="ghost">← Back</Btn>
+        <Btn onClick={onSubmit} variant="primary">Submit for review →</Btn>
+        <span style={{fontSize:11,color:"var(--text3)",marginLeft:4}}>Submits to Review · Notifies DSP Connect team via Slack</span>
+      </div>
+    </div>
+  </Card>;
 }
 
 // ── NAV ───────────────────────────────────────────────────────────────────
@@ -416,6 +487,33 @@ function PartnerApp({partner,onLogout}){
   const now=new Date();
   const paidThisMonth=payouts.filter(p=>{const d=new Date(p.created_at);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}).reduce((s,p)=>s+(p.amount||0),0);
 
+  const startClientBrief=(type)=>{
+    if(!newClient.name)return;
+    setClientType(type);
+    setPendingClient({...newClient,type});
+    setBriefStep(2);
+  };
+
+  const submitClientWithBrief=async()=>{
+    const pc=pendingClient;
+    if(!pc)return;
+    const{data:pipeData}=await supabase.from("pipeline").insert([{type:pc.type,partner_id:partner.id,partner_name:partner.name,name:pc.name,contact_name:pc.contact_name,email:pc.email,monthly_spend:parseFloat(pc.monthly_spend)||0,notes:pc.notes,stage:"Review"}]).select().single();
+    if(pipeData){
+      setPipeline(p=>[pipeData,...p]);
+      await supabase.from("campaign_briefs").insert([{pipeline_id:pipeData.id,partner_id:partner.id,partner_name:partner.name,client_name:pc.name,client_type:pc.type,...brief,budget_total:parseFloat(brief.budget_total)||0,status:"Submitted"}]);
+      // Store Slack notification for admin
+      await supabase.from("slack_notifications").insert([{
+        channel:"#new-client-briefs",
+        message:`📋 New campaign brief submitted\nPartner: ${partner.name}\nClient: ${pc.name} (${pc.type})\nSpend: ${fmtK(parseFloat(pc.monthly_spend)||0)}/mo\nCampaign type: ${brief.campaign_type}\nGEO: ${brief.geo||"—"}\nCreative: ${brief.creative_type||"—"}\nGoals: ${(brief.goals||"—").slice(0,100)}\nNeeds review in DSP Connect portal → Approvals`,
+        sent:false,
+        created_at:new Date().toISOString()
+      }]).catch(()=>{});
+    }
+    setNewClient({name:"",contact_name:"",email:"",monthly_spend:"",notes:""});
+    setBrief({advertiser_name:"",company_category:"",campaign_type:"Managed",goals:"",budget_total:"",start_date:"",end_date:"",timezone:"",geo:"",frequency_cap:"",creative_type:"",traffic_type:"",device_type:"",targeting:"",bundles_domains:"",first_party_data:"",kpis:"",creative_file_link:"",tracking_tags:"",notes:""});
+    setPendingClient(null);setBriefStep(1);setShowAddClient(false);
+  };
+
   const addClient=async(type)=>{
     if(!newClient.name)return;
     const{data}=await supabase.from("pipeline").insert([{type,partner_id:partner.id,partner_name:partner.name,...newClient,monthly_spend:parseFloat(newClient.monthly_spend)||0,stage:"Lead"}]).select().single();
@@ -469,9 +567,9 @@ function PartnerApp({partner,onLogout}){
       {view==="dashboard"&&<div>
         <PH title="Dashboard" sub={`${partner.vertical} · ${partner.start_date} · Day ${days}`}/>
         <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>
-          <KPI label="Active AUM" value={fmtK(totalMonthlyAUM)} sub={`${activeClients.length} active clients`} mono/>
-          <KPI label="Monthly compensation" value={fmt$(monthlyComp)} sub="10% of active AUM" accent="green" mono/>
-          <KPI label="Paid this month" value={fmt$(paidThisMonth)} sub="Recorded payouts" accent="blue" mono/>
+          <KPI label="Active AUM" value={fmtK(totalMonthlyAUM)} sub={`${activeClients.length} active clients`}/>
+          <KPI label="Monthly compensation" value={fmt$(monthlyComp)} sub="10% of active AUM" accent="green"/>
+          <KPI label="Paid this month" value={fmt$(paidThisMonth)} sub="Recorded payouts" accent="blue"/>
           <div style={{...S.card,padding:"18px 20px"}}>
             <div style={{...S.label,marginBottom:10}}>Partner score</div>
             <div style={{fontSize:26,fontWeight:500,fontFamily:"var(--mono)",color:score>=70?"var(--green)":score>=40?"var(--amber)":"var(--red)",lineHeight:1}}>{score}<span style={{fontSize:13,color:"var(--text3)",fontFamily:"var(--font)"}}>/ 100</span></div>
@@ -527,19 +625,7 @@ function PartnerApp({partner,onLogout}){
           <PH title="Brand Clients" sub="Direct advertisers under management"/>
           <Btn onClick={()=>{setClientType("brand");setShowAddClient(true);}} variant="primary">+ Add client</Btn>
         </div>
-        {showAddClient&&clientType==="brand"&&<Card style={{marginBottom:16}}>
-          <CardHead title="New brand client" border/>
-          <div style={{padding:16}}>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
-              <Field label="Company name *"><input value={newClient.name} onChange={e=>setNewClient(c=>({...c,name:e.target.value}))}/></Field>
-              <Field label="Contact name"><input value={newClient.contact_name} onChange={e=>setNewClient(c=>({...c,contact_name:e.target.value}))}/></Field>
-              <Field label="Contact email"><input type="email" value={newClient.email} onChange={e=>setNewClient(c=>({...c,email:e.target.value}))}/></Field>
-              <Field label="Monthly ad spend ($)"><input type="number" value={newClient.monthly_spend} onChange={e=>setNewClient(c=>({...c,monthly_spend:e.target.value}))}/></Field>
-              <Field label="Notes" full><input value={newClient.notes} onChange={e=>setNewClient(c=>({...c,notes:e.target.value}))}/></Field>
-            </div>
-            <div style={{display:"flex",gap:8}}><Btn onClick={()=>addClient("brand")} variant="primary">Add client</Btn><Btn onClick={()=>setShowAddClient(false)} variant="ghost">Cancel</Btn></div>
-          </div>
-        </Card>}
+        {showAddClient&&clientType==="brand"&&<BriefForm type="brand" step={briefStep} setStep={setBriefStep} newClient={newClient} setNewClient={setNewClient} brief={brief} setBrief={setBrief} onNext={()=>startClientBrief("brand")} onSubmit={submitClientWithBrief} onCancel={()=>{setShowAddClient(false);setBriefStep(1);setPendingClient(null);}}/>}
         {brandClients.length===0?<Empty icon="building-skyscraper" title="No brand clients yet" sub="Add your first direct advertiser." cta="+ Add brand client" onCta={()=>{setClientType("brand");setShowAddClient(true);}}/>
         :<Card>
           <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr 1fr",padding:"8px 18px",borderBottom:"0.5px solid var(--line)",background:"var(--ink)"}}>
@@ -564,19 +650,7 @@ function PartnerApp({partner,onLogout}){
           <PH title="Agency Clients" sub="Agencies and their managed spend"/>
           <Btn onClick={()=>{setClientType("agency");setShowAddClient(true);}} variant="primary">+ Add agency</Btn>
         </div>
-        {showAddClient&&clientType==="agency"&&<Card style={{marginBottom:16}}>
-          <CardHead title="New agency client" border/>
-          <div style={{padding:16}}>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
-              <Field label="Agency name *"><input value={newClient.name} onChange={e=>setNewClient(c=>({...c,name:e.target.value}))}/></Field>
-              <Field label="Contact name"><input value={newClient.contact_name} onChange={e=>setNewClient(c=>({...c,contact_name:e.target.value}))}/></Field>
-              <Field label="Contact email"><input type="email" value={newClient.email} onChange={e=>setNewClient(c=>({...c,email:e.target.value}))}/></Field>
-              <Field label="Monthly ad spend ($)"><input type="number" value={newClient.monthly_spend} onChange={e=>setNewClient(c=>({...c,monthly_spend:e.target.value}))}/></Field>
-              <Field label="Notes" full><input value={newClient.notes} onChange={e=>setNewClient(c=>({...c,notes:e.target.value}))}/></Field>
-            </div>
-            <div style={{display:"flex",gap:8}}><Btn onClick={()=>addClient("agency")} variant="primary">Add agency</Btn><Btn onClick={()=>setShowAddClient(false)} variant="ghost">Cancel</Btn></div>
-          </div>
-        </Card>}
+        {showAddClient&&clientType==="agency"&&<BriefForm type="agency" step={briefStep} setStep={setBriefStep} newClient={newClient} setNewClient={setNewClient} brief={brief} setBrief={setBrief} onNext={()=>startClientBrief("agency")} onSubmit={submitClientWithBrief} onCancel={()=>{setShowAddClient(false);setBriefStep(1);setPendingClient(null);}}/>}
         {agencyClients.length===0?<Empty icon="briefcase" title="No agency clients yet" sub="Add agencies to track their managed spend." cta="+ Add agency" onCta={()=>{setClientType("agency");setShowAddClient(true);}}/>
         :<Card>
           <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr 1fr",padding:"8px 18px",borderBottom:"0.5px solid var(--line)",background:"var(--ink)"}}>
@@ -621,10 +695,10 @@ function PartnerApp({partner,onLogout}){
       {view==="compensation"&&<div>
         <PH title="Compensation" sub="Cash Compensation Policy (Exhibit B) · 10% of Qualified Active AUM"/>
         <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>
-          <KPI label="Active AUM" value={fmtK(totalMonthlyAUM)} sub="Monthly managed spend" mono/>
-          <KPI label="Monthly comp" value={fmt$(monthlyComp)} sub="10% of active AUM" accent="green" mono/>
-          <KPI label="Paid this month" value={fmt$(paidThisMonth)} accent="blue" mono/>
-          <KPI label="Total paid (lifetime)" value={fmt$(totalPaid)} accent="blue" mono/>
+          <KPI label="Active AUM" value={fmtK(totalMonthlyAUM)} sub="Monthly managed spend"/>
+          <KPI label="Monthly comp" value={fmt$(monthlyComp)} sub="10% of active AUM" accent="green"/>
+          <KPI label="Paid this month" value={fmt$(paidThisMonth)} accent="blue"/>
+          <KPI label="Total paid (lifetime)" value={fmt$(totalPaid)} accent="blue"/>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:14}}>
           <Card>
@@ -685,10 +759,10 @@ function PartnerApp({partner,onLogout}){
       {view==="equity"&&<div>
         <PH title="Ownership" sub="Equity Vesting, Performance & Acceleration Policy (Exhibit A)"/>
         <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>
-          <KPI label="Ownership stake" value={`${equity.total.toFixed(2)}%`} accent="blue" mono/>
+          <KPI label="Ownership stake" value={`${equity.total.toFixed(2)}%`} accent="blue"/>
           <KPI label="Vesting status" value={equity.qualifies?"Qualified":"Pending"} sub={equity.qualifies?"$5M AUM threshold met":"$5M AUM required"} accent={equity.qualifies?"green":undefined}/>
-          <KPI label="AUM to qualify" value={equity.qualifies?"✓ Met":fmtK(Math.max(0,MIN_EQUITY_AUM-(partner.annual_aum||0)))} sub={equity.qualifies?"":"remaining to $5M"} mono/>
-          <KPI label="Maximum equity" value="15.00%" sub="5% base + 10% acceleration" mono/>
+          <KPI label="AUM to qualify" value={equity.qualifies?"✓ Met":fmtK(Math.max(0,MIN_EQUITY_AUM-(partner.annual_aum||0)))} sub={equity.qualifies?"":"remaining to $5M"}/>
+          <KPI label="Maximum equity" value="15.00%" sub="5% base + 10% acceleration"/>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
           <Card>
@@ -775,10 +849,12 @@ function AdminApp({onLogout}){
   const[tickets,setTickets]=useState([]);
   const[payouts,setPayouts]=useState([]);
   const[announcements,setAnnouncements]=useState([]);
+  const[campaignBriefs,setCampaignBriefs]=useState([]);
   const[loading,setLoading]=useState(true);
   const[view,setView]=useState("dashboard");
   const[selected,setSelected]=useState(null);
   const[showAdd,setShowAdd]=useState(false);
+  const[expandedBrief,setExpandedBrief]=useState(null);
   const[slackMsgs,setSlackMsgs]=useState([]);
   const[slackMsg,setSlackMsg]=useState("");
   const[slackCh,setSlackCh]=useState("#partner-revenue");
@@ -802,7 +878,18 @@ function AdminApp({onLogout}){
       supabase.from("tickets").select("*").order("created_at",{ascending:false}),
       supabase.from("payouts").select("*").order("created_at",{ascending:false}),
       supabase.from("announcements").select("*").order("created_at",{ascending:false}),
-    ]).then(([p,pi,r,t,py,an])=>{setPartners(p.data||[]);setPipeline(pi.data||[]);setResources(r.data||[]);setTickets(t.data||[]);setPayouts(py.data||[]);setAnnouncements(an.data||[]);setLoading(false);});
+      supabase.from("campaign_briefs").select("*").order("created_at",{ascending:false}),
+      supabase.from("slack_notifications").select("*").eq("sent",false).order("created_at",{ascending:false}),
+    ]).then(([p,pi,r,t,py,an,cb,sn])=>{
+      setPartners(p.data||[]);setPipeline(pi.data||[]);setResources(r.data||[]);setTickets(t.data||[]);setPayouts(py.data||[]);setAnnouncements(an.data||[]);setCampaignBriefs(cb.data||[]);setLoading(false);
+      // Auto-add unread Slack notifications to the log
+      if(sn.data&&sn.data.length>0){
+        const msgs=sn.data.map(n=>({channel:n.channel,message:n.message,time:new Date(n.created_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}));
+        setSlackMsgs(prev=>[...msgs,...prev]);
+        // Mark as sent
+        sn.data.forEach(n=>supabase.from("slack_notifications").update({sent:true}).eq("id",n.id));
+      }
+    });
   },[]);
 
   const addPartner=async()=>{
@@ -920,9 +1007,9 @@ function AdminApp({onLogout}){
       <PH title="Overview" sub="DSP Connect · Managing Partner program"/>
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>
         <KPI label="Total partners" value={partners.length} sub={`${active.length} active`}/>
-        <KPI label="Total active AUM" value={fmtK(totalActiveAUM)} sub="All active client spend" mono/>
-        <KPI label="Monthly comp due" value={fmt$(totalComp)} sub="10% of total AUM" accent="blue" mono/>
-        <KPI label="Total paid out" value={fmt$(totalPaidOut)} sub="All recorded payouts" accent="green" mono/>
+        <KPI label="Total active AUM" value={fmtK(totalActiveAUM)} sub="All active client spend"/>
+        <KPI label="Monthly comp due" value={fmt$(totalComp)} sub="10% of total AUM" accent="blue"/>
+        <KPI label="Total paid out" value={fmt$(totalPaidOut)} sub="All recorded payouts" accent="green"/>
       </div>
       {partners.length===0?<Empty icon="users-group" title="No managing partners yet" sub="Create your first managing partner to get started." cta="Admit first partner →" onCta={()=>setView("admissions")}/>
       :<Card>
@@ -1013,9 +1100,9 @@ function AdminApp({onLogout}){
           {open&&<div style={{padding:18,borderTop:"0.5px solid var(--line)",background:"var(--ink3)"}}>
             <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:16}}>
               <KPI label="Active clients" value={myActive.length} sub={`${myClients.length} total`}/>
-              <KPI label="Active AUM" value={fmtK(myAUM)} mono/>
-              <KPI label="Monthly comp" value={fmt$(myAUM*REV_RATE)} accent="green" mono/>
-              <KPI label="Total paid" value={fmt$(myPaid)} accent="blue" mono/>
+              <KPI label="Active AUM" value={fmtK(myAUM)}/>
+              <KPI label="Monthly comp" value={fmt$(myAUM*REV_RATE)} accent="green"/>
+              <KPI label="Total paid" value={fmt$(myPaid)} accent="blue"/>
             </div>
             {myActive.length>0&&<>
               <div style={{...S.label,marginBottom:8}}>Active clients</div>
@@ -1079,28 +1166,50 @@ function AdminApp({onLogout}){
     </div>}
 
     {view==="approvals"&&<div>
-      <PH title="Client Approvals" sub="Clients awaiting your approval before going active"/>
-      {pendingApprovals.length===0?<Empty icon="circle-check" title="No pending approvals" sub="Client submissions in Review will appear here."/>
-      :pendingApprovals.map(c=><Card key={c.id} style={{marginBottom:10}}>
-        <div style={{display:"flex",alignItems:"center",gap:12,padding:"14px 18px"}}>
-          <span style={S.pill(c.type==="brand"?"var(--blue-bg)":"var(--blue-bg)",c.type==="brand"?"var(--blue)":"var(--blue-lt)")}>{c.type}</span>
-          <div style={{flex:1}}>
-            <div style={{fontSize:13,fontWeight:500,color:"var(--text)"}}>{c.name}</div>
-            <div style={{fontSize:11,color:"var(--text3)"}}>Partner: {c.partner_name} · {c.contact_name||""} · <span style={{fontFamily:"var(--mono)",color:"var(--text2)"}}>{fmtK(c.monthly_spend||0)}/mo</span></div>
-            {c.notes&&<div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>{c.notes}</div>}
+      <PH title="Client Approvals" sub="Campaign briefs submitted by partners — review full brief before approving"/>
+      {pendingApprovals.length===0?<Empty icon="circle-check" title="No pending approvals" sub="Campaign briefs submitted by partners will appear here."/>
+      :pendingApprovals.map(c=>{
+        const cb=campaignBriefs.find(b=>b.pipeline_id===c.id);
+        const isExpanded=expandedBrief===c.id;
+        return <Card key={c.id} style={{marginBottom:10,overflow:"hidden"}}>
+          <div style={{display:"flex",alignItems:"center",gap:11,padding:"13px 16px"}}>
+            <span style={S.pill(c.type==="brand"?"var(--blue-bg)":"var(--bg3)",c.type==="brand"?"var(--blue)":"var(--text2)")}>{c.type}</span>
+            <div style={{flex:1}}>
+              <div style={{fontSize:13,fontWeight:500}}>{c.name}</div>
+              <div style={{fontSize:11,color:"var(--text3)"}}>Partner: {c.partner_name} · {c.contact_name||""} · <span style={{fontFamily:"var(--mono)"}}>{fmtK(c.monthly_spend||0)}/mo</span></div>
+              {cb&&<div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>
+                {[cb.campaign_type,cb.creative_type,cb.geo,cb.budget_total?`Budget: ${fmt$(cb.budget_total)}`:""].filter(Boolean).join(" · ")}
+              </div>}
+            </div>
+            {cb&&<Btn onClick={()=>setExpandedBrief(isExpanded?null:c.id)} variant="ghost" size="sm">{isExpanded?"Hide brief ↑":"View brief ↓"}</Btn>}
+            <Btn onClick={()=>{movePipelineStage(c.id,"Approved");sendSlack("#partner-updates",`✅ Client approved: ${c.name} (${c.type}) · Partner: ${c.partner_name} · ${fmtK(c.monthly_spend||0)}/mo`);}} variant="success" size="sm">Approve</Btn>
+            <Btn onClick={()=>movePipelineStage(c.id,"Lead")} variant="danger" size="sm">Reject</Btn>
           </div>
-          <Btn onClick={()=>movePipelineStage(c.id,"Approved")} variant="success" size="sm">Approve</Btn>
-          <Btn onClick={()=>movePipelineStage(c.id,"Lead")} variant="danger" size="sm">Reject</Btn>
-        </div>
-      </Card>)}
+          {isExpanded&&cb&&<div style={{padding:"14px 16px",borderTop:"0.5px solid var(--line)",background:"var(--bg2)"}}>
+            <div style={{...S.label,marginBottom:10}}>Campaign brief — submitted {fmtDate(cb.created_at)}</div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
+              {[["Campaign type",cb.campaign_type],["Goals",cb.goals],["KPIs",cb.kpis],
+                ["Creative type",cb.creative_type],["Traffic type",cb.traffic_type],["Device type",cb.device_type],
+                ["GEO",cb.geo],["Frequency cap",cb.frequency_cap],["Timezone",cb.timezone],
+                ["Total budget",cb.budget_total?fmt$(cb.budget_total):""],["Start date",cb.start_date],["End date",cb.end_date],
+                ["Additional targeting",cb.targeting],["1st party data",cb.first_party_data],["Creative link",cb.creative_file_link],
+                ["Tracking tags",cb.tracking_tags],["Bundles/domains",cb.bundles_domains],["Launch notes",cb.notes],
+              ].filter(([,v])=>v).map(([k,v])=><div key={k} style={{padding:"8px 10px",background:"var(--bg)",borderRadius:5,border:"0.5px solid var(--line)"}}>
+                <div style={S.label}>{k}</div>
+                <div style={{fontSize:12,color:"var(--text)",marginTop:3,wordBreak:"break-word"}}>{v}</div>
+              </div>)}
+            </div>
+          </div>}
+        </Card>;
+      })}
     </div>}
 
     {view==="comp-tracking"&&<div>
       <PH title="Compensation" sub="Active client ad spend · 10% revenue share"/>
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>
-        <KPI label="Total active AUM" value={fmtK(totalActiveAUM)} mono/>
-        <KPI label="Monthly comp due" value={fmt$(totalComp)} accent="blue" mono/>
-        <KPI label="Total paid out" value={fmt$(totalPaidOut)} accent="green" mono/>
+        <KPI label="Total active AUM" value={fmtK(totalActiveAUM)}/>
+        <KPI label="Monthly comp due" value={fmt$(totalComp)} accent="blue"/>
+        <KPI label="Total paid out" value={fmt$(totalPaidOut)} accent="green"/>
         <KPI label="Active partners" value={active.length}/>
       </div>
       {partners.map(p=>{
@@ -1126,8 +1235,8 @@ function AdminApp({onLogout}){
     {view==="payouts"&&<div>
       <PH title="Payout Records" sub="All recorded disbursements"/>
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:20}}>
-        <KPI label="Total paid (all time)" value={fmt$(totalPaidOut)} accent="blue" mono/>
-        <KPI label="Paid this month" value={fmt$(payouts.filter(p=>{const d=new Date(p.created_at);const n=new Date();return d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear();}).reduce((s,p)=>s+(p.amount||0),0))} accent="green" mono/>
+        <KPI label="Total paid (all time)" value={fmt$(totalPaidOut)} accent="blue"/>
+        <KPI label="Paid this month" value={fmt$(payouts.filter(p=>{const d=new Date(p.created_at);const n=new Date();return d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear();}).reduce((s,p)=>s+(p.amount||0),0))} accent="green"/>
         <KPI label="Total records" value={payouts.length}/>
       </div>
       {payouts.length===0?<Empty icon="cash" title="No payouts recorded" sub="Record payouts from Partner Management."/>

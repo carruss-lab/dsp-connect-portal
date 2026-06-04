@@ -61,3 +61,41 @@ create table if not exists audit_log (
 
 alter table audit_log enable row level security;
 create policy "Allow all" on audit_log for all using (true) with check (true);
+
+-- Campaign briefs table
+create table if not exists campaign_briefs (
+  id uuid default gen_random_uuid() primary key,
+  pipeline_id uuid references pipeline(id) on delete cascade,
+  partner_id uuid,
+  partner_name text,
+  client_name text,
+  client_type text default 'brand',
+
+  -- Campaign fields from brief template
+  advertiser_name text,
+  company_category text,
+  campaign_type text default 'Managed',
+  goals text,
+  budget_total numeric default 0,
+  start_date date,
+  end_date date,
+  timezone text,
+  geo text,
+  frequency_cap text,
+  creative_type text,
+  traffic_type text,
+  device_type text,
+  targeting text,
+  bundles_domains text,
+  first_party_data text,
+  kpis text,
+  creative_file_link text,
+  tracking_tags text,
+  notes text,
+
+  status text default 'Submitted',
+  created_at timestamp with time zone default now()
+);
+
+alter table campaign_briefs enable row level security;
+create policy "Allow all" on campaign_briefs for all using (true) with check (true);
