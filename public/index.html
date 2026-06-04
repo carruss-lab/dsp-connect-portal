@@ -1,33 +1,704 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>DSP Connect · Partner Portal</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css" />
-    <style>
-      * { box-sizing: border-box; }
-      body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f3; }
-      input, select, button, textarea { font-family: inherit; font-size: 13px; border: 0.5px solid #d1d0c8; border-radius: 8px; padding: 7px 10px; background: #fff; color: #1a1a18; outline: none; }
-      input:focus, select:focus { border-color: #185FA5; }
-      button { cursor: pointer; border-color: #c8c7bf; }
-      button:hover { background: #f1efe8; }
-      :root {
-        --color-background-primary: #ffffff;
-        --color-background-secondary: #f1efe8;
-        --color-background-tertiary: #e8e6de;
-        --color-text-primary: #1a1a18;
-        --color-text-secondary: #5f5e5a;
-        --color-border-tertiary: rgba(0,0,0,0.12);
-        --color-border-secondary: rgba(0,0,0,0.22);
-        --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        --font-mono: 'SF Mono', 'Fira Code', monospace;
-        --border-radius-md: 8px;
-        --border-radius-lg: 12px;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>DSP Connect · Managing Partner Portal</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.31.0/css/tabler-icons.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f1efe8;color:#1a1a18}
+input,select,textarea{font-family:inherit;font-size:13px;padding:7px 10px;border:0.5px solid rgba(0,0,0,0.22);border-radius:7px;outline:none;background:#fff;color:#1a1a18;width:100%}
+input:focus,select:focus{border-color:#185FA5;box-shadow:0 0 0 2px rgba(24,95,165,0.12)}
+button{font-family:inherit;font-size:13px;padding:7px 14px;border:0.5px solid rgba(0,0,0,0.18);border-radius:8px;cursor:pointer;background:#fff;color:#1a1a18}
+button:hover{opacity:0.85}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { createClient } = supabase;
+const sb = createClient(
+  'https://rwahggesqzeabkyvbhab.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ3YWhnZ2VzcXplYWJreXZiaGFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0NDE3MzQsImV4cCI6MjA5NjAxNzczNH0.Xb8GzYAMnUOAx8RvC_eGRIZSdopt6C39wvP6DKJeKfs'
+);
+
+const { useState, useEffect } = React;
+
+const REV_RATE=0.10,MIN_EQUITY_AUM=5000000;
+const VERTICALS=["Healthcare","Legal","Financial Services","Automotive","Real Estate","Home Services","Franchise","Hospitality","Political","Enterprise","Other"];
+const TRAILING_OPTIONS=[{value:"A",label:"Option A — Compensation ceases on termination date"},{value:"B",label:"Option B — Compensation continues for specified days on originated active accounts"},{value:"C",label:"Option C — As provided in a separate written agreement"}];
+const PIPELINE_STAGES=["Lead","Deposit Paid","Review","Approved","Active"];
+const ADMIN_CREDS={email:"admin@getdspconnect.com",password:"dspconnect2025"};
+const C={bg:"#ffffff",bg2:"#f1efe8",bg3:"#e8e6de",text:"#1a1a18",muted:"#5f5e5a",border:"rgba(0,0,0,0.12)",border2:"rgba(0,0,0,0.22)",blue:"#185FA5",blueBg:"#E6F1FB",green:"#3B6D11",greenBg:"#EAF3DE",amber:"#854F0B",amberBg:"#FAEEDA",purple:"#3C3489",purpleBg:"#EEEDFE",red:"#A32D2D",redBg:"#FCEBEB",teal:"#0F6E56",tealBg:"#E1F5EE"};
+const fmt$=n=>"$"+Math.round(n||0).toLocaleString();
+const fmtK=n=>(n||0)>=1000000?"$"+((n||0)/1000000).toFixed(2)+"M":(n||0)>=1000?"$"+Math.round((n||0)/1000)+"k":"$"+Math.round(n||0);
+const today=()=>new Date().toISOString().slice(0,10);
+const daysIn=d=>Math.max(0,Math.floor((Date.now()-new Date(d))/86400000));
+const DAY30=[{aum:500000,award:3.0},{aum:100000,award:1.5},{aum:50000,award:0.5}];
+const DAY60=[{aum:2000000,award:3.0},{aum:1000000,award:2.0},{aum:500000,award:1.0}];
+const DAY90=[{aum:3000000,award:4.0},{aum:2000000,award:3.0},{aum:1000000,award:2.0}];
+
+function calcEquity(p){
+  const annual=p.annual_aum||0;
+  if(annual<MIN_EQUITY_AUM)return{qualifies:false,base:0,a30:0,a60:0,a90:0,total:0};
+  const a30=(DAY30.find(t=>(p.day30_aum||0)>=t.aum)||{award:0}).award;
+  const a60=(DAY60.find(t=>(p.day60_aum||0)>=t.aum)||{award:0}).award;
+  const a90=(DAY90.find(t=>(p.day90_aum||0)>=t.aum)||{award:0}).award;
+  return{qualifies:true,base:5,a30,a60,a90,total:Math.min(5+a30+a60+a90,15)};
+}
+function calcScore(p,pipeline){
+  let s=0;const aum=p.monthly_spend||0;
+  if(aum>0)s+=20;if(aum>=100000)s+=15;if(aum>=250000)s+=15;
+  const myPipe=pipeline.filter(c=>c.partner_id===p.id);
+  s+=Math.min(myPipe.length*5,20);
+  s+=Math.min(myPipe.filter(c=>c.stage==="Active").length*5,20);
+  return Math.min(s,100);
+}
+
+function Avatar({name,size=36}){
+  const i=(name||"?").split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
+  const p=["#E6F1FB|#185FA5","#EAF3DE|#3B6D11","#EEEDFE|#3C3489","#FAEEDA|#854F0B","#FAECE7|#993C1D","#E1F5EE|#0F6E56"];
+  const[bg,fg]=p[(name||"?").charCodeAt(0)%p.length].split("|");
+  return <div style={{width:size,height:size,borderRadius:"50%",background:bg,color:fg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:size*0.34,fontWeight:500,flexShrink:0}}>{i}</div>;
+}
+function Pill({label,bg,fg}){return <span style={{fontSize:11,fontWeight:500,padding:"3px 10px",borderRadius:20,background:bg,color:fg,whiteSpace:"nowrap"}}>{label}</span>;}
+function StatusPill({s}){
+  const m={Active:[C.greenBg,C.green],Onboarding:[C.amberBg,C.amber],Inactive:[C.redBg,C.red],"Pending Setup":[C.bg2,C.muted],Lead:["#F1EFE8","#444441"],"Deposit Paid":[C.amberBg,C.amber],Review:[C.blueBg,C.blue],Approved:[C.tealBg,C.teal]};
+  const[bg,fg]=m[s]||[C.bg2,C.muted];return <Pill label={s} bg={bg} fg={fg}/>;
+}
+function StatBox({label,value,sub,icon,green,blue}){
+  return <div style={{background:C.bg2,borderRadius:10,padding:"14px 16px"}}>
+    <div style={{fontSize:12,color:C.muted,display:"flex",alignItems:"center",gap:5,marginBottom:6}}><i className={"ti ti-"+icon} style={{fontSize:14}}/>{label}</div>
+    <div style={{fontSize:22,fontWeight:500,color:green?C.green:blue?C.blue:C.text}}>{value}</div>
+    {sub&&<div style={{fontSize:11,color:C.muted,marginTop:2}}>{sub}</div>}
+  </div>;
+}
+function Card({children,style={}}){return <div style={{background:C.bg,border:"0.5px solid "+C.border,borderRadius:12,...style}}>{children}</div>;}
+function ProgressBar({pct,color=C.blue}){return <div style={{height:6,background:C.bg2,borderRadius:3,overflow:"hidden"}}><div style={{height:"100%",width:Math.min(pct||0,100)+"%",background:color,borderRadius:3}}/></div>;}
+function SectionHead({title,action}){return <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}><h2 style={{margin:0,fontSize:18,fontWeight:500}}>{title}</h2>{action}</div>;}
+function EmptyState({icon,title,sub,cta,onCta}){return <Card style={{padding:48,textAlign:"center"}}><i className={"ti ti-"+icon} style={{fontSize:36,color:C.muted,display:"block",marginBottom:14}}/><div style={{fontSize:15,fontWeight:500,marginBottom:6}}>{title}</div><div style={{fontSize:13,color:C.muted,marginBottom:cta?16:0}}>{sub}</div>{cta&&<button onClick={onCta} style={{fontSize:13,padding:"8px 20px",background:C.blue,color:"#fff",border:"none",borderRadius:8,cursor:"pointer"}}>{cta}</button>}</Card>;}
+function Spinner(){return <div style={{display:"flex",alignItems:"center",justifyContent:"center",padding:40,color:C.muted,fontSize:13}}><i className="ti ti-loader" style={{fontSize:20,marginRight:8,animation:"spin 1s linear infinite"}}/>Loading…</div>;}
+
+const PARTNER_NAV=[{section:"HOME",items:[{key:"dashboard",icon:"layout-dashboard",label:"Dashboard"}]},{section:"GROWTH",items:[{key:"brand-clients",icon:"building",label:"Brand clients"},{key:"agency-clients",icon:"briefcase",label:"Agency clients"},{key:"pipeline",icon:"chart-arrows-vertical",label:"Pipeline"}]},{section:"OWNERSHIP",items:[{key:"compensation",icon:"currency-dollar",label:"Compensation"},{key:"equity",icon:"chart-pie",label:"Equity"}]},{section:"RESOURCES",items:[{key:"training",icon:"school",label:"Training"},{key:"sops",icon:"list-check",label:"SOPs"},{key:"documents",icon:"file-text",label:"Documents"}]},{section:"SUPPORT",items:[{key:"support",icon:"help-circle",label:"Help desk"}]}];
+const ADMIN_NAV=[{section:"HOME",items:[{key:"dashboard",icon:"layout-dashboard",label:"Overview"}]},{section:"PARTNERS",items:[{key:"admissions",icon:"user-plus",label:"Admissions"},{key:"partner-mgmt",icon:"users",label:"Partner management"}]},{section:"CLIENTS",items:[{key:"admin-brands",icon:"building",label:"Brand clients"},{key:"admin-agencies",icon:"briefcase",label:"Agency clients"},{key:"approvals",icon:"check-circle",label:"Client approvals"}]},{section:"FINANCE",items:[{key:"comp-tracking",icon:"currency-dollar",label:"Compensation"},{key:"stripe",icon:"credit-card",label:"Stripe payouts"}]},{section:"CONTENT",items:[{key:"content-mgmt",icon:"upload",label:"Content management"}]},{section:"COMMS",items:[{key:"slack",icon:"brand-slack",label:"Slack"}]}];
+
+function NavSidebar({navGroups,active,onSelect,header,footer}){
+  return <div style={{width:196,background:C.bg,borderRight:"0.5px solid "+C.border,display:"flex",flexDirection:"column",flexShrink:0,overflowY:"auto"}}>
+    <div style={{padding:"16px 14px 12px",borderBottom:"0.5px solid "+C.border}}>{header}</div>
+    <div style={{flex:1,padding:"8px 0"}}>
+      {navGroups.map(g=><div key={g.section}>
+        <div style={{fontSize:10,fontWeight:500,color:C.muted,padding:"10px 14px 4px",letterSpacing:"0.5px"}}>{g.section}</div>
+        {g.items.map(n=><button key={n.key} onClick={()=>onSelect(n.key)} style={{display:"flex",alignItems:"center",gap:9,padding:"8px 14px",width:"100%",border:"none",background:active===n.key?C.bg2:"transparent",color:active===n.key?C.text:C.muted,cursor:"pointer",fontSize:13,fontWeight:active===n.key?500:400,textAlign:"left"}}>
+          <i className={"ti ti-"+n.icon} style={{fontSize:15}}/>{n.label}
+          {n.badge?<span style={{marginLeft:"auto",background:C.blue,color:"#fff",fontSize:10,borderRadius:10,padding:"1px 6px"}}>{n.badge}</span>:null}
+        </button>)}
+      </div>)}
+    </div>
+    {footer&&<div style={{padding:"12px 14px",borderTop:"0.5px solid "+C.border}}>{footer}</div>}
+  </div>;
+}
+
+function Login({onLogin}){
+  const[email,setEmail]=useState("");const[pass,setPass]=useState("");const[err,setErr]=useState("");const[loading,setLoading]=useState(false);
+  const attempt=async()=>{
+    setErr("");setLoading(true);
+    if(email.trim().toLowerCase()===ADMIN_CREDS.email&&pass===ADMIN_CREDS.password){setLoading(false);onLogin({role:"admin"});return;}
+    const{data,error}=await sb.from("partners").select("*").eq("email",email.trim().toLowerCase()).eq("password",pass).single();
+    setLoading(false);
+    if(error||!data){setErr("Invalid email or password.");return;}
+    onLogin({role:"partner",partner:data});
+  };
+  return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:C.bg3}}>
+    <div style={{width:400,background:C.bg,border:"0.5px solid "+C.border,borderRadius:16,padding:36}}>
+      <div style={{textAlign:"center",marginBottom:28}}>
+        <div style={{fontSize:22,fontWeight:500}}>DSP Connect</div>
+        <div style={{fontSize:13,color:C.muted,marginTop:4}}>Managing Partner Portal · getdspconnect.com</div>
+      </div>
+      <label style={{fontSize:12,color:C.muted,display:"block",marginBottom:5}}>Email address</label>
+      <input value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&attempt()} placeholder="you@agency.com" style={{marginBottom:14}}/>
+      <label style={{fontSize:12,color:C.muted,display:"block",marginBottom:5}}>Password</label>
+      <input value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e=>e.key==="Enter"&&attempt()} type="password" placeholder="••••••••" style={{marginBottom:20}}/>
+      {err&&<div style={{fontSize:12,color:C.red,background:C.redBg,borderRadius:8,padding:"8px 12px",marginBottom:14}}>{err}</div>}
+      <button onClick={attempt} disabled={loading} style={{width:"100%",padding:10,fontSize:14,fontWeight:500,background:C.blue,color:"#fff",border:"none",borderRadius:8,cursor:"pointer"}}>{loading?"Signing in…":"Sign in"}</button>
+      <div style={{marginTop:20,padding:14,background:C.bg2,borderRadius:10,fontSize:12,color:C.muted}}>
+        <div style={{fontWeight:500,color:C.text,marginBottom:4}}>Admin: admin@getdspconnect.com</div>
+        Partner logins are created by admin and shared directly with each managing partner.
+      </div>
+    </div>
+  </div>;
+}
+
+function Onboarding({partner,onComplete}){
+  const[step,setStep]=useState(0);const[sig,setSig]=useState("");
+  const[checks,setChecks]=useState({comp:false,equity:false,ops:false,noncompete:false,sig:false});
+  const steps=[
+    {title:"Cash compensation policy",icon:"currency-dollar",content:<div style={{fontSize:13,lineHeight:1.7}}>
+      <div style={{fontWeight:500,fontSize:15,marginBottom:12}}>Managing Partner Cash Compensation Policy</div>
+      {[["Rate","10% of Qualified Ad Spend Under Management (AUM)"],["Payment schedule","Monthly, after advertiser funds collected by DSP Connect"],["Qualifying spend","Contracted, activated, invoiced, and collected"],["Non-qualifying","Unpaid invoices, chargebacks, refunds, disputes, write-offs"],["No guarantee","Compensation is production-based only — no salary minimum"]].map(([k,v])=><div key={k} style={{display:"flex",gap:14,padding:"7px 0",borderBottom:"0.5px solid "+C.border}}><span style={{color:C.muted,minWidth:160,flexShrink:0}}>{k}</span><span>{v}</span></div>)}
+      <label style={{display:"flex",alignItems:"center",gap:10,marginTop:16,cursor:"pointer"}}><input type="checkbox" checked={checks.comp} onChange={e=>setChecks(c=>({...c,comp:e.target.checked}))} style={{width:16,height:16,flexShrink:0}}/>I have read and understood the Cash Compensation Policy (Exhibit B)</label>
+    </div>},
+    {title:"Equity vesting policy",icon:"chart-pie",content:<div style={{fontSize:13,lineHeight:1.7}}>
+      <div style={{fontWeight:500,fontSize:15,marginBottom:12}}>Equity Vesting, Performance & Acceleration Policy</div>
+      {[["Equity pool","40% of total LLC membership interests"],["Base grant","5.00% upon qualifying"],["Annual minimum","$5,000,000 AUM in first 12 months"],["Vesting cliff","1 year — no partial vesting before anniversary"],["Max first year","15.00% (5% base + 10% acceleration)"]].map(([k,v])=><div key={k} style={{display:"flex",gap:14,padding:"7px 0",borderBottom:"0.5px solid "+C.border}}><span style={{color:C.muted,minWidth:160,flexShrink:0}}>{k}</span><span>{v}</span></div>)}
+      <div style={{marginTop:12,padding:"10px 12px",background:C.amberBg,borderRadius:8,color:C.amber,fontSize:12}}>Missed acceleration windows are permanently forfeited — they do not carry forward.</div>
+      <label style={{display:"flex",alignItems:"center",gap:10,marginTop:14,cursor:"pointer"}}><input type="checkbox" checked={checks.equity} onChange={e=>setChecks(c=>({...c,equity:e.target.checked}))} style={{width:16,height:16,flexShrink:0}}/>I have read and understood the Equity Vesting Policy (Exhibit A)</label>
+    </div>},
+    {title:"Operating rules",icon:"list-check",content:<div style={{fontSize:13,lineHeight:1.7}}>
+      <div style={{fontWeight:500,fontSize:15,marginBottom:12}}>Operating Rules & Required Acknowledgements</div>
+      {[["Non-compete",(partner.non_compete_days||90)+" days post-termination"],["Trailing comp",TRAILING_OPTIONS.find(o=>o.value===(partner.trailing_option||"A"))?.label],["Account ownership","DSP Connect owns all advertiser accounts"],["IP","All platform materials remain property of DSP Connect"]].map(([k,v])=><div key={k} style={{display:"flex",gap:14,padding:"7px 0",borderBottom:"0.5px solid "+C.border}}><span style={{color:C.muted,minWidth:160,flexShrink:0}}>{k}</span><span>{v}</span></div>)}
+      <label style={{display:"flex",alignItems:"center",gap:10,marginTop:14,cursor:"pointer"}}><input type="checkbox" checked={checks.ops} onChange={e=>setChecks(c=>({...c,ops:e.target.checked}))} style={{width:16,height:16,flexShrink:0}}/>I acknowledge and agree to the operating rules above</label>
+      <label style={{display:"flex",alignItems:"center",gap:10,marginTop:10,cursor:"pointer"}}><input type="checkbox" checked={checks.noncompete} onChange={e=>setChecks(c=>({...c,noncompete:e.target.checked}))} style={{width:16,height:16,flexShrink:0}}/>I acknowledge the non-compete and trailing compensation terms</label>
+    </div>},
+    {title:"Digital signature",icon:"pencil",content:<div style={{fontSize:13,lineHeight:1.7}}>
+      <div style={{fontWeight:500,fontSize:15,marginBottom:12}}>Admission confirmation & digital signature</div>
+      {[["Full legal name",partner.legal_name||partner.name],["Email",partner.email],["Vertical",partner.vertical],["Start date",partner.start_date],["LLC entity","DSP Connect Holdings (Influence Crafters, LLC)"],["Max first-year equity","15.00%"]].map(([k,v])=><div key={k} style={{display:"flex",gap:14,padding:"7px 0",borderBottom:"0.5px solid "+C.border}}><span style={{color:C.muted,minWidth:160,flexShrink:0}}>{k}</span><span style={{fontWeight:500}}>{v}</span></div>)}
+      <div style={{marginTop:16,marginBottom:6,fontWeight:500}}>Type your full legal name to sign</div>
+      <input value={sig} onChange={e=>{setSig(e.target.value);setChecks(c=>({...c,sig:e.target.value.trim().length>4}));}} placeholder={partner.legal_name||partner.name}/>
+      <div style={{marginTop:12,padding:"10px 12px",background:C.greenBg,borderRadius:8,color:C.green,fontSize:12}}>✓ Exhibits A & B acknowledged · Signed {today()}</div>
+    </div>},
+  ];
+  const s=steps[step];
+  const canAdvance=step===0?checks.comp:step===1?checks.equity:step===2?(checks.ops&&checks.noncompete):checks.sig;
+  return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:C.bg3,padding:24}}>
+    <div style={{width:"100%",maxWidth:640}}>
+      <div style={{textAlign:"center",marginBottom:20}}><div style={{fontSize:18,fontWeight:500}}>Welcome, {(partner.name||"").split(" ")[0]}</div><div style={{fontSize:13,color:C.muted,marginTop:4}}>Complete onboarding to access your dashboard</div></div>
+      <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:6,marginBottom:20}}>
+        {steps.map((_,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:6}}>
+          <div style={{width:28,height:28,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:500,background:i<step?C.greenBg:i===step?C.blueBg:C.bg2,color:i<step?C.green:i===step?C.blue:C.muted,border:"0.5px solid "+(i===step?C.blue:C.border)}}>
+            {i<step?<i className="ti ti-check" style={{fontSize:12}}/>:i+1}
+          </div>
+          {i<steps.length-1&&<div style={{width:28,height:1,background:i<step?C.green:C.border}}/>}
+        </div>)}
+      </div>
+      <Card style={{padding:24,marginBottom:14}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:18,paddingBottom:14,borderBottom:"0.5px solid "+C.border}}>
+          <i className={"ti ti-"+s.icon} style={{fontSize:20,color:C.blue}}/><span style={{fontWeight:500,fontSize:15}}>{s.title}</span><span style={{marginLeft:"auto",fontSize:12,color:C.muted}}>Step {step+1} of {steps.length}</span>
+        </div>
+        {s.content}
+      </Card>
+      <div style={{display:"flex",gap:10,justifyContent:"flex-end"}}>
+        {step>0&&<button onClick={()=>setStep(s=>s-1)}>Back</button>}
+        {step<steps.length-1
+          ?<button onClick={()=>{if(canAdvance)setStep(s=>s+1);}} style={{background:canAdvance?C.blue:"#ccc",color:"#fff",border:"none",cursor:canAdvance?"pointer":"not-allowed"}}>Continue →</button>
+          :<button onClick={onComplete} disabled={!canAdvance} style={{background:canAdvance?C.green:"#ccc",color:"#fff",border:"none",cursor:canAdvance?"pointer":"not-allowed"}}>Access my dashboard →</button>}
+      </div>
+    </div>
+  </div>;
+}
+
+function PartnerApp({partner,onLogout}){
+  const[view,setView]=useState("dashboard");
+  const[pipeline,setPipeline]=useState([]);
+  const[resources,setResources]=useState([]);
+  const[tickets,setTickets]=useState([]);
+  const[loading,setLoading]=useState(true);
+  const[showAddClient,setShowAddClient]=useState(false);
+  const[clientType,setClientType]=useState("brand");
+  const[newClient,setNewClient]=useState({name:"",contact_name:"",email:"",monthly_spend:"",notes:""});
+  const[newTicket,setNewTicket]=useState({type:"Client Issue",subject:"",details:""});
+  const[showTicket,setShowTicket]=useState(false);
+
+  useEffect(()=>{
+    Promise.all([
+      sb.from("pipeline").select("*").eq("partner_id",partner.id),
+      sb.from("resources").select("*").order("created_at",{ascending:false}),
+      sb.from("tickets").select("*").eq("partner_id",partner.id).order("created_at",{ascending:false}),
+    ]).then(([p,r,t])=>{setPipeline(p.data||[]);setResources(r.data||[]);setTickets(t.data||[]);setLoading(false);});
+  },[partner.id]);
+
+  const days=daysIn(partner.start_date);
+  const monthly=(partner.monthly_spend||0)*REV_RATE;
+  const equity=calcEquity(partner);
+  const brandClients=pipeline.filter(c=>c.type==="brand");
+  const agencyClients=pipeline.filter(c=>c.type==="agency");
+  const score=calcScore(partner,pipeline);
+
+  const addClient=async(type)=>{
+    if(!newClient.name)return;
+    const{data}=await sb.from("pipeline").insert([{type,partner_id:partner.id,partner_name:partner.name,...newClient,monthly_spend:parseFloat(newClient.monthly_spend)||0,stage:"Lead"}]).select().single();
+    if(data)setPipeline(p=>[...p,data]);
+    setNewClient({name:"",contact_name:"",email:"",monthly_spend:"",notes:""});setShowAddClient(false);
+  };
+  const moveStage=async(id,stage)=>{
+    await sb.from("pipeline").update({stage}).eq("id",id);
+    setPipeline(p=>p.map(c=>c.id===id?{...c,stage}:c));
+  };
+  const submitTicket=async()=>{
+    if(!newTicket.subject)return;
+    const{data}=await sb.from("tickets").insert([{partner_id:partner.id,partner_name:partner.name,...newTicket,status:"Open"}]).select().single();
+    if(data)setTickets(t=>[data,...t]);
+    setNewTicket({type:"Client Issue",subject:"",details:""});setShowTicket(false);
+  };
+
+  const navGroups=PARTNER_NAV.map(g=>({...g,items:g.items.map(i=>i.key==="pipeline"?{...i,badge:pipeline.filter(c=>c.stage==="Review").length||null}:i)}));
+  const header=<div><div style={{fontSize:11,color:C.muted,marginBottom:2}}>DSP Connect</div><div style={{fontWeight:500,fontSize:13}}>{(partner.name||"").split(" ")[0]}</div><div style={{fontSize:11,color:C.muted}}>{partner.agency||partner.vertical}</div></div>;
+  const footer=<div><div style={{fontSize:11,color:C.muted,marginBottom:8}}>Day {days} · {partner.vertical}</div><button onClick={onLogout} style={{fontSize:12,color:C.muted,background:"none",border:"none",cursor:"pointer",display:"flex",alignItems:"center",gap:6,padding:0}}><i className="ti ti-logout" style={{fontSize:13}}/>Sign out</button></div>;
+
+  if(loading)return <div style={{display:"flex",minHeight:"100vh"}}><NavSidebar navGroups={navGroups} active={view} onSelect={setView} header={header} footer={footer}/><div style={{flex:1}}><Spinner/></div></div>;
+
+  return <div style={{display:"flex",minHeight:"100vh",background:C.bg3}}>
+    <NavSidebar navGroups={navGroups} active={view} onSelect={setView} header={header} footer={footer}/>
+    <div style={{flex:1,overflowY:"auto",padding:24}}>
+
+      {view==="dashboard"&&<div>
+        <div style={{marginBottom:20}}><h2 style={{margin:"0 0 4px",fontSize:18,fontWeight:500}}>Dashboard</h2><div style={{fontSize:12,color:C.muted}}>{partner.vertical} · Started {partner.start_date} · Day {days}</div></div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>
+          <StatBox label="Monthly AUM" value={fmtK(partner.monthly_spend||0)} sub="Managed spend" icon="chart-bar"/>
+          <StatBox label="Monthly compensation" value={fmt$(monthly)} sub="10% of AUM" icon="currency-dollar" green/>
+          <StatBox label="Active clients" value={pipeline.filter(c=>c.stage==="Active").length} sub={pipeline.length+" total"} icon="building"/>
+          <div style={{background:C.bg2,borderRadius:10,padding:"14px 16px"}}>
+            <div style={{fontSize:12,color:C.muted,marginBottom:6,display:"flex",alignItems:"center",gap:5}}><i className="ti ti-star" style={{fontSize:14}}/>Partner score</div>
+            <div style={{fontSize:22,fontWeight:500,color:score>=70?C.green:score>=40?C.amber:C.red}}>{score}</div>
+            <div style={{marginTop:6}}><ProgressBar pct={score} color={score>=70?C.green:score>=40?C.amber:C.red}/></div>
+            <div style={{fontSize:10,color:C.muted,marginTop:4}}>out of 100</div>
+          </div>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:14}}>
+          <Card style={{padding:16}}>
+            <div style={{fontWeight:500,fontSize:14,marginBottom:14,display:"flex",alignItems:"center",gap:8}}><i className="ti ti-bell" style={{fontSize:15,color:C.blue}}/>Announcements</div>
+            <div style={{background:C.blueBg,borderRadius:8,padding:"10px 12px",marginBottom:8}}><div style={{fontSize:12,fontWeight:500,color:C.blue,marginBottom:2}}>Welcome to DSP Connect</div><div style={{fontSize:12,color:C.blue}}>Your Managing Partner portal is now active. Complete your 90-day acceleration window to maximize equity.</div></div>
+            <div style={{background:C.amberBg,borderRadius:8,padding:"10px 12px"}}><div style={{fontSize:12,fontWeight:500,color:C.amber,marginBottom:2}}>Reminder: 90-day windows</div><div style={{fontSize:12,color:C.amber}}>Missed acceleration windows are permanently forfeited.</div></div>
+          </Card>
+          <Card style={{padding:16}}>
+            <div style={{fontWeight:500,fontSize:14,marginBottom:14,display:"flex",alignItems:"center",gap:8}}><i className="ti ti-bolt" style={{fontSize:15,color:C.amber}}/>90-Day acceleration — Day {Math.min(days,90)} of 90</div>
+            <div style={{display:"flex",gap:8,marginBottom:12}}>
+              {[{label:"Day 1–30",done:days>30,active:days<=30,award:(DAY30.find(t=>(partner.day30_aum||0)>=t.aum)||{award:0}).award,max:3},
+                {label:"Day 31–60",done:days>60,active:days>30&&days<=60,award:(DAY60.find(t=>(partner.day60_aum||0)>=t.aum)||{award:0}).award,max:3},
+                {label:"Day 61–90",done:days>90,active:days>60&&days<=90,award:(DAY90.find(t=>(partner.day90_aum||0)>=t.aum)||{award:0}).award,max:4},
+              ].map(w=><div key={w.label} style={{flex:1,background:w.active?C.amberBg:w.done?C.greenBg:C.bg2,borderRadius:8,padding:"10px"}}>
+                <div style={{fontSize:10,fontWeight:500,color:w.active?C.amber:w.done?C.green:C.muted,marginBottom:4}}>{w.label}</div>
+                <div style={{fontSize:18,fontWeight:500,color:w.active?C.amber:w.done?C.green:C.muted}}>{w.award.toFixed(1)}%</div>
+                <div style={{fontSize:10,color:C.muted}}>of {w.max}% max</div>
+              </div>)}
+            </div>
+            <div style={{borderTop:"0.5px solid "+C.border,paddingTop:12}}>
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:12,marginBottom:5}}><span style={{color:C.muted}}>Total equity</span><span style={{fontWeight:500,color:C.purple}}>{equity.total.toFixed(2)}% / 15%</span></div>
+              <ProgressBar pct={(equity.total/15)*100} color={C.purple}/>
+            </div>
+          </Card>
+        </div>
+      </div>}
+
+      {view==="brand-clients"&&<div>
+        <SectionHead title="Brand clients" action={<button onClick={()=>{setClientType("brand");setShowAddClient(true);}} style={{display:"flex",alignItems:"center",gap:6}}><i className="ti ti-plus" style={{fontSize:13}}/>Add brand client</button>}/>
+        {showAddClient&&clientType==="brand"&&<Card style={{padding:16,marginBottom:16}}>
+          <div style={{fontWeight:500,fontSize:13,marginBottom:12}}>New brand client</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+            {[["Company name *","name","text"],["Contact name","contact_name","text"],["Email","email","email"],["Monthly spend ($)","monthly_spend","number"]].map(([label,field,type])=><div key={field}><label style={{fontSize:12,color:C.muted,display:"block",marginBottom:4}}>{label}</label><input type={type} value={newClient[field]} onChange={e=>setNewClient(c=>({...c,[field]:e.target.value}))}/></div>)}
+          </div>
+          <div style={{display:"flex",gap:8,marginTop:12}}><button onClick={()=>addClient("brand")} style={{background:C.blue,color:"#fff",border:"none",borderRadius:8}}>Add client</button><button onClick={()=>setShowAddClient(false)}>Cancel</button></div>
+        </Card>}
+        {brandClients.length===0?<EmptyState icon="building" title="No brand clients yet" sub="Add your first direct advertiser client." cta="Add brand client" onCta={()=>{setClientType("brand");setShowAddClient(true);}}/>
+        :<Card style={{overflow:"hidden"}}>
+          <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",padding:"10px 16px",background:C.bg2,borderBottom:"0.5px solid "+C.border,fontSize:11,fontWeight:500,color:C.muted}}><span>Company</span><span>Monthly spend</span><span>Stage</span><span>Added</span></div>
+          {brandClients.map((c,i)=><div key={c.id} style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",padding:"12px 16px",borderBottom:i<brandClients.length-1?"0.5px solid "+C.border:"none",alignItems:"center"}}>
+            <div><div style={{fontWeight:500,fontSize:13}}>{c.name}</div><div style={{fontSize:11,color:C.muted}}>{c.contact_name}</div></div>
+            <div style={{fontSize:13,fontWeight:500,color:C.green}}>{fmtK(c.monthly_spend||0)}</div>
+            <StatusPill s={c.stage}/>
+            <div style={{fontSize:12,color:C.muted}}>{(c.created_at||"").slice(0,10)}</div>
+          </div>)}
+        </Card>}
+      </div>}
+
+      {view==="agency-clients"&&<div>
+        <SectionHead title="Agency clients" action={<button onClick={()=>{setClientType("agency");setShowAddClient(true);}}><i className="ti ti-plus" style={{fontSize:13,marginRight:6}}/>Add agency client</button>}/>
+        {showAddClient&&clientType==="agency"&&<Card style={{padding:16,marginBottom:16}}>
+          <div style={{fontWeight:500,fontSize:13,marginBottom:12}}>New agency client</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+            {[["Agency name *","name","text"],["Contact name","contact_name","text"],["Email","email","email"],["Monthly spend ($)","monthly_spend","number"]].map(([label,field,type])=><div key={field}><label style={{fontSize:12,color:C.muted,display:"block",marginBottom:4}}>{label}</label><input type={type} value={newClient[field]} onChange={e=>setNewClient(c=>({...c,[field]:e.target.value}))}/></div>)}
+          </div>
+          <div style={{display:"flex",gap:8,marginTop:12}}><button onClick={()=>addClient("agency")} style={{background:C.blue,color:"#fff",border:"none",borderRadius:8}}>Add agency</button><button onClick={()=>setShowAddClient(false)}>Cancel</button></div>
+        </Card>}
+        {agencyClients.length===0?<EmptyState icon="briefcase" title="No agency clients yet" sub="Add agencies to track their managed spend."/>
+        :<Card style={{overflow:"hidden"}}>
+          <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",padding:"10px 16px",background:C.bg2,borderBottom:"0.5px solid "+C.border,fontSize:11,fontWeight:500,color:C.muted}}><span>Agency</span><span>Monthly spend</span><span>Stage</span><span>Added</span></div>
+          {agencyClients.map((c,i)=><div key={c.id} style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",padding:"12px 16px",borderBottom:i<agencyClients.length-1?"0.5px solid "+C.border:"none",alignItems:"center"}}>
+            <div><div style={{fontWeight:500,fontSize:13}}>{c.name}</div><div style={{fontSize:11,color:C.muted}}>{c.contact_name}</div></div>
+            <div style={{fontSize:13,fontWeight:500,color:C.green}}>{fmtK(c.monthly_spend||0)}</div>
+            <StatusPill s={c.stage}/>
+            <div style={{fontSize:12,color:C.muted}}>{(c.created_at||"").slice(0,10)}</div>
+          </div>)}
+        </Card>}
+      </div>}
+
+      {view==="pipeline"&&<div>
+        <h2 style={{margin:"0 0 20px",fontSize:18,fontWeight:500}}>Pipeline</h2>
+        {["brand","agency"].map(type=><div key={type} style={{marginBottom:28}}>
+          <div style={{fontWeight:500,fontSize:14,marginBottom:12}}>{type==="brand"?"Brand clients":"Agency clients"}</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:8}}>
+            {PIPELINE_STAGES.map(stage=>{const inStage=pipeline.filter(c=>c.type===type&&c.stage===stage);
+              return <div key={stage}>
+                <div style={{fontSize:11,fontWeight:500,color:C.muted,marginBottom:6,textAlign:"center"}}>{stage} ({inStage.length})</div>
+                <div style={{minHeight:60,background:C.bg2,borderRadius:8,padding:6,display:"flex",flexDirection:"column",gap:6}}>
+                  {inStage.map(c=><div key={c.id} style={{background:C.bg,border:"0.5px solid "+C.border,borderRadius:6,padding:"8px 10px"}}>
+                    <div style={{fontSize:12,fontWeight:500,marginBottom:2}}>{c.name}</div>
+                    <div style={{fontSize:11,color:C.muted,marginBottom:6}}>{fmtK(c.monthly_spend||0)}/mo</div>
+                    <select value={c.stage} onChange={e=>moveStage(c.id,e.target.value)} style={{fontSize:10,width:"100%",padding:"2px 4px",borderRadius:4}}>{PIPELINE_STAGES.map(s=><option key={s}>{s}</option>)}</select>
+                  </div>)}
+                  {inStage.length===0&&<div style={{fontSize:11,color:C.muted,textAlign:"center",padding:"8px 4px"}}>—</div>}
+                </div>
+              </div>;
+            })}
+          </div>
+        </div>)}
+      </div>}
+
+      {view==="compensation"&&<div>
+        <h2 style={{margin:"0 0 4px",fontSize:18,fontWeight:500}}>Compensation center</h2>
+        <div style={{fontSize:12,color:C.muted,marginBottom:20}}>10% of Qualified AUM · Cash Compensation Policy</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>
+          <StatBox label="Brand revenue" value={fmtK(brandClients.filter(c=>c.stage==="Active").reduce((s,c)=>s+(c.monthly_spend||0),0))} icon="building" green/>
+          <StatBox label="Agency revenue" value={fmtK(agencyClients.filter(c=>c.stage==="Active").reduce((s,c)=>s+(c.monthly_spend||0),0))} icon="briefcase" green/>
+          <StatBox label="Revenue share (10%)" value={fmt$(monthly)} icon="currency-dollar" green/>
+          <StatBox label="Annual run rate" value={fmtK(monthly*12)} icon="trending-up" green/>
+        </div>
+      </div>}
+
+      {view==="equity"&&<div>
+        <h2 style={{margin:"0 0 4px",fontSize:18,fontWeight:500}}>Ownership center</h2>
+        <div style={{fontSize:12,color:C.muted,marginBottom:20}}>Equity Vesting, Performance & Acceleration Policy</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>
+          <StatBox label="Ownership %" value={equity.total.toFixed(2)+"%"} icon="chart-pie" blue/>
+          <StatBox label="Vesting status" value={equity.qualifies?"Qualified":"Not yet"} sub={equity.qualifies?"$5M AUM met":"$5M AUM required"} icon="lock"/>
+          <StatBox label="Next milestone" value={equity.qualifies?"Max achieved":fmtK(5000000-(partner.annual_aum||0))} sub={equity.qualifies?"":"to qualify"} icon="flag"/>
+          <StatBox label="Equity value" value="Contact admin" icon="currency-dollar"/>
+        </div>
+        <Card style={{padding:16}}>
+          <div style={{fontWeight:500,fontSize:14,marginBottom:16}}>Equity breakdown</div>
+          {[{label:"Base grant (5%)",pct:equity.base,max:5,color:C.blue},{label:"Day 30 acceleration",pct:equity.a30,max:3,color:C.amber},{label:"Day 60 acceleration",pct:equity.a60,max:3,color:C.green},{label:"Day 90 acceleration",pct:equity.a90,max:4,color:C.purple}].map(r=><div key={r.label} style={{marginBottom:12}}>
+            <div style={{display:"flex",justifyContent:"space-between",fontSize:12,marginBottom:4}}><span style={{color:C.muted}}>{r.label}</span><span style={{fontWeight:500}}>{equity.qualifies?r.pct.toFixed(2):0}%</span></div>
+            <ProgressBar pct={equity.qualifies?(r.pct/r.max)*100:0} color={r.color}/>
+          </div>)}
+          <div style={{borderTop:"0.5px solid "+C.border,marginTop:12,paddingTop:12,display:"flex",justifyContent:"space-between",fontSize:14,fontWeight:500}}><span>Total</span><span style={{color:C.purple}}>{equity.total.toFixed(2)}% / 15.00%</span></div>
+        </Card>
+      </div>}
+
+      {["training","sops","documents"].includes(view)&&<div>
+        <h2 style={{margin:"0 0 20px",fontSize:18,fontWeight:500}}>{view==="training"?"Training":view==="sops"?"SOPs":"Documents"}</h2>
+        {resources.filter(r=>r.category===view).length===0?<EmptyState icon="file-text" title="No resources yet" sub="Admin will upload materials here. Check back soon."/>
+        :<div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:12}}>
+          {resources.filter(r=>r.category===view).map(r=><Card key={r.id} style={{padding:14}}>
+            <div style={{display:"flex",alignItems:"center",gap:10}}><i className={"ti ti-"+(r.type==="video"?"player-play":"file-text")} style={{fontSize:18,color:C.blue}}/>
+            <div><div style={{fontWeight:500,fontSize:13}}>{r.title}</div><div style={{fontSize:11,color:C.muted}}>{r.type?.toUpperCase()} · {(r.created_at||"").slice(0,10)}</div></div></div>
+          </Card>)}
+        </div>}
+      </div>}
+
+      {view==="support"&&<div>
+        <SectionHead title="Help desk" action={<button onClick={()=>setShowTicket(true)}><i className="ti ti-plus" style={{fontSize:13,marginRight:6}}/>Submit ticket</button>}/>
+        {showTicket&&<Card style={{padding:16,marginBottom:16}}>
+          <div style={{fontWeight:500,fontSize:13,marginBottom:12}}>New support ticket</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
+            <div><label style={{fontSize:12,color:C.muted,display:"block",marginBottom:4}}>Issue type</label><select value={newTicket.type} onChange={e=>setNewTicket(t=>({...t,type:e.target.value}))}>{["Client Issue","Agency Issue","Billing Issue","Technical Issue","Other"].map(t=><option key={t}>{t}</option>)}</select></div>
+            <div><label style={{fontSize:12,color:C.muted,display:"block",marginBottom:4}}>Subject *</label><input value={newTicket.subject} onChange={e=>setNewTicket(t=>({...t,subject:e.target.value}))} placeholder="Brief description"/></div>
+          </div>
+          <div style={{marginBottom:10}}><label style={{fontSize:12,color:C.muted,display:"block",marginBottom:4}}>Details</label><input value={newTicket.details} onChange={e=>setNewTicket(t=>({...t,details:e.target.value}))} placeholder="Full description…"/></div>
+          <div style={{display:"flex",gap:8}}><button onClick={submitTicket} style={{background:C.blue,color:"#fff",border:"none",borderRadius:8}}>Submit</button><button onClick={()=>setShowTicket(false)}>Cancel</button></div>
+        </Card>}
+        {tickets.length===0?<EmptyState icon="help-circle" title="No tickets yet" sub="Submit a ticket for any client, billing, or technical issue."/>
+        :<Card style={{overflow:"hidden"}}>
+          {tickets.map((t,i,arr)=><div key={t.id} style={{padding:"12px 16px",borderBottom:i<arr.length-1?"0.5px solid "+C.border:"none"}}>
+            <div style={{display:"flex",alignItems:"center",gap:10}}><Pill label={t.type} bg={C.blueBg} fg={C.blue}/><span style={{fontWeight:500,fontSize:13,flex:1}}>{t.subject}</span><Pill label={t.status} bg={t.status==="Open"?C.amberBg:C.greenBg} fg={t.status==="Open"?C.amber:C.green}/><span style={{fontSize:12,color:C.muted}}>{(t.created_at||"").slice(0,10)}</span></div>
+            {t.details&&<div style={{fontSize:12,color:C.muted,marginTop:4}}>{t.details}</div>}
+          </div>)}
+        </Card>}
+      </div>}
+    </div>
+  </div>;
+}
+
+function AdminApp({onLogout}){
+  const[partners,setPartners]=useState([]);
+  const[pipeline,setPipeline]=useState([]);
+  const[resources,setResources]=useState([]);
+  const[tickets,setTickets]=useState([]);
+  const[loading,setLoading]=useState(true);
+  const[view,setView]=useState("dashboard");
+  const[selected,setSelected]=useState(null);
+  const[showAdd,setShowAdd]=useState(false);
+  const[slackMsgs,setSlackMsgs]=useState([]);
+  const[slackMsg,setSlackMsg]=useState("");
+  const[slackCh,setSlackCh]=useState("#partner-revenue");
+  const[newResource,setNewResource]=useState({title:"",type:"pdf",category:"training",description:""});
+  const[showAddResource,setShowAddResource]=useState(false);
+  const[saving,setSaving]=useState(false);
+  const blank={name:"",legal_name:"",agency:"",email:"",password:"",vertical:VERTICALS[0],start_date:today(),monthly_spend:"",annual_aum:"",day30_aum:"",day60_aum:"",day90_aum:"",non_compete_days:"90",trailing_option:"A",status:"Pending Setup"};
+  const[form,setForm]=useState(blank);const[formErr,setFormErr]=useState("");
+
+  useEffect(()=>{
+    Promise.all([
+      sb.from("partners").select("*").order("created_at",{ascending:false}),
+      sb.from("pipeline").select("*").order("created_at",{ascending:false}),
+      sb.from("resources").select("*").order("created_at",{ascending:false}),
+      sb.from("tickets").select("*").order("created_at",{ascending:false}),
+    ]).then(([p,pi,r,t])=>{setPartners(p.data||[]);setPipeline(pi.data||[]);setResources(r.data||[]);setTickets(t.data||[]);setLoading(false);});
+  },[]);
+
+  const addPartner=async()=>{
+    if(!form.name||!form.email||!form.password){setFormErr("Name, email, and password required.");return;}
+    if(partners.find(p=>p.email.toLowerCase()===form.email.toLowerCase())){setFormErr("Email already exists.");return;}
+    setSaving(true);
+    const{data,error}=await sb.from("partners").insert([{...form,monthly_spend:parseFloat(form.monthly_spend)||0,annual_aum:parseFloat(form.annual_aum)||0,day30_aum:parseFloat(form.day30_aum)||0,day60_aum:parseFloat(form.day60_aum)||0,day90_aum:parseFloat(form.day90_aum)||0,non_compete_days:parseInt(form.non_compete_days)||90,onboarded:false}]).select().single();
+    setSaving(false);
+    if(error){setFormErr(error.message);return;}
+    setPartners(p=>[data,...p]);setForm(blank);setShowAdd(false);setFormErr("");
+  };
+  const updatePartner=async(id,updates)=>{
+    await sb.from("partners").update(updates).eq("id",id);
+    setPartners(p=>p.map(x=>x.id===id?{...x,...updates}:x));
+    if(selected?.id===id)setSelected(s=>({...s,...updates}));
+  };
+  const addResource=async()=>{
+    if(!newResource.title)return;
+    const{data}=await sb.from("resources").insert([newResource]).select().single();
+    if(data)setResources(r=>[data,...r]);
+    setNewResource({title:"",type:"pdf",category:"training",description:""});setShowAddResource(false);
+  };
+  const updateTicket=async(id,status)=>{
+    await sb.from("tickets").update({status}).eq("id",id);
+    setTickets(t=>t.map(x=>x.id===id?{...x,status}:x));
+  };
+  const movePipelineStage=async(id,stage)=>{
+    await sb.from("pipeline").update({stage}).eq("id",id);
+    setPipeline(p=>p.map(c=>c.id===id?{...c,stage}:c));
+  };
+  const sendSlack=(ch,msg)=>{const time=new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});setSlackMsgs(p=>[{channel:ch,message:msg,time},...p]);};
+
+  const totalAUM=partners.reduce((s,p)=>s+(p.monthly_spend||0),0);
+  const totalComp=totalAUM*REV_RATE;
+  const active=partners.filter(p=>p.status==="Active");
+  const pendingApprovals=pipeline.filter(c=>c.stage==="Review");
+  const navGroups=ADMIN_NAV.map(g=>({...g,items:g.items.map(i=>({...i,badge:i.key==="approvals"?pendingApprovals.length||null:null}))}));
+  const header=<div><div style={{fontSize:11,color:C.muted,marginBottom:2}}>DSP Connect</div><div style={{fontWeight:500,fontSize:13}}>Admin Portal</div></div>;
+  const footer=<button onClick={onLogout} style={{fontSize:12,color:C.muted,background:"none",border:"none",cursor:"pointer",display:"flex",alignItems:"center",gap:6,padding:0}}><i className="ti ti-logout" style={{fontSize:13}}/>Sign out</button>;
+  const F=({label,children,full})=><div style={full?{gridColumn:"1/-1"}:{}}><label style={{fontSize:12,color:C.muted,display:"block",marginBottom:5}}>{label}</label>{children}</div>;
+
+  if(loading)return <div style={{display:"flex",minHeight:"100vh"}}><NavSidebar navGroups={navGroups} active={view} onSelect={setView} header={header} footer={footer}/><div style={{flex:1}}><Spinner/></div></div>;
+
+  return <div style={{display:"flex",minHeight:"100vh",background:C.bg3}}>
+    <NavSidebar navGroups={navGroups} active={view} onSelect={setView} header={header} footer={footer}/>
+    <div style={{flex:1,overflowY:"auto",padding:24}}>
+
+      {view==="dashboard"&&<div>
+        <div style={{marginBottom:20}}><h2 style={{margin:"0 0 4px",fontSize:18,fontWeight:500}}>Admin overview</h2><div style={{fontSize:12,color:C.muted}}>DSP Connect · Managing Partner program</div></div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>
+          <StatBox label="Total partners" value={partners.length} sub={active.length+" active"} icon="users"/>
+          <StatBox label="Total monthly AUM" value={fmtK(totalAUM)} icon="chart-bar"/>
+          <StatBox label="Monthly comp due" value={fmt$(totalComp)} sub="10% of AUM" icon="currency-dollar" green/>
+          <StatBox label="Pending review" value={pendingApprovals.length} sub="Client approvals" icon="clock"/>
+        </div>
+        {partners.length===0?<EmptyState icon="users" title="No managing partners yet" sub="Create your first managing partner to get started." cta="Add first partner →" onCta={()=>setView("admissions")}/>
+        :<Card style={{overflow:"hidden"}}>
+          <div style={{padding:"13px 16px",borderBottom:"0.5px solid "+C.border,fontWeight:500,fontSize:14}}>Partner snapshot</div>
+          {partners.map((p,i)=>{const eq=calcEquity(p);return <div key={p.id} style={{display:"flex",alignItems:"center",gap:12,padding:"13px 16px",borderBottom:i<partners.length-1?"0.5px solid "+C.border:"none"}}>
+            <Avatar name={p.name}/><div style={{flex:1}}><div style={{fontWeight:500,fontSize:13}}>{p.name}{p.agency?" · "+p.agency:""}</div><div style={{fontSize:11,color:C.muted}}>{p.vertical} · Day {daysIn(p.start_date)}</div></div>
+            <StatusPill s={p.status}/>
+            <div style={{textAlign:"right",minWidth:90}}><div style={{fontSize:13,fontWeight:500}}>{fmtK(p.monthly_spend||0)}</div><div style={{fontSize:11,color:C.muted}}>AUM/mo</div></div>
+            <div style={{textAlign:"right",minWidth:75}}><div style={{fontSize:13,fontWeight:500,color:C.green}}>{fmt$((p.monthly_spend||0)*REV_RATE)}</div><div style={{fontSize:11,color:C.muted}}>comp/mo</div></div>
+            <div style={{textAlign:"right",minWidth:55}}><div style={{fontSize:13,fontWeight:500,color:C.purple}}>{eq.total.toFixed(1)}%</div><div style={{fontSize:11,color:C.muted}}>equity</div></div>
+          </div>;})}
+        </Card>}
+      </div>}
+
+      {view==="admissions"&&<div>
+        <SectionHead title="Partner admissions" action={<button onClick={()=>setShowAdd(s=>!s)} style={{background:showAdd?"transparent":C.blue,color:showAdd?C.text:"#fff",border:showAdd?"0.5px solid "+C.border:"none",borderRadius:8}}>{showAdd?"Cancel":"+ New partner"}</button>}/>
+        {showAdd&&<Card style={{padding:20,marginBottom:20}}>
+          <div style={{fontWeight:500,fontSize:14,marginBottom:16,paddingBottom:12,borderBottom:"0.5px solid "+C.border}}>New Managing Partner — Admission Notice</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+            <F label="Full legal name *"><input value={form.legal_name} onChange={e=>setForm(f=>({...f,legal_name:e.target.value}))}/></F>
+            <F label="Display name *"><input value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))}/></F>
+            <F label="Agency / company"><input value={form.agency} onChange={e=>setForm(f=>({...f,agency:e.target.value}))}/></F>
+            <F label="Email *"><input value={form.email} onChange={e=>setForm(f=>({...f,email:e.target.value}))}/></F>
+            <F label="Portal password *"><input value={form.password} onChange={e=>setForm(f=>({...f,password:e.target.value}))}/></F>
+            <F label="Start date"><input type="date" value={form.start_date} onChange={e=>setForm(f=>({...f,start_date:e.target.value}))}/></F>
+            <F label="Vertical"><select value={form.vertical} onChange={e=>setForm(f=>({...f,vertical:e.target.value}))}>{VERTICALS.map(v=><option key={v}>{v}</option>)}</select></F>
+            <F label="Non-compete (days)"><input type="number" value={form.non_compete_days} onChange={e=>setForm(f=>({...f,non_compete_days:e.target.value}))}/></F>
+            <F label="Trailing compensation" full><select value={form.trailing_option} onChange={e=>setForm(f=>({...f,trailing_option:e.target.value}))}>{TRAILING_OPTIONS.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}</select></F>
+            <div style={{gridColumn:"1/-1",paddingTop:12,borderTop:"0.5px solid "+C.border}}>
+              <div style={{fontSize:12,color:C.muted,marginBottom:10,fontWeight:500}}>AUM — can update later</div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+                <F label="Monthly spend ($)"><input type="number" value={form.monthly_spend} onChange={e=>setForm(f=>({...f,monthly_spend:e.target.value}))} placeholder="0"/></F>
+                <F label="Annual AUM ($)"><input type="number" value={form.annual_aum} onChange={e=>setForm(f=>({...f,annual_aum:e.target.value}))} placeholder="0"/></F>
+                <F label="Day 30 AUM ($)"><input type="number" value={form.day30_aum} onChange={e=>setForm(f=>({...f,day30_aum:e.target.value}))} placeholder="0"/></F>
+                <F label="Day 60 AUM ($)"><input type="number" value={form.day60_aum} onChange={e=>setForm(f=>({...f,day60_aum:e.target.value}))} placeholder="0"/></F>
+                <F label="Day 90 AUM ($)"><input type="number" value={form.day90_aum} onChange={e=>setForm(f=>({...f,day90_aum:e.target.value}))} placeholder="0"/></F>
+              </div>
+            </div>
+          </div>
+          {formErr&&<div style={{marginTop:10,fontSize:12,color:C.red,background:C.redBg,padding:"8px 12px",borderRadius:8}}>{formErr}</div>}
+          <div style={{display:"flex",gap:10,marginTop:14}}>
+            <button onClick={addPartner} disabled={saving} style={{background:C.blue,color:"#fff",border:"none",borderRadius:8}}>{saving?"Saving…":"Create partner account"}</button>
+            <button onClick={()=>{setShowAdd(false);setForm(blank);setFormErr("");}}>Cancel</button>
+          </div>
+        </Card>}
+        {partners.length===0&&!showAdd&&<EmptyState icon="user-plus" title="No partners yet" sub='Click "+ New partner" to create the first managing partner.'/>}
+        {partners.filter(p=>p.status==="Pending Setup").length>0&&<div style={{marginBottom:16}}>
+          <div style={{fontSize:12,fontWeight:500,color:C.muted,marginBottom:10}}>Pending setup</div>
+          {partners.filter(p=>p.status==="Pending Setup").map(p=><Card key={p.id} style={{padding:14,marginBottom:10}}>
+            <div style={{display:"flex",alignItems:"center",gap:12}}><Avatar name={p.name}/><div style={{flex:1}}><div style={{fontWeight:500,fontSize:13}}>{p.name}</div><div style={{fontSize:11,color:C.muted}}>{p.email}</div></div><StatusPill s={p.status}/>
+            <button onClick={()=>updatePartner(p.id,{status:"Active"})} style={{fontSize:12,padding:"6px 12px",background:C.greenBg,color:C.green,border:"0.5px solid #C0DD97",borderRadius:8}}>Activate</button></div>
+          </Card>)}
+        </div>}
+      </div>}
+
+      {view==="partner-mgmt"&&<div>
+        <h2 style={{margin:"0 0 20px",fontSize:18,fontWeight:500}}>Partner management</h2>
+        {partners.length===0?<EmptyState icon="users" title="No partners" sub="Add partners from Admissions." cta="Go to admissions" onCta={()=>setView("admissions")}/>
+        :partners.map(p=>{const eq=calcEquity(p);const open=selected?.id===p.id;
+          return <Card key={p.id} style={{marginBottom:12,overflow:"hidden"}}>
+            <div onClick={()=>setSelected(open?null:p)} style={{display:"flex",alignItems:"center",gap:12,padding:"14px 16px",cursor:"pointer",background:open?C.bg2:"transparent"}}>
+              <Avatar name={p.name} size={42}/><div style={{flex:1}}><div style={{fontWeight:500,fontSize:14}}>{p.name}{p.agency?" · "+p.agency:""}</div><div style={{fontSize:12,color:C.muted}}>{p.email} · {p.vertical}</div></div>
+              <StatusPill s={p.status}/><Pill label={eq.total.toFixed(1)+"% equity"} bg={C.purpleBg} fg={C.purple}/>
+              <div style={{textAlign:"right",minWidth:90}}><div style={{fontSize:14,fontWeight:500}}>{fmtK(p.monthly_spend||0)}</div><div style={{fontSize:11,color:C.muted}}>AUM/mo</div></div>
+              <div style={{textAlign:"right",minWidth:80}}><div style={{fontSize:14,fontWeight:500,color:C.green}}>{fmt$((p.monthly_spend||0)*REV_RATE)}</div><div style={{fontSize:11,color:C.muted}}>comp/mo</div></div>
+            </div>
+            {open&&<div style={{padding:16,borderTop:"0.5px solid "+C.border,background:C.bg2}}>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:14}}>
+                {[{label:"Monthly AUM ($)",f:"monthly_spend"},{label:"Annual AUM ($)",f:"annual_aum"},{label:"Day 30 AUM ($)",f:"day30_aum"},{label:"Day 60 AUM ($)",f:"day60_aum"},{label:"Day 90 AUM ($)",f:"day90_aum"}].map(({label,f})=><div key={f}><label style={{fontSize:11,color:C.muted,display:"block",marginBottom:4}}>{label}</label><input type="number" defaultValue={p[f]||0} onBlur={e=>updatePartner(p.id,{[f]:parseFloat(e.target.value)||0})} style={{fontSize:13}}/></div>)}
+              </div>
+              <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                <select value={p.status} onChange={e=>updatePartner(p.id,{status:e.target.value})} style={{fontSize:12,padding:"6px 10px",borderRadius:8,border:"0.5px solid "+C.border,background:C.bg}}>{["Pending Setup","Onboarding","Active","Inactive"].map(s=><option key={s}>{s}</option>)}</select>
+              </div>
+            </div>}
+          </Card>;
+        })}
+      </div>}
+
+      {(view==="admin-brands"||view==="admin-agencies")&&<div>
+        <h2 style={{margin:"0 0 20px",fontSize:18,fontWeight:500}}>{view==="admin-brands"?"All brand clients":"All agency clients"}</h2>
+        {pipeline.filter(c=>c.type===(view==="admin-brands"?"brand":"agency")).length===0?<EmptyState icon="building" title="No clients yet" sub="Partners will add clients from their dashboard."/>
+        :<Card style={{overflow:"hidden"}}>
+          <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr 1fr",padding:"10px 16px",background:C.bg2,borderBottom:"0.5px solid "+C.border,fontSize:11,fontWeight:500,color:C.muted}}><span>Name</span><span>Spend</span><span>Stage</span><span>Partner</span><span>Added</span></div>
+          {pipeline.filter(c=>c.type===(view==="admin-brands"?"brand":"agency")).map((c,i,arr)=><div key={c.id} style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr 1fr",padding:"12px 16px",borderBottom:i<arr.length-1?"0.5px solid "+C.border:"none",alignItems:"center"}}>
+            <div><div style={{fontWeight:500,fontSize:13}}>{c.name}</div><div style={{fontSize:11,color:C.muted}}>{c.contact_name}</div></div>
+            <div style={{fontSize:13,fontWeight:500,color:C.green}}>{fmtK(c.monthly_spend||0)}</div>
+            <select value={c.stage} onChange={e=>movePipelineStage(c.id,e.target.value)} style={{fontSize:11,padding:"2px 6px",borderRadius:4,border:"0.5px solid "+C.border,background:C.bg}}>{PIPELINE_STAGES.map(s=><option key={s}>{s}</option>)}</select>
+            <div style={{fontSize:12,color:C.muted}}>{c.partner_name}</div>
+            <div style={{fontSize:12,color:C.muted}}>{(c.created_at||"").slice(0,10)}</div>
+          </div>)}
+        </Card>}
+      </div>}
+
+      {view==="approvals"&&<div>
+        <h2 style={{margin:"0 0 4px",fontSize:18,fontWeight:500}}>Client approvals</h2>
+        <div style={{fontSize:12,color:C.muted,marginBottom:20}}>Clients in Review stage — pending approval</div>
+        {pendingApprovals.length===0?<EmptyState icon="check-circle" title="No pending approvals" sub="Clients in Review stage will appear here."/>
+        :pendingApprovals.map(c=><Card key={c.id} style={{padding:14,marginBottom:10}}>
+          <div style={{display:"flex",alignItems:"center",gap:12}}>
+            <Pill label={c.type==="brand"?"Brand":"Agency"} bg={C.blueBg} fg={C.blue}/>
+            <div style={{flex:1}}><div style={{fontWeight:500,fontSize:13}}>{c.name}</div><div style={{fontSize:11,color:C.muted}}>Partner: {c.partner_name} · {fmtK(c.monthly_spend||0)}/mo</div></div>
+            <button onClick={()=>movePipelineStage(c.id,"Approved")} style={{fontSize:12,padding:"6px 12px",background:C.greenBg,color:C.green,border:"0.5px solid #C0DD97",borderRadius:8}}>Approve</button>
+            <button onClick={()=>movePipelineStage(c.id,"Lead")} style={{fontSize:12,padding:"6px 12px",background:C.redBg,color:C.red,border:"0.5px solid #F7C1C1",borderRadius:8}}>Reject</button>
+          </div>
+        </Card>)}
+      </div>}
+
+      {view==="comp-tracking"&&<div>
+        <h2 style={{margin:"0 0 4px",fontSize:18,fontWeight:500}}>Compensation tracking</h2>
+        <div style={{fontSize:12,color:C.muted,marginBottom:20}}>Ad Revenue Under Management · 10% rev share</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:20}}>
+          <StatBox label="Total monthly AUM" value={fmtK(totalAUM)} icon="chart-bar"/>
+          <StatBox label="Monthly comp due" value={fmt$(totalComp)} icon="currency-dollar" green/>
+          <StatBox label="Annual run rate" value={fmtK(totalComp*12)} icon="trending-up" green/>
+        </div>
+        {partners.map(p=><Card key={p.id} style={{marginBottom:12,overflow:"hidden"}}>
+          <div style={{padding:"12px 16px",borderBottom:"0.5px solid "+C.border,display:"flex",alignItems:"center",gap:12}}>
+            <Avatar name={p.name} size={36}/><div style={{flex:1}}><div style={{fontWeight:500,fontSize:13}}>{p.name}</div><div style={{fontSize:11,color:C.muted}}>{p.vertical}</div></div>
+            <StatusPill s={p.status}/><div style={{fontSize:13,fontWeight:500,color:C.green}}>10% · {fmt$((p.monthly_spend||0)*REV_RATE)}/mo</div>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)"}}>
+            {[{l:"Monthly AUM",v:fmtK(p.monthly_spend||0)},{l:"Annual AUM",v:fmtK(p.annual_aum||0)},{l:"Monthly comp",v:fmt$((p.monthly_spend||0)*REV_RATE),green:true},{l:"Annual comp",v:fmtK((p.annual_aum||0)*REV_RATE),green:true}].map((m,i)=><div key={m.l} style={{padding:"10px 16px",borderRight:i<3?"0.5px solid "+C.border:"none"}}><div style={{fontSize:11,color:C.muted,marginBottom:3}}>{m.l}</div><div style={{fontSize:15,fontWeight:500,color:m.green?C.green:C.text}}>{m.v}</div></div>)}
+          </div>
+        </Card>)}
+      </div>}
+
+      {view==="stripe"&&<div>
+        <h2 style={{margin:"0 0 4px",fontSize:18,fontWeight:500}}>Stripe payouts</h2>
+        <div style={{fontSize:12,color:C.muted,marginBottom:20}}>Disbursements from DSP Connect Stripe · Partners do not connect their own Stripe</div>
+        <div style={{background:C.greenBg,border:"0.5px solid #C0DD97",borderRadius:10,padding:"10px 16px",marginBottom:20,fontSize:13,color:C.green,display:"flex",alignItems:"center",gap:10}}>
+          <i className="ti ti-check-circle" style={{fontSize:16}}/>DSP Connect Stripe account · All payouts flow from your account only
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:20}}>
+          <StatBox label="Next payout batch" value={fmt$(totalComp)} sub="All active partners" icon="send" green/>
+          <StatBox label="Active partners" value={active.length} icon="users"/>
+          <StatBox label="Payout rate" value="10% AUM" icon="percentage"/>
+        </div>
+        {active.map(p=><Card key={p.id} style={{marginBottom:10,padding:"14px 16px",display:"flex",alignItems:"center",gap:12}}>
+          <Avatar name={p.name} size={36}/><div style={{flex:1}}><div style={{fontWeight:500,fontSize:13}}>{p.name}</div><div style={{fontSize:11,color:C.muted}}>{p.email}</div></div>
+          <div style={{fontSize:13,fontWeight:500,color:C.green}}>10% · {fmt$((p.monthly_spend||0)*REV_RATE)}/mo</div>
+          <div style={{fontSize:12,color:C.muted}}>{fmtK(p.monthly_spend||0)} AUM</div>
+        </Card>)}
+      </div>}
+
+      {view==="content-mgmt"&&<div>
+        <SectionHead title="Content management" action={<button onClick={()=>setShowAddResource(s=>!s)} style={{background:showAddResource?"transparent":C.blue,color:showAddResource?C.text:"#fff",border:showAddResource?"0.5px solid "+C.border:"none",borderRadius:8}}>{showAddResource?"Cancel":"+ Add resource"}</button>}/>
+        {showAddResource&&<Card style={{padding:16,marginBottom:16}}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
+            <div><label style={{fontSize:12,color:C.muted,display:"block",marginBottom:4}}>Title *</label><input value={newResource.title} onChange={e=>setNewResource(r=>({...r,title:e.target.value}))}/></div>
+            <div><label style={{fontSize:12,color:C.muted,display:"block",marginBottom:4}}>Type</label><select value={newResource.type} onChange={e=>setNewResource(r=>({...r,type:e.target.value}))}>{["pdf","video","pptx","docx","article"].map(t=><option key={t}>{t}</option>)}</select></div>
+            <div><label style={{fontSize:12,color:C.muted,display:"block",marginBottom:4}}>Category</label><select value={newResource.category} onChange={e=>setNewResource(r=>({...r,category:e.target.value}))}>{["training","sops","documents"].map(c=><option key={c}>{c}</option>)}</select></div>
+            <div><label style={{fontSize:12,color:C.muted,display:"block",marginBottom:4}}>Description</label><input value={newResource.description} onChange={e=>setNewResource(r=>({...r,description:e.target.value}))}/></div>
+          </div>
+          <div style={{display:"flex",gap:8}}><button onClick={addResource} style={{background:C.blue,color:"#fff",border:"none",borderRadius:8}}>Add resource</button><button onClick={()=>setShowAddResource(false)}>Cancel</button></div>
+        </Card>}
+        {["training","sops","documents"].map(cat=><div key={cat} style={{marginBottom:20}}>
+          <div style={{fontWeight:500,fontSize:13,color:C.muted,marginBottom:8,textTransform:"capitalize"}}>{cat} ({resources.filter(r=>r.category===cat).length})</div>
+          {resources.filter(r=>r.category===cat).length===0?<div style={{fontSize:13,color:C.muted}}>None yet.</div>
+          :resources.filter(r=>r.category===cat).map(r=><Card key={r.id} style={{padding:"12px 14px",marginBottom:8,display:"flex",alignItems:"center",gap:10}}>
+            <i className={"ti ti-"+(r.type==="video"?"player-play":"file-text")} style={{fontSize:18,color:C.blue}}/>
+            <div style={{flex:1}}><div style={{fontWeight:500,fontSize:13}}>{r.title}</div><div style={{fontSize:11,color:C.muted}}>{r.type?.toUpperCase()} · {r.description}</div></div>
+          </Card>)}
+        </div>)}
+      </div>}
+
+      {view==="slack"&&<div>
+        <h2 style={{margin:"0 0 20px",fontSize:18,fontWeight:500}}>Slack</h2>
+        <Card style={{padding:20,marginBottom:14}}>
+          <div style={{fontWeight:500,fontSize:13,marginBottom:12}}>Message log</div>
+          <div style={{background:C.bg2,borderRadius:10,padding:12,maxHeight:240,overflowY:"auto",display:"flex",flexDirection:"column",gap:8,marginBottom:12}}>
+            {slackMsgs.length===0&&<div style={{color:C.muted,fontSize:13,textAlign:"center",padding:"2rem 0"}}>No notifications yet.</div>}
+            {slackMsgs.map((m,i)=><div key={i} style={{background:C.bg,borderRadius:8,padding:"10px 12px",border:"0.5px solid "+C.border}}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{fontSize:11,fontWeight:500,color:C.blue}}>{m.channel}</span><span style={{fontSize:11,color:C.muted}}>{m.time}</span></div>
+              <div style={{fontSize:13}}>{m.message}</div>
+            </div>)}
+          </div>
+          <div style={{display:"flex",gap:8}}>
+            <select value={slackCh} onChange={e=>setSlackCh(e.target.value)} style={{fontSize:12,padding:"6px 10px",borderRadius:8,border:"0.5px solid "+C.border,background:C.bg}}><option>#partner-revenue</option><option>#partner-payouts</option><option>#partner-updates</option></select>
+            <input value={slackMsg} onChange={e=>setSlackMsg(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&slackMsg.trim()){sendSlack(slackCh,slackMsg);setSlackMsg("");}}} placeholder="Send message…" style={{flex:1}}/>
+            <button onClick={()=>{if(slackMsg.trim()){sendSlack(slackCh,slackMsg);setSlackMsg("");}}} style={{padding:"6px 14px"}}>Send</button>
+          </div>
+        </Card>
+      </div>}
+
+    </div>
+  </div>;
+}
+
+function App(){
+  const[session,setSession]=useState(null);
+  const handleLogin=async s=>{
+    if(s.role==="partner"){
+      const{data}=await sb.from("partners").select("*").eq("id",s.partner.id).single();
+      setSession({...s,partner:data||s.partner});
+    }else setSession(s);
+  };
+  const completeOnboarding=async()=>{
+    await sb.from("partners").update({onboarded:true,status:"Active"}).eq("id",session.partner.id);
+    setSession(s=>({...s,partner:{...s.partner,onboarded:true,status:"Active"}}));
+  };
+  if(!session)return <Login onLogin={handleLogin}/>;
+  if(session.role==="admin")return <AdminApp onLogout={()=>setSession(null)}/>;
+  if(!session.partner.onboarded)return <Onboarding partner={session.partner} onComplete={completeOnboarding}/>;
+  return <PartnerApp partner={session.partner} onLogout={()=>setSession(null)}/>;
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
 </html>
