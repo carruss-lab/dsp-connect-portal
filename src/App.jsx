@@ -880,16 +880,17 @@ function AdminApp({onLogout}){
       supabase.from("payouts").select("*").order("created_at",{ascending:false}),
       supabase.from("announcements").select("*").order("created_at",{ascending:false}),
       supabase.from("campaign_briefs").select("*").order("created_at",{ascending:false}),
-      supabase.from("slack_notifications").select("*").eq("sent",false).order("created_at",{ascending:false}),
-    ]).then(([p,pi,r,t,py,an,cb,sn])=>{
+    ]).then(([p,pi,r,t,py,an,cb])=>{
       setPartners(p.data||[]);setPipeline(pi.data||[]);setResources(r.data||[]);setTickets(t.data||[]);setPayouts(py.data||[]);setAnnouncements(an.data||[]);setCampaignBriefs(cb.data||[]);setLoading(false);
-      // Auto-add unread Slack notifications to the log
-      if(sn.data&&sn.data.length>0){
-        const msgs=sn.data.map(n=>({channel:n.channel,message:n.message,time:new Date(n.created_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}));
-        setSlackMsgs(prev=>[...msgs,...prev]);
-        // Mark as sent
-        sn.data.forEach(n=>supabase.from("slack_notifications").update({sent:true}).eq("id",n.id));
-      }
+      // Load slack notifications separately so a missing table doesn't crash the app
+      supabase.from("slack_notifications").select("*").eq("sent",false).order("created_at",{ascending:false})
+        .then(({data:sn})=>{
+          if(sn&&sn.length>0){
+            const msgs=sn.map(n=>({channel:n.channel,message:n.message,time:new Date(n.created_at).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}));
+            setSlackMsgs(prev=>[...msgs,...prev]);
+            sn.forEach(n=>supabase.from("slack_notifications").update({sent:true}).eq("id",n.id));
+          }
+        }).catch(()=>{});
     });
   },[]);
 
