@@ -232,7 +232,7 @@ const ANAV=[
 ];
 
 function Sidebar({groups,active,onSelect,top,bottom}){
-  return <div style={{width:"var(--sidebar-w)",background:"var(--bg)",borderRight:"0.5px solid var(--line2)",display:"flex",flexDirection:"column",flexShrink:0,overflowY:"auto"}}>
+  return <div style={{width:"var(--sidebar-w)",background:"var(--bg)",borderRight:"0.5px solid var(--line2)",display:"flex",flexDirection:"column",flexShrink:0,overflowY:"auto",position:"sticky",top:0,height:"100vh"}}>
     {top}
     <div style={{flex:1,padding:"6px 0 12px"}}>
       {groups.map(g=><div key={g.section}>
