@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { sendWelcomeEmail, sendOnboardingCompleteEmail, sendClientApprovedEmail, sendPayoutEmail, sendTicketReplyEmail } from "./emails";
 import { supabase } from "./supabase";
 
 const REV_RATE = 0.10;
@@ -62,8 +63,8 @@ function getVimeoId(url=""){
 
 // ── DESIGN TOKENS ─────────────────────────────────────────────────────────
 const S = {
-  card: {background:"var(--ink2)",border:"0.5px solid var(--line2)",borderRadius:"var(--r-lg)"},
-  cardInner: {background:"var(--ink3)",border:"0.5px solid var(--line)",borderRadius:"var(--r)"},
+  card: {background:"var(--bg)",border:"0.5px solid var(--line2)",borderRadius:"var(--r-lg)"},
+  cardInner: {background:"var(--bg2)",border:"0.5px solid var(--line)",borderRadius:"var(--r)"},
   pill: (bg,fg) => ({fontSize:10,fontWeight:600,letterSpacing:"0.5px",padding:"3px 8px",borderRadius:3,background:bg,color:fg,whiteSpace:"nowrap",textTransform:"uppercase",fontFamily:"var(--mono)"}),
   label: {fontSize:10,color:"var(--text3)",letterSpacing:"0.6px",textTransform:"uppercase",fontWeight:500},
   mono: {fontFamily:"var(--mono)",fontSize:12,color:"var(--text2)"},
@@ -149,7 +150,7 @@ function Spinner(){
 }
 
 function TableHead({cols}){
-  return <div style={{display:"grid",gridTemplateColumns:cols,padding:"8px 18px",borderBottom:"0.5px solid var(--line)",background:"var(--ink)"}}>
+  return <div style={{display:"grid",gridTemplateColumns:cols,padding:"8px 18px",borderBottom:"0.5px solid var(--line)",background:"var(--bg)"}}>
     {Array.isArray(cols)?null:null}
   </div>;
 }
@@ -289,7 +290,7 @@ const ADMIN_NAV=[
 ];
 
 function Sidebar({groups,active,onSelect,top,bottom}){
-  return <div style={{width:200,background:"var(--ink2)",borderRight:"0.5px solid var(--line)",display:"flex",flexDirection:"column",flexShrink:0,overflowY:"auto"}}>
+  return <div style={{width:200,background:"var(--bg)",borderRight:"0.5px solid var(--line)",display:"flex",flexDirection:"column",flexShrink:0,overflowY:"auto"}}>
     {top}
     <div style={{flex:1,padding:"8px 0 12px"}}>
       {groups.map(g=><div key={g.section}>
@@ -299,7 +300,7 @@ function Sidebar({groups,active,onSelect,top,bottom}){
           return <button key={n.key} onClick={()=>onSelect(n.key)} style={{display:"flex",alignItems:"center",gap:9,padding:"8px 20px",width:"100%",border:"none",background:isActive?"var(--blue-bg)":"transparent",color:isActive?"var(--blue-lt)":"var(--text3)",cursor:"pointer",fontSize:12,fontWeight:isActive?500:400,textAlign:"left",borderLeft:isActive?"2px solid var(--gold)":"2px solid transparent",transition:"all 0.15s",fontFamily:"var(--font)"}}>
             <i className={`ti ti-${n.icon}`} style={{fontSize:14,flexShrink:0}}/>
             <span style={{flex:1}}>{n.label}</span>
-            {n.badge?<span style={{background:"var(--blue-lt)",color:"var(--ink)",fontSize:9,fontWeight:700,borderRadius:10,padding:"1px 5px",fontFamily:"var(--mono)"}}>{n.badge}</span>:null}
+            {n.badge?<span style={{background:"var(--blue-lt)",color:"var(--bg)",fontSize:9,fontWeight:700,borderRadius:10,padding:"1px 5px",fontFamily:"var(--mono)"}}>{n.badge}</span>:null}
           </button>;
         })}
       </div>)}
@@ -319,12 +320,12 @@ function Login({onLogin}){
     if(error||!data){setErr("Invalid credentials.");return;}
     onLogin({role:"partner",partner:data});
   };
-  return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"var(--ink)",position:"relative",overflow:"hidden"}}>
+  return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"var(--bg)",position:"relative",overflow:"hidden"}}>
     <div style={{position:"absolute",inset:0,backgroundImage:"radial-gradient(ellipse 80% 50% at 50% -20%,rgba(43,31,232,0.06),transparent)",pointerEvents:"none"}}/>
     <div style={{width:400,animation:"fadeUp 0.4s ease"}}>
       <div style={{textAlign:"center",marginBottom:36}}>
         <div style={{width:44,height:44,background:"linear-gradient(135deg,var(--gold),var(--gold-lt))",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 14px"}}>
-          <span style={{fontSize:22,fontWeight:700,color:"var(--ink)",fontFamily:"var(--font)"}}>D</span>
+          <span style={{fontSize:22,fontWeight:700,color:"var(--bg)",fontFamily:"var(--font)"}}>D</span>
         </div>
         <div style={{fontSize:18,fontWeight:600,color:"var(--text)",letterSpacing:"0.5px",marginBottom:4}}>DSP CONNECT</div>
         <div style={{fontSize:11,color:"var(--text3)",letterSpacing:"1px",textTransform:"uppercase"}}>Managing Partner Portal</div>
@@ -340,7 +341,7 @@ function Login({onLogin}){
         </div>
         {err&&<div style={{fontSize:12,color:"var(--red)",background:"var(--red-bg)",border:"0.5px solid rgba(224,85,85,0.2)",borderRadius:6,padding:"8px 12px",marginBottom:14}}>{err}</div>}
         <Btn onClick={attempt} variant="primary" size="lg" disabled={loading}>{loading?"Authenticating…":"Sign in"}</Btn>
-        <div style={{marginTop:18,padding:"12px 14px",background:"var(--ink3)",borderRadius:6,fontSize:11,color:"var(--text3)",borderLeft:"2px solid var(--gold)"}}>
+        <div style={{marginTop:18,padding:"12px 14px",background:"var(--bg2)",borderRadius:6,fontSize:11,color:"var(--text3)",borderLeft:"2px solid var(--gold)"}}>
           <span style={{color:"var(--blue-lt)",fontWeight:500}}>Admin:</span> {ADMIN_EMAIL}<br/>
           Partner credentials are issued by admin and delivered directly.
         </div>
@@ -416,7 +417,7 @@ function Onboarding({partner,onComplete}){
     onComplete();
   };
 
-  return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"var(--ink)",padding:24}}>
+  return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"var(--bg)",padding:24}}>
     <div style={{width:"100%",maxWidth:660,animation:"fadeUp 0.4s ease"}}>
       <div style={{textAlign:"center",marginBottom:24}}>
         <div style={{fontSize:11,color:"var(--text3)",letterSpacing:"1px",textTransform:"uppercase",marginBottom:6}}>DSP Connect · Managing Partner Onboarding</div>
@@ -424,7 +425,7 @@ function Onboarding({partner,onComplete}){
       </div>
       <div style={{display:"flex",justifyContent:"center",gap:4,marginBottom:24}}>
         {steps.map((_,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:4}}>
-          <div style={{width:24,height:24,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:600,fontFamily:"var(--mono)",background:i<step?"var(--green-bg)":i===step?"var(--blue-bg)":"var(--ink3)",color:i<step?"var(--green)":i===step?"var(--blue-lt)":"var(--text3)",border:`0.5px solid ${i<step?"rgba(46,204,138,0.3)":i===step?"rgba(43,31,232,0.25)":"var(--line)"}`}}>
+          <div style={{width:24,height:24,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:600,fontFamily:"var(--mono)",background:i<step?"var(--green-bg)":i===step?"var(--blue-bg)":"var(--bg2)",color:i<step?"var(--green)":i===step?"var(--blue-lt)":"var(--text3)",border:`0.5px solid ${i<step?"rgba(46,204,138,0.3)":i===step?"rgba(43,31,232,0.25)":"var(--line)"}`}}>
             {i<step?<i className="ti ti-check" style={{fontSize:10}}/>:i+1}
           </div>
           {i<steps.length-1&&<div style={{width:32,height:1,background:i<step?"var(--green)":"var(--line2)"}}/>}
@@ -560,7 +561,7 @@ function PartnerApp({partner,onLogout}){
   const P=({children})=><div style={{flex:1,overflowY:"auto",padding:24}}>{children}</div>;
   const PH=({title,sub})=><div style={{marginBottom:22}}><div style={{fontFamily:"var(--font)",fontSize:20,color:"var(--text)",marginBottom:3}}>{title}</div>{sub&&<div style={{fontSize:11,color:"var(--text3)"}}>{sub}</div>}</div>;
 
-  return <div style={{display:"flex",minHeight:"100vh",background:"var(--ink)"}}>
+  return <div style={{display:"flex",minHeight:"100vh",background:"var(--bg)"}}>
     <Sidebar groups={navGroups} active={view} onSelect={setView} top={sideTop} bottom={sideBottom}/>
     <P>
 
@@ -593,7 +594,7 @@ function PartnerApp({partner,onLogout}){
                 {[{label:"Day 1–30",done:days>30,active:days<=30,award:(DAY30.find(t=>(partner.day30_aum||0)>=t.aum)||{award:0}).award,max:3},
                   {label:"Day 31–60",done:days>60,active:days>30&&days<=60,award:(DAY60.find(t=>(partner.day60_aum||0)>=t.aum)||{award:0}).award,max:3},
                   {label:"Day 61–90",done:days>90,active:days>60&&days<=90,award:(DAY90.find(t=>(partner.day90_aum||0)>=t.aum)||{award:0}).award,max:4},
-                ].map(w=><div key={w.label} style={{padding:"12px",background:w.active?"var(--blue-bg)":w.done?"var(--green-bg)":"var(--ink3)",borderRadius:6,border:`0.5px solid ${w.active?"rgba(43,31,232,0.18)":w.done?"rgba(46,204,138,0.2)":"var(--line)"}`}}>
+                ].map(w=><div key={w.label} style={{padding:"12px",background:w.active?"var(--blue-bg)":w.done?"var(--green-bg)":"var(--bg2)",borderRadius:6,border:`0.5px solid ${w.active?"rgba(43,31,232,0.18)":w.done?"rgba(46,204,138,0.2)":"var(--line)"}`}}>
                   <div style={{fontSize:9,fontWeight:600,letterSpacing:"0.5px",color:w.active?"var(--blue-lt)":w.done?"var(--green)":"var(--text3)",textTransform:"uppercase",marginBottom:6}}>{w.label}</div>
                   <div style={{fontFamily:"var(--mono)",fontSize:22,fontWeight:400,color:w.active?"var(--blue-lt)":w.done?"var(--green)":"var(--text3)",lineHeight:1}}>{w.award.toFixed(1)}<span style={{fontSize:12}}>%</span></div>
                   <div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>max {w.max}%</div>
@@ -628,7 +629,7 @@ function PartnerApp({partner,onLogout}){
         {showAddClient&&clientType==="brand"&&<BriefForm type="brand" step={briefStep} setStep={setBriefStep} newClient={newClient} setNewClient={setNewClient} brief={brief} setBrief={setBrief} onNext={()=>startClientBrief("brand")} onSubmit={submitClientWithBrief} onCancel={()=>{setShowAddClient(false);setBriefStep(1);setPendingClient(null);}}/>}
         {brandClients.length===0?<Empty icon="building-skyscraper" title="No brand clients yet" sub="Add your first direct advertiser." cta="+ Add brand client" onCta={()=>{setClientType("brand");setShowAddClient(true);}}/>
         :<Card>
-          <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr 1fr",padding:"8px 18px",borderBottom:"0.5px solid var(--line)",background:"var(--ink)"}}>
+          <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr 1fr",padding:"8px 18px",borderBottom:"0.5px solid var(--line)",background:"var(--bg)"}}>
             {["Company","Contact","Monthly Spend","Stage","Added"].map(h=><span key={h} style={S.label}>{h}</span>)}
           </div>
           {brandClients.map((c,i)=><div key={c.id} style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr 1fr",padding:"13px 18px",borderBottom:i<brandClients.length-1?"0.5px solid var(--line)":"none",alignItems:"center"}}>
@@ -638,7 +639,7 @@ function PartnerApp({partner,onLogout}){
             <StatusBadge s={c.stage}/>
             <div style={{fontSize:11,color:"var(--text3)"}}>{(c.created_at||"").slice(0,10)}</div>
           </div>)}
-          <div style={{padding:"10px 18px",borderTop:"0.5px solid var(--line)",display:"flex",justifyContent:"space-between",background:"var(--ink)"}}>
+          <div style={{padding:"10px 18px",borderTop:"0.5px solid var(--line)",display:"flex",justifyContent:"space-between",background:"var(--bg)"}}>
             <span style={S.label}>Total active AUM</span>
             <span style={{fontFamily:"var(--mono)",fontSize:12,color:"var(--green)"}}>{fmtK(brandClients.filter(c=>c.stage==="Active").reduce((s,c)=>s+(c.monthly_spend||0),0))}/mo</span>
           </div>
@@ -653,7 +654,7 @@ function PartnerApp({partner,onLogout}){
         {showAddClient&&clientType==="agency"&&<BriefForm type="agency" step={briefStep} setStep={setBriefStep} newClient={newClient} setNewClient={setNewClient} brief={brief} setBrief={setBrief} onNext={()=>startClientBrief("agency")} onSubmit={submitClientWithBrief} onCancel={()=>{setShowAddClient(false);setBriefStep(1);setPendingClient(null);}}/>}
         {agencyClients.length===0?<Empty icon="briefcase" title="No agency clients yet" sub="Add agencies to track their managed spend." cta="+ Add agency" onCta={()=>{setClientType("agency");setShowAddClient(true);}}/>
         :<Card>
-          <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr 1fr",padding:"8px 18px",borderBottom:"0.5px solid var(--line)",background:"var(--ink)"}}>
+          <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr 1fr",padding:"8px 18px",borderBottom:"0.5px solid var(--line)",background:"var(--bg)"}}>
             {["Agency","Contact","Monthly Spend","Stage","Added"].map(h=><span key={h} style={S.label}>{h}</span>)}
           </div>
           {agencyClients.map((c,i)=><div key={c.id} style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr 1fr",padding:"13px 18px",borderBottom:i<agencyClients.length-1?"0.5px solid var(--line)":"none",alignItems:"center"}}>
@@ -663,7 +664,7 @@ function PartnerApp({partner,onLogout}){
             <StatusBadge s={c.stage}/>
             <div style={{fontSize:11,color:"var(--text3)"}}>{(c.created_at||"").slice(0,10)}</div>
           </div>)}
-          <div style={{padding:"10px 18px",borderTop:"0.5px solid var(--line)",display:"flex",justifyContent:"space-between",background:"var(--ink)"}}>
+          <div style={{padding:"10px 18px",borderTop:"0.5px solid var(--line)",display:"flex",justifyContent:"space-between",background:"var(--bg)"}}>
             <span style={S.label}>Total active AUM</span>
             <span style={{fontFamily:"var(--mono)",fontSize:12,color:"var(--green)"}}>{fmtK(agencyClients.filter(c=>c.stage==="Active").reduce((s,c)=>s+(c.monthly_spend||0),0))}/mo</span>
           </div>
@@ -678,11 +679,11 @@ function PartnerApp({partner,onLogout}){
             {PIPELINE_STAGES.map(stage=>{const inStage=pipeline.filter(c=>c.type===type&&c.stage===stage);
               return <div key={stage}>
                 <div style={{fontSize:10,fontWeight:600,color:"var(--text3)",letterSpacing:"0.4px",textTransform:"uppercase",marginBottom:6,textAlign:"center"}}>{stage} <span style={{fontFamily:"var(--mono)"}}>{inStage.length}</span></div>
-                <div style={{minHeight:56,background:"var(--ink3)",borderRadius:6,padding:6,display:"flex",flexDirection:"column",gap:5,border:"0.5px solid var(--line)"}}>
-                  {inStage.map(c=><div key={c.id} style={{background:"var(--ink2)",border:"0.5px solid var(--line2)",borderRadius:4,padding:"8px 10px"}}>
+                <div style={{minHeight:56,background:"var(--bg2)",borderRadius:6,padding:6,display:"flex",flexDirection:"column",gap:5,border:"0.5px solid var(--line)"}}>
+                  {inStage.map(c=><div key={c.id} style={{background:"var(--bg)",border:"0.5px solid var(--line2)",borderRadius:4,padding:"8px 10px"}}>
                     <div style={{fontSize:11,fontWeight:500,color:"var(--text)",marginBottom:3}}>{c.name}</div>
                     <div style={{fontFamily:"var(--mono)",fontSize:11,color:"var(--green)",marginBottom:6}}>{fmtK(c.monthly_spend||0)}</div>
-                    <select value={c.stage} onChange={e=>moveStage(c.id,e.target.value)} style={{fontSize:10,padding:"2px 4px",borderRadius:3,border:"0.5px solid var(--line2)",background:"var(--ink3)",color:"var(--text2)",width:"100%"}}>{PIPELINE_STAGES.map(s=><option key={s}>{s}</option>)}</select>
+                    <select value={c.stage} onChange={e=>moveStage(c.id,e.target.value)} style={{fontSize:10,padding:"2px 4px",borderRadius:3,border:"0.5px solid var(--line2)",background:"var(--bg2)",color:"var(--text2)",width:"100%"}}>{PIPELINE_STAGES.map(s=><option key={s}>{s}</option>)}</select>
                   </div>)}
                   {inStage.length===0&&<div style={{fontSize:10,color:"var(--text3)",textAlign:"center",padding:"10px 4px"}}>—</div>}
                 </div>
@@ -705,7 +706,7 @@ function PartnerApp({partner,onLogout}){
             <CardHead title="Active client breakdown"/>
             {activeClients.length===0?<div style={{padding:"28px 18px",textAlign:"center",fontSize:12,color:"var(--text3)"}}>No active clients yet</div>
             :<>
-              <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",padding:"8px 18px",background:"var(--ink)",borderBottom:"0.5px solid var(--line)"}}>
+              <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",padding:"8px 18px",background:"var(--bg)",borderBottom:"0.5px solid var(--line)"}}>
                 {["Client","Type","AUM/mo","10% Comp"].map(h=><span key={h} style={S.label}>{h}</span>)}
               </div>
               {activeClients.map((c,i)=><div key={c.id} style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",padding:"11px 18px",borderBottom:i<activeClients.length-1?"0.5px solid var(--line)":"none",alignItems:"center"}}>
@@ -714,7 +715,7 @@ function PartnerApp({partner,onLogout}){
                 <span style={{fontFamily:"var(--mono)",fontSize:12,color:"var(--green)"}}>{fmtK(c.monthly_spend||0)}</span>
                 <span style={{fontFamily:"var(--mono)",fontSize:12,color:"var(--green)"}}>{fmt$((c.monthly_spend||0)*REV_RATE)}</span>
               </div>)}
-              <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",padding:"11px 18px",background:"var(--ink)",borderTop:"0.5px solid var(--line)"}}>
+              <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",padding:"11px 18px",background:"var(--bg)",borderTop:"0.5px solid var(--line)"}}>
                 <span style={{fontSize:12,fontWeight:600,color:"var(--text)"}}>Total</span><span/>
                 <span style={{fontFamily:"var(--mono)",fontSize:12,color:"var(--green)",fontWeight:600}}>{fmtK(totalMonthlyAUM)}</span>
                 <span style={{fontFamily:"var(--mono)",fontSize:12,color:"var(--green)",fontWeight:600}}>{fmt$(monthlyComp)}</span>
@@ -738,7 +739,7 @@ function PartnerApp({partner,onLogout}){
             </div>}/>
           {filteredPayouts.length===0?<div style={{padding:"28px 18px",textAlign:"center",fontSize:12,color:"var(--text3)"}}>No payouts recorded for this period.</div>
           :<>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr 1fr",padding:"8px 18px",background:"var(--ink)",borderBottom:"0.5px solid var(--line)"}}>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr 1fr",padding:"8px 18px",background:"var(--bg)",borderBottom:"0.5px solid var(--line)"}}>
               {["Date","Period","Amount","Reference","Notes"].map(h=><span key={h} style={S.label}>{h}</span>)}
             </div>
             {filteredPayouts.map((p,i,arr)=><div key={p.id} style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr 1fr",padding:"12px 18px",borderBottom:i<arr.length-1?"0.5px solid var(--line)":"none",alignItems:"center"}}>
@@ -748,7 +749,7 @@ function PartnerApp({partner,onLogout}){
               <span style={{fontFamily:"var(--mono)",fontSize:11,color:"var(--text2)"}}>{p.reference||"—"}</span>
               <span style={{fontSize:11,color:"var(--text3)"}}>{p.notes||"—"}</span>
             </div>)}
-            <div style={{padding:"10px 18px",background:"var(--ink)",borderTop:"0.5px solid var(--line)",display:"flex",justifyContent:"space-between"}}>
+            <div style={{padding:"10px 18px",background:"var(--bg)",borderTop:"0.5px solid var(--line)",display:"flex",justifyContent:"space-between"}}>
               <span style={S.label}>Total shown</span>
               <span style={{fontFamily:"var(--mono)",fontSize:12,color:"var(--green)",fontWeight:500}}>{fmt$(filteredPayouts.reduce((s,p)=>s+(p.amount||0),0))}</span>
             </div>
@@ -901,6 +902,7 @@ function AdminApp({onLogout}){
     if(error){setFormErr(error.message);return;}
     setPartners(p=>[data,...p]);
     sendSlack("#partner-updates",`New partner admitted: ${data.name} (${data.agency||data.vertical}) · Start: ${data.start_date}`);
+    sendWelcomeEmail({...data,password:form.password});
     setForm(blank);setShowAdd(false);setFormErr("");
   };
 
@@ -916,14 +918,20 @@ function AdminApp({onLogout}){
     const{data}=await supabase.from("payouts").insert([{partner_id:payoutModal,partner_name:p?.name,...newPayout,amount:parseFloat(newPayout.amount)||0}]).select().single();
     if(data)setPayouts(py=>[data,...py]);
     sendSlack("#partner-payouts",`Payout recorded: ${p?.name} · ${fmt$(parseFloat(newPayout.amount)||0)} · ${newPayout.period_label||"—"} · Ref: ${newPayout.reference||"—"}`);
+    if(p) sendPayoutEmail(p,{...newPayout,amount:parseFloat(newPayout.amount)||0});
     setNewPayout({amount:"",period_label:"",period_start:"",period_end:"",reference:"",notes:""});
     setPayoutModal(null);
   };
 
   const replyTicket=async(id)=>{
     const reply=ticketReply[id];if(!reply)return;
+    const ticket=tickets.find(t=>t.id===id);
     await supabase.from("tickets").update({status:"Closed",admin_reply:reply}).eq("id",id);
     setTickets(t=>t.map(x=>x.id===id?{...x,status:"Closed",admin_reply:reply}:x));
+    if(ticket){
+      const partner=partners.find(p=>p.id===ticket.partner_id);
+      if(partner) sendTicketReplyEmail(partner,ticket,reply);
+    }
     setTicketReply(r=>({...r,[id]:""}));
   };
 
@@ -959,6 +967,13 @@ function AdminApp({onLogout}){
   const movePipelineStage=async(id,stage)=>{
     await supabase.from("pipeline").update({stage}).eq("id",id);
     setPipeline(p=>p.map(c=>c.id===id?{...c,stage}:c));
+    if(stage==="Approved"||stage==="Active"){
+      const client=pipeline.find(c=>c.id===id);
+      if(client){
+        const partner=partners.find(p=>p.id===client.partner_id);
+        if(partner) sendClientApprovedEmail(partner,client);
+      }
+    }
   };
 
   const sendSlack=(ch,msg)=>{const time=new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});setSlackMsgs(p=>[{channel:ch,message:msg,time},...p]);};
@@ -980,9 +995,9 @@ function AdminApp({onLogout}){
 
   const P=({children})=><div style={{flex:1,overflowY:"auto",padding:24}}>{children}</div>;
   const PH=({title,sub})=><div style={{marginBottom:22}}><div style={{fontFamily:"var(--font)",fontSize:20,color:"var(--text)",marginBottom:3}}>{title}</div>{sub&&<div style={{fontSize:11,color:"var(--text3)"}}>{sub}</div>}</div>;
-  const TH=({cols,labels})=><div style={{display:"grid",gridTemplateColumns:cols,padding:"8px 18px",borderBottom:"0.5px solid var(--line)",background:"var(--ink)"}}>{labels.map(h=><span key={h} style={S.label}>{h}</span>)}</div>;
+  const TH=({cols,labels})=><div style={{display:"grid",gridTemplateColumns:cols,padding:"8px 18px",borderBottom:"0.5px solid var(--line)",background:"var(--bg)"}}>{labels.map(h=><span key={h} style={S.label}>{h}</span>)}</div>;
 
-  return <div style={{display:"flex",minHeight:"100vh",background:"var(--ink)"}}>
+  return <div style={{display:"flex",minHeight:"100vh",background:"var(--bg)"}}>
     <Sidebar groups={navGroups} active={view} onSelect={setView} top={sideTop} bottom={sideBottom}/>
     <P>
 
@@ -1086,7 +1101,7 @@ function AdminApp({onLogout}){
         const myPayouts=payouts.filter(py=>py.partner_id===p.id);
         const myPaid=myPayouts.reduce((s,py)=>s+(py.amount||0),0);
         return <Card key={p.id} style={{marginBottom:10,overflow:"hidden"}}>
-          <div onClick={()=>setSelected(open?null:p)} style={{display:"flex",alignItems:"center",gap:12,padding:"14px 18px",cursor:"pointer",background:open?"var(--ink3)":"transparent",transition:"background 0.15s"}}>
+          <div onClick={()=>setSelected(open?null:p)} style={{display:"flex",alignItems:"center",gap:12,padding:"14px 18px",cursor:"pointer",background:open?"var(--bg2)":"transparent",transition:"background 0.15s"}}>
             <Avatar name={p.name} size={38}/><div style={{flex:1,minWidth:0}}>
               <div style={{fontSize:13,fontWeight:500,color:"var(--text)"}}>{p.name}{p.agency?` · ${p.agency}`:""}</div>
               <div style={{fontSize:11,color:"var(--text3)"}}>{p.email} · {p.vertical} · Day {daysIn(p.start_date)}</div>
@@ -1097,7 +1112,7 @@ function AdminApp({onLogout}){
             <div style={{textAlign:"right",minWidth:80}}><div style={{fontFamily:"var(--mono)",fontSize:13,color:"var(--green)"}}>{fmt$(myAUM*REV_RATE)}</div><div style={{fontSize:10,color:"var(--text3)"}}>comp/mo</div></div>
             <i className={`ti ti-chevron-${open?"up":"down"}`} style={{fontSize:14,color:"var(--text3)",marginLeft:4}}/>
           </div>
-          {open&&<div style={{padding:18,borderTop:"0.5px solid var(--line)",background:"var(--ink3)"}}>
+          {open&&<div style={{padding:18,borderTop:"0.5px solid var(--line)",background:"var(--bg2)"}}>
             <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:16}}>
               <KPI label="Active clients" value={myActive.length} sub={`${myClients.length} total`}/>
               <KPI label="Active AUM" value={fmtK(myAUM)}/>
@@ -1123,7 +1138,7 @@ function AdminApp({onLogout}){
               </div>)}
             </div>
             <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
-              <select value={p.status} onChange={e=>updatePartner(p.id,{status:e.target.value})} style={{fontSize:12,padding:"6px 10px",borderRadius:6,border:"0.5px solid var(--line3)",background:"var(--ink3)",color:"var(--text)",width:"auto"}}>{["Pending Setup","Onboarding","Active","Inactive"].map(s=><option key={s}>{s}</option>)}</select>
+              <select value={p.status} onChange={e=>updatePartner(p.id,{status:e.target.value})} style={{fontSize:12,padding:"6px 10px",borderRadius:6,border:"0.5px solid var(--line3)",background:"var(--bg2)",color:"var(--text)",width:"auto"}}>{["Pending Setup","Onboarding","Active","Inactive"].map(s=><option key={s}>{s}</option>)}</select>
               <Btn onClick={()=>setPayoutModal(p.id)} variant="success">+ Record payout</Btn>
               <Btn onClick={()=>sendSlack("#partner-revenue",`${p.name}: ${fmtK(myAUM)} AUM · ${fmt$(myAUM*REV_RATE)} comp/mo · ${myActive.length} active clients`)} variant="ghost">Notify Slack</Btn>
             </div>
@@ -1154,11 +1169,11 @@ function AdminApp({onLogout}){
             <div><div style={{fontSize:13,fontWeight:500,color:"var(--text)"}}>{c.name}</div>{c.notes&&<div style={{fontSize:10,color:"var(--text3)"}}>{c.notes}</div>}</div>
             <div style={{fontSize:11,color:"var(--text3)"}}>{c.contact_name||"—"}</div>
             <div style={{fontFamily:"var(--mono)",fontSize:12,color:c.stage==="Active"?"var(--green)":"var(--text2)"}}>{fmtK(c.monthly_spend||0)}</div>
-            <select value={c.stage} onChange={e=>movePipelineStage(c.id,e.target.value)} style={{fontSize:11,padding:"3px 6px",borderRadius:4,border:"0.5px solid var(--line2)",background:"var(--ink3)",color:"var(--text)",width:"auto"}}>{PIPELINE_STAGES.map(s=><option key={s}>{s}</option>)}</select>
+            <select value={c.stage} onChange={e=>movePipelineStage(c.id,e.target.value)} style={{fontSize:11,padding:"3px 6px",borderRadius:4,border:"0.5px solid var(--line2)",background:"var(--bg2)",color:"var(--text)",width:"auto"}}>{PIPELINE_STAGES.map(s=><option key={s}>{s}</option>)}</select>
             <div style={{fontSize:11,color:"var(--text3)"}}>{c.partner_name}</div>
             <div style={{fontSize:11,color:"var(--text3)"}}>{(c.created_at||"").slice(0,10)}</div>
           </div>)}
-          <div style={{padding:"10px 18px",background:"var(--ink)",borderTop:"0.5px solid var(--line)",display:"flex",justifyContent:"space-between"}}>
+          <div style={{padding:"10px 18px",background:"var(--bg)",borderTop:"0.5px solid var(--line)",display:"flex",justifyContent:"space-between"}}>
             <span style={S.label}>Total active AUM</span>
             <span style={{fontFamily:"var(--mono)",fontSize:12,color:"var(--green)",fontWeight:500}}>{fmtK(pipeline.filter(c=>c.type===(view==="admin-brands"?"brand":"agency")&&c.stage==="Active").reduce((s,c)=>s+(c.monthly_spend||0),0))}/mo</span>
           </div>
@@ -1250,7 +1265,7 @@ function AdminApp({onLogout}){
           <span style={{fontFamily:"var(--mono)",fontSize:11,color:"var(--text2)"}}>{p.reference||"—"}</span>
           <span style={{fontSize:11,color:"var(--text3)"}}>{p.notes||"—"}</span>
         </div>)}
-        <div style={{padding:"10px 18px",background:"var(--ink)",borderTop:"0.5px solid var(--line)",display:"flex",justifyContent:"space-between"}}>
+        <div style={{padding:"10px 18px",background:"var(--bg)",borderTop:"0.5px solid var(--line)",display:"flex",justifyContent:"space-between"}}>
           <span style={S.label}>Grand total</span>
           <span style={{fontFamily:"var(--mono)",fontSize:13,color:"var(--green)",fontWeight:500}}>{fmt$(totalPaidOut)}</span>
         </div>
@@ -1336,9 +1351,9 @@ function AdminApp({onLogout}){
       <Card>
         <CardHead title="Notification log"/>
         <div style={{padding:14}}>
-          <div style={{background:"var(--ink)",border:"0.5px solid var(--line)",borderRadius:6,padding:12,maxHeight:220,overflowY:"auto",marginBottom:12,display:"flex",flexDirection:"column",gap:6}}>
+          <div style={{background:"var(--bg)",border:"0.5px solid var(--line)",borderRadius:6,padding:12,maxHeight:220,overflowY:"auto",marginBottom:12,display:"flex",flexDirection:"column",gap:6}}>
             {slackMsgs.length===0?<div style={{fontSize:12,color:"var(--text3)",textAlign:"center",padding:"20px 0"}}>No notifications sent this session.</div>
-            :slackMsgs.map((m,i)=><div key={i} style={{padding:"8px 10px",background:"var(--ink2)",borderRadius:4,border:"0.5px solid var(--line)"}}>
+            :slackMsgs.map((m,i)=><div key={i} style={{padding:"8px 10px",background:"var(--bg)",borderRadius:4,border:"0.5px solid var(--line)"}}>
               <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}><span style={{fontFamily:"var(--mono)",fontSize:10,color:"var(--blue-lt)"}}>{m.channel}</span><span style={{fontFamily:"var(--mono)",fontSize:10,color:"var(--text3)"}}>{m.time}</span></div>
               <div style={{fontSize:12,color:"var(--text2)"}}>{m.message}</div>
             </div>)}
@@ -1367,6 +1382,7 @@ export default function App(){
   };
   const completeOnboarding=async()=>{
     await supabase.from("partners").update({onboarded:true,status:"Active"}).eq("id",session.partner.id);
+    sendOnboardingCompleteEmail(session.partner);
     setSession(s=>({...s,partner:{...s.partner,onboarded:true,status:"Active"}}));
   };
   if(!session)return <Login onLogin={handleLogin}/>;
