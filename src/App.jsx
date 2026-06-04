@@ -18,7 +18,7 @@ const fmtK = n => (n||0)>=1000000 ? "$"+((n||0)/1000000).toFixed(2)+"M" : (n||0)
 const today = () => new Date().toISOString().slice(0,10);
 const daysIn = d => Math.max(0,Math.floor((Date.now()-new Date(d))/86400000));
 const fmtDate = d => d ? new Date(d).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}) : "—";
-const fmtMono = v => <span style={{fontFamily:"var(--font-mono)",fontSize:12,color:"var(--silver)"}}>{v||"—"}</span>;
+const fmtMono = v => <span style={{fontFamily:"var(--mono)",fontSize:12,color:"var(--text2)"}}>{v||"—"}</span>;
 
 const DAY30=[{aum:500000,award:3.0},{aum:100000,award:1.5},{aum:50000,award:0.5}];
 const DAY60=[{aum:2000000,award:3.0},{aum:1000000,award:2.0},{aum:500000,award:1.0}];
@@ -45,23 +45,19 @@ function calcScore(p,pipeline){
 const S = {
   card: {background:"var(--ink2)",border:"0.5px solid var(--line2)",borderRadius:"var(--r-lg)"},
   cardInner: {background:"var(--ink3)",border:"0.5px solid var(--line)",borderRadius:"var(--r)"},
-  pill: (bg,fg) => ({fontSize:10,fontWeight:600,letterSpacing:"0.4px",padding:"3px 9px",borderRadius:20,background:bg,color:fg,whiteSpace:"nowrap",textTransform:"uppercase"}),
-  label: {fontSize:11,color:"var(--text3)",letterSpacing:"0.3px",textTransform:"uppercase",fontWeight:500},
-  mono: {fontFamily:"var(--font-mono)",fontSize:12,color:"var(--silver)"},
-  goldText: {color:"var(--gold)",fontFamily:"var(--font-mono)",fontWeight:500},
-  greenText: {color:"var(--green)",fontFamily:"var(--font-mono)",fontWeight:500},
+  pill: (bg,fg) => ({fontSize:10,fontWeight:600,letterSpacing:"0.5px",padding:"3px 8px",borderRadius:3,background:bg,color:fg,whiteSpace:"nowrap",textTransform:"uppercase",fontFamily:"var(--mono)"}),
+  label: {fontSize:10,color:"var(--text3)",letterSpacing:"0.6px",textTransform:"uppercase",fontWeight:500},
+  mono: {fontFamily:"var(--mono)",fontSize:12,color:"var(--text2)"},
 };
 
 // ── UI PRIMITIVES ─────────────────────────────────────────────────────────
 function Logo(){
-  return <div style={{padding:"20px 20px 16px"}}>
+  return <div style={{padding:"18px 16px 14px"}}>
     <div style={{display:"flex",alignItems:"center",gap:10}}>
-      <div style={{width:28,height:28,background:"linear-gradient(135deg,var(--gold),var(--gold-lt))",borderRadius:4,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-        <span style={{fontSize:13,fontWeight:700,color:"var(--ink)",fontFamily:"var(--font-serif)"}}>D</span>
-      </div>
+      <img src="/logo.png" alt="DSP Connect" style={{width:22,height:22,objectFit:"contain",flexShrink:0}}/>
       <div>
-        <div style={{fontSize:12,fontWeight:600,color:"var(--text)",letterSpacing:"0.5px"}}>DSP CONNECT</div>
-        <div style={{fontSize:9,color:"var(--text3)",letterSpacing:"0.8px",textTransform:"uppercase"}}>Partner Portal</div>
+        <div style={{fontSize:11,fontWeight:600,color:"var(--text)",letterSpacing:"0.8px",textTransform:"uppercase"}}>DSP Connect</div>
+        <div style={{fontSize:9,color:"var(--text3)",letterSpacing:"0.5px"}}>Partner Portal</div>
       </div>
     </div>
   </div>;
@@ -69,27 +65,25 @@ function Logo(){
 
 function Avatar({name,size=32}){
   const i=(name||"?").split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
-  const colors=[["rgba(201,168,76,0.2)","var(--gold)"],["rgba(46,204,138,0.15)","var(--green)"],["rgba(74,158,255,0.15)","var(--blue)"],["rgba(240,168,50,0.15)","var(--amber)"]];
-  const[bg,fg]=colors[(name||"?").charCodeAt(0)%colors.length];
-  return <div style={{width:size,height:size,borderRadius:"50%",background:bg,border:`0.5px solid ${fg}33`,color:fg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:size*0.32,fontWeight:600,flexShrink:0,fontFamily:"var(--font-sans)"}}>{i}</div>;
+  return <div style={{width:size,height:size,borderRadius:"50%",background:"var(--blue-bg2)",border:"0.5px solid rgba(43,31,232,0.3)",color:"var(--blue-lt)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:size*0.32,fontWeight:600,flexShrink:0,fontFamily:"var(--mono)",letterSpacing:"0.5px"}}>{i}</div>;
 }
 
 function StatusBadge({s}){
   const m={
     Active:["var(--green-bg)","var(--green)"],Onboarding:["var(--amber-bg)","var(--amber)"],
-    Inactive:["var(--red-bg)","var(--red)"],"Pending Setup":["rgba(255,255,255,0.05)","var(--text3)"],
-    Lead:["rgba(255,255,255,0.05)","var(--silver)"],"Deposit Paid":["var(--amber-bg)","var(--amber)"],
-    Review:["var(--blue-bg)","var(--blue)"],Approved:["rgba(46,204,138,0.15)","var(--green)"],
-    Paid:["var(--green-bg)","var(--green)"],Open:["var(--amber-bg)","var(--amber)"],Closed:["rgba(255,255,255,0.05)","var(--text3)"],
+    Inactive:["var(--red-bg)","var(--red)"],"Pending Setup":["rgba(255,255,255,0.04)","var(--text3)"],
+    Lead:["rgba(255,255,255,0.04)","var(--text3)"],"Deposit Paid":["var(--amber-bg)","var(--amber)"],
+    Review:["var(--blue-bg)","var(--blue-lt)"],Approved:["var(--green-bg)","var(--green)"],
+    Paid:["var(--green-bg)","var(--green)"],Open:["var(--amber-bg)","var(--amber)"],Closed:["rgba(255,255,255,0.04)","var(--text3)"],
   };
-  const[bg,fg]=m[s]||["rgba(255,255,255,0.05)","var(--text3)"];
+  const[bg,fg]=m[s]||["rgba(255,255,255,0.04)","var(--text3)"];
   return <span style={S.pill(bg,fg)}>{s}</span>;
 }
 
 function KPI({label,value,sub,accent,mono}){
   return <div style={{...S.card,padding:"18px 20px"}}>
     <div style={{...S.label,marginBottom:10}}>{label}</div>
-    <div style={{fontSize:26,fontWeight:accent==="gold"?400:500,color:accent==="gold"?"var(--gold)":accent==="green"?"var(--green)":accent==="amber"?"var(--amber)":"var(--text)",fontFamily:mono?"var(--font-mono)":accent?"var(--font-mono)":"var(--font-sans)",letterSpacing:accent?"-0.5px":"0",lineHeight:1}}>{value}</div>
+    <div style={{fontSize:24,fontWeight:500,color:accent==="green"?"var(--green)":accent==="blue"?"var(--blue-lt)":accent==="amber"?"var(--amber)":"var(--text)",fontFamily:mono||accent?"var(--mono)":"var(--font)",letterSpacing:"-0.3px",lineHeight:1}}>{value}</div>
     {sub&&<div style={{fontSize:11,color:"var(--text3)",marginTop:6}}>{sub}</div>}
   </div>;
 }
@@ -102,7 +96,7 @@ function CardHead({title,sub,action,border=true}){
   </div>;
 }
 
-function Bar({pct,color="var(--gold)"}){
+function Bar({pct,color="var(--blue-lt)"}){
   return <div style={{height:3,background:"var(--line2)",borderRadius:2,overflow:"hidden"}}>
     <div style={{height:"100%",width:`${Math.min(pct||0,100)}%`,background:color,borderRadius:2,transition:"width 0.6s ease"}}/>
   </div>;
@@ -110,14 +104,14 @@ function Bar({pct,color="var(--gold)"}){
 
 function Btn({onClick,children,variant="ghost",size="md",disabled}){
   const variants={
-    primary:{background:"var(--gold)",color:"var(--ink)",border:"none",fontWeight:600},
-    success:{background:"var(--green-bg)",color:"var(--green)",border:"0.5px solid rgba(46,204,138,0.3)"},
-    danger:{background:"var(--red-bg)",color:"var(--red)",border:"0.5px solid rgba(224,85,85,0.3)"},
+    primary:{background:"var(--blue)",color:"var(--white)",border:"none",fontWeight:500},
+    success:{background:"var(--green-bg)",color:"var(--green)",border:"0.5px solid rgba(29,184,122,0.25)"},
+    danger:{background:"var(--red-bg)",color:"var(--red)",border:"0.5px solid rgba(217,79,79,0.25)"},
     ghost:{background:"transparent",color:"var(--text2)",border:"0.5px solid var(--line3)"},
-    link:{background:"transparent",color:"var(--gold)",border:"none",padding:"0"},
+    link:{background:"transparent",color:"var(--blue-lt)",border:"none",padding:"0"},
   };
-  const sizes={sm:{fontSize:11,padding:"4px 10px",borderRadius:4},md:{fontSize:12,padding:"7px 14px",borderRadius:6},lg:{fontSize:13,padding:"9px 20px",borderRadius:6}};
-  return <button onClick={onClick} disabled={disabled} style={{...variants[variant],...sizes[size],cursor:disabled?"not-allowed":"pointer",opacity:disabled?0.4:1,fontFamily:"var(--font-sans)",letterSpacing:"0.2px",transition:"opacity 0.15s,background 0.15s",whiteSpace:"nowrap"}}>{children}</button>;
+  const sizes={sm:{fontSize:11,padding:"4px 10px",borderRadius:4},md:{fontSize:12,padding:"7px 14px",borderRadius:5},lg:{fontSize:13,padding:"9px 20px",borderRadius:5}};
+  return <button onClick={onClick} disabled={disabled} style={{...variants[variant],...sizes[size],cursor:disabled?"not-allowed":"pointer",opacity:disabled?0.4:1,fontFamily:"var(--font)",letterSpacing:"0.1px",transition:"opacity 0.15s",whiteSpace:"nowrap"}}>{children}</button>;
 }
 
 function Empty({icon,title,sub,cta,onCta}){
@@ -131,7 +125,7 @@ function Empty({icon,title,sub,cta,onCta}){
 
 function Spinner(){
   return <div style={{display:"flex",alignItems:"center",justifyContent:"center",padding:48,color:"var(--text3)",fontSize:12,gap:8}}>
-    <i className="ti ti-loader-2" style={{fontSize:18,animation:"spin 1s linear infinite",color:"var(--gold)"}}/>Loading
+    <i className="ti ti-loader-2" style={{fontSize:18,animation:"spin 1s linear infinite",color:"var(--blue-lt)"}}/>Loading
   </div>;
 }
 
@@ -173,10 +167,10 @@ function Sidebar({groups,active,onSelect,top,bottom}){
         <div style={{...S.label,padding:"14px 20px 5px"}}>{g.section}</div>
         {g.items.map(n=>{
           const isActive=active===n.key;
-          return <button key={n.key} onClick={()=>onSelect(n.key)} style={{display:"flex",alignItems:"center",gap:9,padding:"8px 20px",width:"100%",border:"none",background:isActive?"var(--gold-bg)":"transparent",color:isActive?"var(--gold)":"var(--text3)",cursor:"pointer",fontSize:12,fontWeight:isActive?500:400,textAlign:"left",borderLeft:isActive?"2px solid var(--gold)":"2px solid transparent",transition:"all 0.15s",fontFamily:"var(--font-sans)"}}>
+          return <button key={n.key} onClick={()=>onSelect(n.key)} style={{display:"flex",alignItems:"center",gap:9,padding:"8px 20px",width:"100%",border:"none",background:isActive?"var(--blue-bg)":"transparent",color:isActive?"var(--blue-lt)":"var(--text3)",cursor:"pointer",fontSize:12,fontWeight:isActive?500:400,textAlign:"left",borderLeft:isActive?"2px solid var(--gold)":"2px solid transparent",transition:"all 0.15s",fontFamily:"var(--font)"}}>
             <i className={`ti ti-${n.icon}`} style={{fontSize:14,flexShrink:0}}/>
             <span style={{flex:1}}>{n.label}</span>
-            {n.badge?<span style={{background:"var(--gold)",color:"var(--ink)",fontSize:9,fontWeight:700,borderRadius:10,padding:"1px 5px",fontFamily:"var(--font-mono)"}}>{n.badge}</span>:null}
+            {n.badge?<span style={{background:"var(--blue-lt)",color:"var(--ink)",fontSize:9,fontWeight:700,borderRadius:10,padding:"1px 5px",fontFamily:"var(--mono)"}}>{n.badge}</span>:null}
           </button>;
         })}
       </div>)}
@@ -197,11 +191,11 @@ function Login({onLogin}){
     onLogin({role:"partner",partner:data});
   };
   return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"var(--ink)",position:"relative",overflow:"hidden"}}>
-    <div style={{position:"absolute",inset:0,backgroundImage:"radial-gradient(ellipse 80% 50% at 50% -20%,rgba(201,168,76,0.08),transparent)",pointerEvents:"none"}}/>
+    <div style={{position:"absolute",inset:0,backgroundImage:"radial-gradient(ellipse 80% 50% at 50% -20%,rgba(43,31,232,0.06),transparent)",pointerEvents:"none"}}/>
     <div style={{width:400,animation:"fadeUp 0.4s ease"}}>
       <div style={{textAlign:"center",marginBottom:36}}>
         <div style={{width:44,height:44,background:"linear-gradient(135deg,var(--gold),var(--gold-lt))",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 14px"}}>
-          <span style={{fontSize:22,fontWeight:700,color:"var(--ink)",fontFamily:"var(--font-serif)"}}>D</span>
+          <span style={{fontSize:22,fontWeight:700,color:"var(--ink)",fontFamily:"var(--font)"}}>D</span>
         </div>
         <div style={{fontSize:18,fontWeight:600,color:"var(--text)",letterSpacing:"0.5px",marginBottom:4}}>DSP CONNECT</div>
         <div style={{fontSize:11,color:"var(--text3)",letterSpacing:"1px",textTransform:"uppercase"}}>Managing Partner Portal</div>
@@ -218,7 +212,7 @@ function Login({onLogin}){
         {err&&<div style={{fontSize:12,color:"var(--red)",background:"var(--red-bg)",border:"0.5px solid rgba(224,85,85,0.2)",borderRadius:6,padding:"8px 12px",marginBottom:14}}>{err}</div>}
         <Btn onClick={attempt} variant="primary" size="lg" disabled={loading}>{loading?"Authenticating…":"Sign in"}</Btn>
         <div style={{marginTop:18,padding:"12px 14px",background:"var(--ink3)",borderRadius:6,fontSize:11,color:"var(--text3)",borderLeft:"2px solid var(--gold)"}}>
-          <span style={{color:"var(--gold-lt)",fontWeight:500}}>Admin:</span> {ADMIN_EMAIL}<br/>
+          <span style={{color:"var(--blue-lt)",fontWeight:500}}>Admin:</span> {ADMIN_EMAIL}<br/>
           Partner credentials are issued by admin and delivered directly.
         </div>
       </div>
@@ -237,13 +231,13 @@ function Onboarding({partner,onComplete}){
   </div>;
 
   const Check=({id,label,checked,onChange})=><label style={{display:"flex",alignItems:"flex-start",gap:10,marginTop:14,cursor:"pointer",fontSize:12,color:"var(--text2)"}}>
-    <input type="checkbox" checked={checked} onChange={onChange} style={{width:14,height:14,flexShrink:0,marginTop:2,accentColor:"var(--gold)"}}/>
+    <input type="checkbox" checked={checked} onChange={onChange} style={{width:14,height:14,flexShrink:0,marginTop:2,accentColor:"var(--blue-lt)"}}/>
     {label}
   </label>;
 
   const steps=[
     {title:"Cash Compensation Policy",tag:"Exhibit B",icon:"currency-dollar",content:<div>
-      <div style={{fontFamily:"var(--font-serif)",fontSize:16,color:"var(--text)",marginBottom:16}}>Managing Partner Cash Compensation Policy</div>
+      <div style={{fontFamily:"var(--font)",fontSize:16,color:"var(--text)",marginBottom:16}}>Managing Partner Cash Compensation Policy</div>
       <Row k="Rate" v="10% of Qualified Ad Spend Under Management (AUM)"/>
       <Row k="Payment schedule" v="Monthly, after advertiser funds collected by DSP Connect"/>
       <Row k="Qualifying spend" v="Contracted, activated, invoiced, and collected"/>
@@ -252,7 +246,7 @@ function Onboarding({partner,onComplete}){
       <Check id="comp" label="I have read and understood the Cash Compensation Policy (Exhibit B)" checked={checks.comp} onChange={e=>setChecks(c=>({...c,comp:e.target.checked}))}/>
     </div>},
     {title:"Equity Vesting Policy",tag:"Exhibit A",icon:"chart-donut",content:<div>
-      <div style={{fontFamily:"var(--font-serif)",fontSize:16,color:"var(--text)",marginBottom:16}}>Equity Vesting, Performance & Acceleration Policy</div>
+      <div style={{fontFamily:"var(--font)",fontSize:16,color:"var(--text)",marginBottom:16}}>Equity Vesting, Performance & Acceleration Policy</div>
       <Row k="Equity pool" v="40% of total LLC membership interests"/>
       <Row k="Base grant" v="5.00% upon qualifying"/>
       <Row k="Annual minimum" v="$5,000,000 AUM in first 12 months"/>
@@ -262,7 +256,7 @@ function Onboarding({partner,onComplete}){
       <Check id="equity" label="I have read and understood the Equity Vesting Policy (Exhibit A)" checked={checks.equity} onChange={e=>setChecks(c=>({...c,equity:e.target.checked}))}/>
     </div>},
     {title:"Operating Rules",tag:"Acknowledgment",icon:"checklist",content:<div>
-      <div style={{fontFamily:"var(--font-serif)",fontSize:16,color:"var(--text)",marginBottom:16}}>Operating Rules & Required Acknowledgements</div>
+      <div style={{fontFamily:"var(--font)",fontSize:16,color:"var(--text)",marginBottom:16}}>Operating Rules & Required Acknowledgements</div>
       <Row k="Non-compete" v={`${partner.non_compete_days||90} days post-termination`}/>
       <Row k="Trailing compensation" v={TRAILING_OPTIONS.find(o=>o.value===(partner.trailing_option||"A"))?.label}/>
       <Row k="Account ownership" v="DSP Connect owns all advertiser accounts"/>
@@ -271,7 +265,7 @@ function Onboarding({partner,onComplete}){
       <Check id="noncompete" label="I acknowledge the non-compete period and trailing compensation terms" checked={checks.noncompete} onChange={e=>setChecks(c=>({...c,noncompete:e.target.checked}))}/>
     </div>},
     {title:"Digital Signature",tag:"Final step",icon:"pencil",content:<div>
-      <div style={{fontFamily:"var(--font-serif)",fontSize:16,color:"var(--text)",marginBottom:16}}>Admission Confirmation & Digital Signature</div>
+      <div style={{fontFamily:"var(--font)",fontSize:16,color:"var(--text)",marginBottom:16}}>Admission Confirmation & Digital Signature</div>
       <Row k="Full legal name" v={partner.legal_name||partner.name}/>
       <Row k="Email address" v={partner.email}/>
       <Row k="Vertical" v={partner.vertical}/>
@@ -280,7 +274,7 @@ function Onboarding({partner,onComplete}){
       <Row k="Maximum equity (Year 1)" v="15.00%"/>
       <div style={{marginTop:18}}>
         <label style={{...S.label,display:"block",marginBottom:8}}>Type your full legal name to execute</label>
-        <input value={sig} onChange={e=>{setSig(e.target.value);setChecks(c=>({...c,sig:e.target.value.trim().length>4}));}} placeholder={partner.legal_name||partner.name} style={{fontStyle:"italic",fontSize:16,fontFamily:"var(--font-serif)",color:"var(--gold)"}}/>
+        <input value={sig} onChange={e=>{setSig(e.target.value);setChecks(c=>({...c,sig:e.target.value.trim().length>4}));}} placeholder={partner.legal_name||partner.name} style={{fontStyle:"italic",fontSize:16,fontFamily:"var(--font)",color:"var(--blue-lt)"}}/>
       </div>
       <div style={{marginTop:14,padding:"10px 14px",background:"var(--green-bg)",border:"0.5px solid rgba(46,204,138,0.2)",borderRadius:6,fontSize:12,color:"var(--green)"}}>✓ Exhibits A & B acknowledged · Executed {today()}</div>
     </div>},
@@ -297,11 +291,11 @@ function Onboarding({partner,onComplete}){
     <div style={{width:"100%",maxWidth:660,animation:"fadeUp 0.4s ease"}}>
       <div style={{textAlign:"center",marginBottom:24}}>
         <div style={{fontSize:11,color:"var(--text3)",letterSpacing:"1px",textTransform:"uppercase",marginBottom:6}}>DSP Connect · Managing Partner Onboarding</div>
-        <div style={{fontFamily:"var(--font-serif)",fontSize:20,color:"var(--text)"}}>Welcome, {(partner.name||"").split(" ")[0]}</div>
+        <div style={{fontFamily:"var(--font)",fontSize:20,color:"var(--text)"}}>Welcome, {(partner.name||"").split(" ")[0]}</div>
       </div>
       <div style={{display:"flex",justifyContent:"center",gap:4,marginBottom:24}}>
         {steps.map((_,i)=><div key={i} style={{display:"flex",alignItems:"center",gap:4}}>
-          <div style={{width:24,height:24,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:600,fontFamily:"var(--font-mono)",background:i<step?"var(--green-bg)":i===step?"var(--gold-bg)":"var(--ink3)",color:i<step?"var(--green)":i===step?"var(--gold)":"var(--text3)",border:`0.5px solid ${i<step?"rgba(46,204,138,0.3)":i===step?"rgba(201,168,76,0.3)":"var(--line)"}`}}>
+          <div style={{width:24,height:24,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:600,fontFamily:"var(--mono)",background:i<step?"var(--green-bg)":i===step?"var(--blue-bg)":"var(--ink3)",color:i<step?"var(--green)":i===step?"var(--blue-lt)":"var(--text3)",border:`0.5px solid ${i<step?"rgba(46,204,138,0.3)":i===step?"rgba(43,31,232,0.25)":"var(--line)"}`}}>
             {i<step?<i className="ti ti-check" style={{fontSize:10}}/>:i+1}
           </div>
           {i<steps.length-1&&<div style={{width:32,height:1,background:i<step?"var(--green)":"var(--line2)"}}/>}
@@ -309,9 +303,9 @@ function Onboarding({partner,onComplete}){
       </div>
       <Card style={{marginBottom:14}}>
         <div style={{padding:"16px 20px",borderBottom:"0.5px solid var(--line)",display:"flex",alignItems:"center",gap:10}}>
-          <i className={`ti ti-${s.icon}`} style={{fontSize:16,color:"var(--gold)"}}/>
+          <i className={`ti ti-${s.icon}`} style={{fontSize:16,color:"var(--blue-lt)"}}/>
           <span style={{fontSize:14,fontWeight:500,color:"var(--text)",flex:1}}>{s.title}</span>
-          <span style={{...S.pill("var(--gold-bg)","var(--gold)")}}>{s.tag}</span>
+          <span style={{...S.pill("var(--blue-bg)","var(--blue-lt)")}}>{s.tag}</span>
         </div>
         <div style={{padding:20}}>{s.content}</div>
       </Card>
@@ -398,8 +392,8 @@ function PartnerApp({partner,onLogout}){
     </div>
   </div>;
   const sideBottom=<div>
-    <div style={{fontSize:10,color:"var(--text3)",marginBottom:8,fontFamily:"var(--font-mono)"}}>Day {days} of engagement</div>
-    <button onClick={onLogout} style={{fontSize:11,color:"var(--text3)",background:"none",border:"none",cursor:"pointer",display:"flex",alignItems:"center",gap:6,padding:0,fontFamily:"var(--font-sans)"}}>
+    <div style={{fontSize:10,color:"var(--text3)",marginBottom:8,fontFamily:"var(--mono)"}}>Day {days} of engagement</div>
+    <button onClick={onLogout} style={{fontSize:11,color:"var(--text3)",background:"none",border:"none",cursor:"pointer",display:"flex",alignItems:"center",gap:6,padding:0,fontFamily:"var(--font)"}}>
       <i className="ti ti-logout" style={{fontSize:12}}/>Sign out
     </button>
   </div>;
@@ -407,7 +401,7 @@ function PartnerApp({partner,onLogout}){
   if(loading)return <div style={{display:"flex",minHeight:"100vh"}}><Sidebar groups={navGroups} active={view} onSelect={setView} top={sideTop} bottom={sideBottom}/><div style={{flex:1}}><Spinner/></div></div>;
 
   const P=({children})=><div style={{flex:1,overflowY:"auto",padding:24}}>{children}</div>;
-  const PH=({title,sub})=><div style={{marginBottom:22}}><div style={{fontFamily:"var(--font-serif)",fontSize:20,color:"var(--text)",marginBottom:3}}>{title}</div>{sub&&<div style={{fontSize:11,color:"var(--text3)"}}>{sub}</div>}</div>;
+  const PH=({title,sub})=><div style={{marginBottom:22}}><div style={{fontFamily:"var(--font)",fontSize:20,color:"var(--text)",marginBottom:3}}>{title}</div>{sub&&<div style={{fontSize:11,color:"var(--text3)"}}>{sub}</div>}</div>;
 
   return <div style={{display:"flex",minHeight:"100vh",background:"var(--ink)"}}>
     <Sidebar groups={navGroups} active={view} onSelect={setView} top={sideTop} bottom={sideBottom}/>
@@ -418,10 +412,10 @@ function PartnerApp({partner,onLogout}){
         <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>
           <KPI label="Active AUM" value={fmtK(totalMonthlyAUM)} sub={`${activeClients.length} active clients`} mono/>
           <KPI label="Monthly compensation" value={fmt$(monthlyComp)} sub="10% of active AUM" accent="green" mono/>
-          <KPI label="Paid this month" value={fmt$(paidThisMonth)} sub="Recorded payouts" accent="gold" mono/>
+          <KPI label="Paid this month" value={fmt$(paidThisMonth)} sub="Recorded payouts" accent="blue" mono/>
           <div style={{...S.card,padding:"18px 20px"}}>
             <div style={{...S.label,marginBottom:10}}>Partner score</div>
-            <div style={{fontSize:26,fontWeight:500,fontFamily:"var(--font-mono)",color:score>=70?"var(--green)":score>=40?"var(--amber)":"var(--red)",lineHeight:1}}>{score}<span style={{fontSize:13,color:"var(--text3)",fontFamily:"var(--font-sans)"}}>/ 100</span></div>
+            <div style={{fontSize:26,fontWeight:500,fontFamily:"var(--mono)",color:score>=70?"var(--green)":score>=40?"var(--amber)":"var(--red)",lineHeight:1}}>{score}<span style={{fontSize:13,color:"var(--text3)",fontFamily:"var(--font)"}}>/ 100</span></div>
             <div style={{marginTop:10}}><Bar pct={score} color={score>=70?"var(--green)":score>=40?"var(--amber)":"var(--red)"}/></div>
           </div>
         </div>
@@ -442,27 +436,27 @@ function PartnerApp({partner,onLogout}){
                 {[{label:"Day 1–30",done:days>30,active:days<=30,award:(DAY30.find(t=>(partner.day30_aum||0)>=t.aum)||{award:0}).award,max:3},
                   {label:"Day 31–60",done:days>60,active:days>30&&days<=60,award:(DAY60.find(t=>(partner.day60_aum||0)>=t.aum)||{award:0}).award,max:3},
                   {label:"Day 61–90",done:days>90,active:days>60&&days<=90,award:(DAY90.find(t=>(partner.day90_aum||0)>=t.aum)||{award:0}).award,max:4},
-                ].map(w=><div key={w.label} style={{padding:"12px",background:w.active?"var(--gold-bg)":w.done?"var(--green-bg)":"var(--ink3)",borderRadius:6,border:`0.5px solid ${w.active?"rgba(201,168,76,0.2)":w.done?"rgba(46,204,138,0.2)":"var(--line)"}`}}>
-                  <div style={{fontSize:9,fontWeight:600,letterSpacing:"0.5px",color:w.active?"var(--gold)":w.done?"var(--green)":"var(--text3)",textTransform:"uppercase",marginBottom:6}}>{w.label}</div>
-                  <div style={{fontFamily:"var(--font-mono)",fontSize:22,fontWeight:400,color:w.active?"var(--gold)":w.done?"var(--green)":"var(--text3)",lineHeight:1}}>{w.award.toFixed(1)}<span style={{fontSize:12}}>%</span></div>
+                ].map(w=><div key={w.label} style={{padding:"12px",background:w.active?"var(--blue-bg)":w.done?"var(--green-bg)":"var(--ink3)",borderRadius:6,border:`0.5px solid ${w.active?"rgba(43,31,232,0.18)":w.done?"rgba(46,204,138,0.2)":"var(--line)"}`}}>
+                  <div style={{fontSize:9,fontWeight:600,letterSpacing:"0.5px",color:w.active?"var(--blue-lt)":w.done?"var(--green)":"var(--text3)",textTransform:"uppercase",marginBottom:6}}>{w.label}</div>
+                  <div style={{fontFamily:"var(--mono)",fontSize:22,fontWeight:400,color:w.active?"var(--blue-lt)":w.done?"var(--green)":"var(--text3)",lineHeight:1}}>{w.award.toFixed(1)}<span style={{fontSize:12}}>%</span></div>
                   <div style={{fontSize:10,color:"var(--text3)",marginTop:3}}>max {w.max}%</div>
                 </div>)}
               </div>
               <div style={{borderTop:"0.5px solid var(--line)",paddingTop:12}}>
-                <div style={{display:"flex",justifyContent:"space-between",fontSize:11,marginBottom:6}}><span style={{color:"var(--text3)"}}>Total equity earned</span><span style={{fontFamily:"var(--font-mono)",color:"var(--gold)",fontWeight:500}}>{equity.total.toFixed(2)}% / 15.00%</span></div>
-                <Bar pct={(equity.total/15)*100} color="var(--gold)"/>
+                <div style={{display:"flex",justifyContent:"space-between",fontSize:11,marginBottom:6}}><span style={{color:"var(--text3)"}}>Total equity earned</span><span style={{fontFamily:"var(--mono)",color:"var(--blue-lt)",fontWeight:500}}>{equity.total.toFixed(2)}% / 15.00%</span></div>
+                <Bar pct={(equity.total/15)*100} color="var(--blue-lt)"/>
               </div>
             </div>
           </Card>
         </div>
         <Card>
           <CardHead title="Client pipeline" action={<Btn onClick={()=>setView("pipeline")} variant="link" size="sm">View all →</Btn>}/>
-          {pipeline.length===0?<div style={{padding:"28px 18px",textAlign:"center",fontSize:12,color:"var(--text3)"}}>No clients yet. <button onClick={()=>setView("brand-clients")} style={{background:"none",border:"none",color:"var(--gold)",cursor:"pointer",fontSize:12,fontFamily:"var(--font-sans)"}}>Add your first →</button></div>
+          {pipeline.length===0?<div style={{padding:"28px 18px",textAlign:"center",fontSize:12,color:"var(--text3)"}}>No clients yet. <button onClick={()=>setView("brand-clients")} style={{background:"none",border:"none",color:"var(--blue-lt)",cursor:"pointer",fontSize:12,fontFamily:"var(--font)"}}>Add your first →</button></div>
           :<div style={{padding:"4px 0"}}>
             {PIPELINE_STAGES.map(stage=>{const inStage=pipeline.filter(c=>c.stage===stage);if(!inStage.length)return null;
               return <div key={stage} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 18px",borderBottom:"0.5px solid var(--line)"}}>
                 <StatusBadge s={stage}/><span style={{fontSize:12,color:"var(--text3)",flex:1}}>{inStage.length} client{inStage.length>1?"s":""}</span>
-                <span style={{fontFamily:"var(--font-mono)",fontSize:12,color:"var(--silver)"}}>{fmtK(inStage.reduce((s,c)=>s+(c.monthly_spend||0),0))}/mo</span>
+                <span style={{fontFamily:"var(--mono)",fontSize:12,color:"var(--text2)"}}>{fmtK(inStage.reduce((s,c)=>s+(c.monthly_spend||0),0))}/mo</span>
               </div>;
             })}
           </div>}
@@ -495,13 +489,13 @@ function PartnerApp({partner,onLogout}){
           {brandClients.map((c,i)=><div key={c.id} style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr 1fr",padding:"13px 18px",borderBottom:i<brandClients.length-1?"0.5px solid var(--line)":"none",alignItems:"center"}}>
             <div><div style={{fontSize:13,fontWeight:500,color:"var(--text)"}}>{c.name}</div>{c.notes&&<div style={{fontSize:11,color:"var(--text3)"}}>{c.notes}</div>}</div>
             <div style={{fontSize:12,color:"var(--text3)"}}>{c.contact_name||"—"}</div>
-            <div style={{fontFamily:"var(--font-mono)",fontSize:12,color:c.stage==="Active"?"var(--green)":"var(--silver)"}}>{fmtK(c.monthly_spend||0)}</div>
+            <div style={{fontFamily:"var(--mono)",fontSize:12,color:c.stage==="Active"?"var(--green)":"var(--text2)"}}>{fmtK(c.monthly_spend||0)}</div>
             <StatusBadge s={c.stage}/>
             <div style={{fontSize:11,color:"var(--text3)"}}>{(c.created_at||"").slice(0,10)}</div>
           </div>)}
           <div style={{padding:"10px 18px",borderTop:"0.5px solid var(--line)",display:"flex",justifyContent:"space-between",background:"var(--ink)"}}>
             <span style={S.label}>Total active AUM</span>
-            <span style={{fontFamily:"var(--font-mono)",fontSize:12,color:"var(--green)"}}>{fmtK(brandClients.filter(c=>c.stage==="Active").reduce((s,c)=>s+(c.monthly_spend||0),0))}/mo</span>
+            <span style={{fontFamily:"var(--mono)",fontSize:12,color:"var(--green)"}}>{fmtK(brandClients.filter(c=>c.stage==="Active").reduce((s,c)=>s+(c.monthly_spend||0),0))}/mo</span>
           </div>
         </Card>}
       </div>}
@@ -532,13 +526,13 @@ function PartnerApp({partner,onLogout}){
           {agencyClients.map((c,i)=><div key={c.id} style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr 1fr",padding:"13px 18px",borderBottom:i<agencyClients.length-1?"0.5px solid var(--line)":"none",alignItems:"center"}}>
             <div><div style={{fontSize:13,fontWeight:500,color:"var(--text)"}}>{c.name}</div>{c.notes&&<div style={{fontSize:11,color:"var(--text3)"}}>{c.notes}</div>}</div>
             <div style={{fontSize:12,color:"var(--text3)"}}>{c.contact_name||"—"}</div>
-            <div style={{fontFamily:"var(--font-mono)",fontSize:12,color:c.stage==="Active"?"var(--green)":"var(--silver)"}}>{fmtK(c.monthly_spend||0)}</div>
+            <div style={{fontFamily:"var(--mono)",fontSize:12,color:c.stage==="Active"?"var(--green)":"var(--text2)"}}>{fmtK(c.monthly_spend||0)}</div>
             <StatusBadge s={c.stage}/>
             <div style={{fontSize:11,color:"var(--text3)"}}>{(c.created_at||"").slice(0,10)}</div>
           </div>)}
           <div style={{padding:"10px 18px",borderTop:"0.5px solid var(--line)",display:"flex",justifyContent:"space-between",background:"var(--ink)"}}>
             <span style={S.label}>Total active AUM</span>
-            <span style={{fontFamily:"var(--font-mono)",fontSize:12,color:"var(--green)"}}>{fmtK(agencyClients.filter(c=>c.stage==="Active").reduce((s,c)=>s+(c.monthly_spend||0),0))}/mo</span>
+            <span style={{fontFamily:"var(--mono)",fontSize:12,color:"var(--green)"}}>{fmtK(agencyClients.filter(c=>c.stage==="Active").reduce((s,c)=>s+(c.monthly_spend||0),0))}/mo</span>
           </div>
         </Card>}
       </div>}
@@ -546,15 +540,15 @@ function PartnerApp({partner,onLogout}){
       {view==="pipeline"&&<div>
         <PH title="Pipeline" sub="All clients by stage"/>
         {["brand","agency"].map(type=><div key={type} style={{marginBottom:28}}>
-          <div style={{fontSize:11,fontWeight:600,color:"var(--text3)",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:10}}>{type==="brand"?"Brand clients":"Agency clients"} <span style={{color:"var(--text3)",fontFamily:"var(--font-mono)"}}>{pipeline.filter(c=>c.type===type).length}</span></div>
+          <div style={{fontSize:11,fontWeight:600,color:"var(--text3)",letterSpacing:"0.5px",textTransform:"uppercase",marginBottom:10}}>{type==="brand"?"Brand clients":"Agency clients"} <span style={{color:"var(--text3)",fontFamily:"var(--mono)"}}>{pipeline.filter(c=>c.type===type).length}</span></div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:8}}>
             {PIPELINE_STAGES.map(stage=>{const inStage=pipeline.filter(c=>c.type===type&&c.stage===stage);
               return <div key={stage}>
-                <div style={{fontSize:10,fontWeight:600,color:"var(--text3)",letterSpacing:"0.4px",textTransform:"uppercase",marginBottom:6,textAlign:"center"}}>{stage} <span style={{fontFamily:"var(--font-mono)"}}>{inStage.length}</span></div>
+                <div style={{fontSize:10,fontWeight:600,color:"var(--text3)",letterSpacing:"0.4px",textTransform:"uppercase",marginBottom:6,textAlign:"center"}}>{stage} <span style={{fontFamily:"var(--mono)"}}>{inStage.length}</span></div>
                 <div style={{minHeight:56,background:"var(--ink3)",borderRadius:6,padding:6,display:"flex",flexDirection:"column",gap:5,border:"0.5px solid var(--line)"}}>
                   {inStage.map(c=><div key={c.id} style={{background:"var(--ink2)",border:"0.5px solid var(--line2)",borderRadius:4,padding:"8px 10px"}}>
                     <div style={{fontSize:11,fontWeight:500,color:"var(--text)",marginBottom:3}}>{c.name}</div>
-                    <div style={{fontFamily:"var(--font-mono)",fontSize:11,color:"var(--green)",marginBottom:6}}>{fmtK(c.monthly_spend||0)}</div>
+                    <div style={{fontFamily:"var(--mono)",fontSize:11,color:"var(--green)",marginBottom:6}}>{fmtK(c.monthly_spend||0)}</div>
                     <select value={c.stage} onChange={e=>moveStage(c.id,e.target.value)} style={{fontSize:10,padding:"2px 4px",borderRadius:3,border:"0.5px solid var(--line2)",background:"var(--ink3)",color:"var(--text2)",width:"100%"}}>{PIPELINE_STAGES.map(s=><option key={s}>{s}</option>)}</select>
                   </div>)}
                   {inStage.length===0&&<div style={{fontSize:10,color:"var(--text3)",textAlign:"center",padding:"10px 4px"}}>—</div>}
@@ -570,8 +564,8 @@ function PartnerApp({partner,onLogout}){
         <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>
           <KPI label="Active AUM" value={fmtK(totalMonthlyAUM)} sub="Monthly managed spend" mono/>
           <KPI label="Monthly comp" value={fmt$(monthlyComp)} sub="10% of active AUM" accent="green" mono/>
-          <KPI label="Paid this month" value={fmt$(paidThisMonth)} accent="gold" mono/>
-          <KPI label="Total paid (lifetime)" value={fmt$(totalPaid)} accent="gold" mono/>
+          <KPI label="Paid this month" value={fmt$(paidThisMonth)} accent="blue" mono/>
+          <KPI label="Total paid (lifetime)" value={fmt$(totalPaid)} accent="blue" mono/>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:14}}>
           <Card>
@@ -583,14 +577,14 @@ function PartnerApp({partner,onLogout}){
               </div>
               {activeClients.map((c,i)=><div key={c.id} style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",padding:"11px 18px",borderBottom:i<activeClients.length-1?"0.5px solid var(--line)":"none",alignItems:"center"}}>
                 <span style={{fontSize:13,fontWeight:500,color:"var(--text)"}}>{c.name}</span>
-                <span style={S.pill(c.type==="brand"?"var(--blue-bg)":"rgba(201,168,76,0.1)",c.type==="brand"?"var(--blue)":"var(--gold)")}>{c.type}</span>
-                <span style={{fontFamily:"var(--font-mono)",fontSize:12,color:"var(--green)"}}>{fmtK(c.monthly_spend||0)}</span>
-                <span style={{fontFamily:"var(--font-mono)",fontSize:12,color:"var(--green)"}}>{fmt$((c.monthly_spend||0)*REV_RATE)}</span>
+                <span style={S.pill(c.type==="brand"?"var(--blue-bg)":"rgba(201,168,76,0.1)",c.type==="brand"?"var(--blue)":"var(--blue-lt)")}>{c.type}</span>
+                <span style={{fontFamily:"var(--mono)",fontSize:12,color:"var(--green)"}}>{fmtK(c.monthly_spend||0)}</span>
+                <span style={{fontFamily:"var(--mono)",fontSize:12,color:"var(--green)"}}>{fmt$((c.monthly_spend||0)*REV_RATE)}</span>
               </div>)}
               <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",padding:"11px 18px",background:"var(--ink)",borderTop:"0.5px solid var(--line)"}}>
                 <span style={{fontSize:12,fontWeight:600,color:"var(--text)"}}>Total</span><span/>
-                <span style={{fontFamily:"var(--font-mono)",fontSize:12,color:"var(--green)",fontWeight:600}}>{fmtK(totalMonthlyAUM)}</span>
-                <span style={{fontFamily:"var(--font-mono)",fontSize:12,color:"var(--green)",fontWeight:600}}>{fmt$(monthlyComp)}</span>
+                <span style={{fontFamily:"var(--mono)",fontSize:12,color:"var(--green)",fontWeight:600}}>{fmtK(totalMonthlyAUM)}</span>
+                <span style={{fontFamily:"var(--mono)",fontSize:12,color:"var(--green)",fontWeight:600}}>{fmt$(monthlyComp)}</span>
               </div>
             </>}
           </Card>
@@ -599,7 +593,7 @@ function PartnerApp({partner,onLogout}){
             <div style={{padding:"4px 0"}}>
               {[["Annual AUM",fmtK(totalMonthlyAUM*12)],["Annual compensation",fmt$(monthlyComp*12)],["YTD compensation (est.)",fmt$(monthlyComp*Math.max(1,Math.floor(days/30)))],["Annual run rate",fmtK(monthlyComp*12)]].map(([l,v])=><div key={l} style={{display:"flex",justifyContent:"space-between",padding:"11px 18px",borderBottom:"0.5px solid var(--line)",alignItems:"center"}}>
                 <span style={{fontSize:12,color:"var(--text3)"}}>{l}</span>
-                <span style={{fontFamily:"var(--font-mono)",fontSize:13,color:"var(--green)",fontWeight:500}}>{v}</span>
+                <span style={{fontFamily:"var(--mono)",fontSize:13,color:"var(--green)",fontWeight:500}}>{v}</span>
               </div>)}
             </div>
           </Card>
@@ -607,7 +601,7 @@ function PartnerApp({partner,onLogout}){
         <Card>
           <CardHead title="Payout history" action={
             <div style={{display:"flex",gap:4}}>
-              {["weekly","monthly","all"].map(v=><button key={v} onClick={()=>setPayView(v)} style={{fontSize:10,padding:"3px 9px",borderRadius:4,border:"0.5px solid var(--line3)",background:payView===v?"var(--gold-bg)":"transparent",color:payView===v?"var(--gold)":"var(--text3)",cursor:"pointer",textTransform:"capitalize",fontFamily:"var(--font-sans)",letterSpacing:"0.3px"}}>{v}</button>)}
+              {["weekly","monthly","all"].map(v=><button key={v} onClick={()=>setPayView(v)} style={{fontSize:10,padding:"3px 9px",borderRadius:4,border:"0.5px solid var(--line3)",background:payView===v?"var(--blue-bg)":"transparent",color:payView===v?"var(--blue-lt)":"var(--text3)",cursor:"pointer",textTransform:"capitalize",fontFamily:"var(--font)",letterSpacing:"0.3px"}}>{v}</button>)}
             </div>}/>
           {filteredPayouts.length===0?<div style={{padding:"28px 18px",textAlign:"center",fontSize:12,color:"var(--text3)"}}>No payouts recorded for this period.</div>
           :<>
@@ -617,13 +611,13 @@ function PartnerApp({partner,onLogout}){
             {filteredPayouts.map((p,i,arr)=><div key={p.id} style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr 1fr",padding:"12px 18px",borderBottom:i<arr.length-1?"0.5px solid var(--line)":"none",alignItems:"center"}}>
               <span style={{fontSize:11,color:"var(--text3)"}}>{fmtDate(p.created_at)}</span>
               <span style={{fontSize:12,color:"var(--text2)"}}>{p.period_label||"—"}</span>
-              <span style={{fontFamily:"var(--font-mono)",fontSize:13,color:"var(--green)",fontWeight:500}}>{fmt$(p.amount)}</span>
-              <span style={{fontFamily:"var(--font-mono)",fontSize:11,color:"var(--silver)"}}>{p.reference||"—"}</span>
+              <span style={{fontFamily:"var(--mono)",fontSize:13,color:"var(--green)",fontWeight:500}}>{fmt$(p.amount)}</span>
+              <span style={{fontFamily:"var(--mono)",fontSize:11,color:"var(--text2)"}}>{p.reference||"—"}</span>
               <span style={{fontSize:11,color:"var(--text3)"}}>{p.notes||"—"}</span>
             </div>)}
             <div style={{padding:"10px 18px",background:"var(--ink)",borderTop:"0.5px solid var(--line)",display:"flex",justifyContent:"space-between"}}>
               <span style={S.label}>Total shown</span>
-              <span style={{fontFamily:"var(--font-mono)",fontSize:12,color:"var(--green)",fontWeight:500}}>{fmt$(filteredPayouts.reduce((s,p)=>s+(p.amount||0),0))}</span>
+              <span style={{fontFamily:"var(--mono)",fontSize:12,color:"var(--green)",fontWeight:500}}>{fmt$(filteredPayouts.reduce((s,p)=>s+(p.amount||0),0))}</span>
             </div>
           </>}
         </Card>
@@ -632,7 +626,7 @@ function PartnerApp({partner,onLogout}){
       {view==="equity"&&<div>
         <PH title="Ownership" sub="Equity Vesting, Performance & Acceleration Policy (Exhibit A)"/>
         <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>
-          <KPI label="Ownership stake" value={`${equity.total.toFixed(2)}%`} accent="gold" mono/>
+          <KPI label="Ownership stake" value={`${equity.total.toFixed(2)}%`} accent="blue" mono/>
           <KPI label="Vesting status" value={equity.qualifies?"Qualified":"Pending"} sub={equity.qualifies?"$5M AUM threshold met":"$5M AUM required"} accent={equity.qualifies?"green":undefined}/>
           <KPI label="AUM to qualify" value={equity.qualifies?"✓ Met":fmtK(Math.max(0,MIN_EQUITY_AUM-(partner.annual_aum||0)))} sub={equity.qualifies?"":"remaining to $5M"} mono/>
           <KPI label="Maximum equity" value="15.00%" sub="5% base + 10% acceleration" mono/>
@@ -641,16 +635,16 @@ function PartnerApp({partner,onLogout}){
           <Card>
             <CardHead title="Equity breakdown"/>
             <div style={{padding:"14px 18px"}}>
-              {[{label:"Base grant",pct:equity.base,max:5,color:"var(--blue)",note:"5% upon qualifying"},{label:"Day 1–30 acceleration",pct:equity.a30,max:3,color:"var(--gold)",note:"Max 3%"},{label:"Day 31–60 acceleration",pct:equity.a60,max:3,color:"var(--green)",note:"Max 3%"},{label:"Day 61–90 acceleration",pct:equity.a90,max:4,color:"var(--amber)",note:"Max 4%"}].map(r=><div key={r.label} style={{marginBottom:16}}>
+              {[{label:"Base grant",pct:equity.base,max:5,color:"var(--blue)",note:"5% upon qualifying"},{label:"Day 1–30 acceleration",pct:equity.a30,max:3,color:"var(--blue-lt)",note:"Max 3%"},{label:"Day 31–60 acceleration",pct:equity.a60,max:3,color:"var(--green)",note:"Max 3%"},{label:"Day 61–90 acceleration",pct:equity.a90,max:4,color:"var(--amber)",note:"Max 4%"}].map(r=><div key={r.label} style={{marginBottom:16}}>
                 <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
                   <span style={{fontSize:12,color:"var(--text3)"}}>{r.label} <span style={{fontSize:10,color:"var(--text3)"}}>{r.note}</span></span>
-                  <span style={{fontFamily:"var(--font-mono)",fontSize:12,color:r.color}}>{equity.qualifies?r.pct.toFixed(2):0}%</span>
+                  <span style={{fontFamily:"var(--mono)",fontSize:12,color:r.color}}>{equity.qualifies?r.pct.toFixed(2):0}%</span>
                 </div>
                 <Bar pct={equity.qualifies?(r.pct/r.max)*100:0} color={r.color}/>
               </div>)}
               <div style={{borderTop:"0.5px solid var(--line)",paddingTop:14,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                 <span style={{fontSize:13,fontWeight:500,color:"var(--text)"}}>Total</span>
-                <span style={{fontFamily:"var(--font-mono)",fontSize:16,color:"var(--gold)",fontWeight:500}}>{equity.total.toFixed(2)}% <span style={{fontSize:11,color:"var(--text3)"}}>/ 15.00%</span></span>
+                <span style={{fontFamily:"var(--mono)",fontSize:16,color:"var(--blue-lt)",fontWeight:500}}>{equity.total.toFixed(2)}% <span style={{fontSize:11,color:"var(--text3)"}}>/ 15.00%</span></span>
               </div>
             </div>
           </Card>
@@ -659,7 +653,7 @@ function PartnerApp({partner,onLogout}){
             <div style={{padding:"4px 0"}}>
               {[{label:"Equity Vesting Policy",tag:"Exhibit A",date:"On file"},{label:"Cash Compensation Policy",tag:"Exhibit B",date:"On file"},{label:"Managing Partner Admission Notice",tag:"",date:partner.start_date},{label:"Master Operating Agreement",tag:"",date:"On file"}].map((doc,i,arr)=><div key={doc.label} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 18px",borderBottom:i<arr.length-1?"0.5px solid var(--line)":"none"}}>
                 <div style={{display:"flex",alignItems:"center",gap:10}}><i className="ti ti-file-check" style={{fontSize:14,color:"var(--green)"}}/><div><div style={{fontSize:12,color:"var(--text)"}}>{doc.label}</div>{doc.tag&&<div style={{fontSize:10,color:"var(--text3)"}}>{doc.tag}</div>}</div></div>
-                <span style={{fontFamily:"var(--font-mono)",fontSize:11,color:"var(--text3)"}}>{doc.date}</span>
+                <span style={{fontFamily:"var(--mono)",fontSize:11,color:"var(--text3)"}}>{doc.date}</span>
               </div>)}
             </div>
             <div style={{padding:"10px 18px",background:"var(--green-bg)",borderTop:"0.5px solid rgba(46,204,138,0.15)",margin:"0"}}>
@@ -676,14 +670,14 @@ function PartnerApp({partner,onLogout}){
           :<div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:12}}>
             {resources.filter(r=>r.category===view).map(r=><Card key={r.id} style={{padding:16}}>
               <div style={{display:"flex",alignItems:"flex-start",gap:12}}>
-                <div style={{width:36,height:36,background:"var(--gold-bg)",borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                  <i className={`ti ti-${r.type==="video"?"player-play":r.type==="article"?"article":"file-text"}`} style={{fontSize:16,color:"var(--gold)"}}/>
+                <div style={{width:36,height:36,background:"var(--blue-bg)",borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                  <i className={`ti ti-${r.type==="video"?"player-play":r.type==="article"?"article":"file-text"}`} style={{fontSize:16,color:"var(--blue-lt)"}}/>
                 </div>
                 <div style={{flex:1}}>
                   <div style={{fontSize:13,fontWeight:500,color:"var(--text)",marginBottom:3}}>{r.title}</div>
                   <div style={{fontSize:10,color:"var(--text3)",letterSpacing:"0.3px",textTransform:"uppercase"}}>{r.type} · {(r.created_at||"").slice(0,10)}</div>
                   {r.description&&<div style={{fontSize:12,color:"var(--text3)",marginTop:6}}>{r.description}</div>}
-                  {r.url&&<a href={r.url} target="_blank" rel="noreferrer" style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:"var(--gold)",marginTop:8,textDecoration:"none"}}><i className="ti ti-external-link" style={{fontSize:11}}/>Open resource</a>}
+                  {r.url&&<a href={r.url} target="_blank" rel="noreferrer" style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:"var(--blue-lt)",marginTop:8,textDecoration:"none"}}><i className="ti ti-external-link" style={{fontSize:11}}/>Open resource</a>}
                 </div>
               </div>
             </Card>)}
@@ -713,7 +707,7 @@ function PartnerApp({partner,onLogout}){
               <span style={S.pill("var(--blue-bg)","var(--blue)")}>{t.type}</span>
               <span style={{fontSize:13,fontWeight:500,color:"var(--text)",flex:1}}>{t.subject}</span>
               <StatusBadge s={t.status}/>
-              <span style={{fontFamily:"var(--font-mono)",fontSize:10,color:"var(--text3)"}}>{(t.created_at||"").slice(0,10)}</span>
+              <span style={{fontFamily:"var(--mono)",fontSize:10,color:"var(--text3)"}}>{(t.created_at||"").slice(0,10)}</span>
             </div>
             {t.details&&<div style={{fontSize:12,color:"var(--text3)",paddingLeft:0,marginBottom:t.admin_reply?6:0}}>{t.details}</div>}
             {t.admin_reply&&<div style={{padding:"8px 12px",background:"var(--green-bg)",border:"0.5px solid rgba(46,204,138,0.15)",borderRadius:6,fontSize:12,color:"var(--green)"}}><span style={{fontWeight:600}}>Response: </span>{t.admin_reply}</div>}
@@ -844,13 +838,13 @@ function AdminApp({onLogout}){
   const navGroups=ADMIN_NAV.map(g=>({...g,items:g.items.map(i=>({...i,badge:i.key==="approvals"?pendingApprovals.length||null:i.key==="admissions"?partners.filter(p=>p.status==="Pending Setup").length||null:i.key==="slack"?openTickets.length||null:null}))}));
 
   const sideTop=<div><Logo/><div style={{padding:"0 20px 14px",borderBottom:"0.5px solid var(--line)"}}><div style={{fontSize:10,color:"var(--text3)",letterSpacing:"0.5px",textTransform:"uppercase"}}>Administration</div></div></div>;
-  const sideBottom=<button onClick={onLogout} style={{fontSize:11,color:"var(--text3)",background:"none",border:"none",cursor:"pointer",display:"flex",alignItems:"center",gap:6,padding:0,fontFamily:"var(--font-sans)"}}><i className="ti ti-logout" style={{fontSize:12}}/>Sign out</button>;
+  const sideBottom=<button onClick={onLogout} style={{fontSize:11,color:"var(--text3)",background:"none",border:"none",cursor:"pointer",display:"flex",alignItems:"center",gap:6,padding:0,fontFamily:"var(--font)"}}><i className="ti ti-logout" style={{fontSize:12}}/>Sign out</button>;
   const F=({label,children,full})=><div style={full?{gridColumn:"1/-1"}:{}}><label style={{...S.label,display:"block",marginBottom:6}}>{label}</label>{children}</div>;
 
   if(loading)return <div style={{display:"flex",minHeight:"100vh"}}><Sidebar groups={navGroups} active={view} onSelect={setView} top={sideTop} bottom={sideBottom}/><div style={{flex:1}}><Spinner/></div></div>;
 
   const P=({children})=><div style={{flex:1,overflowY:"auto",padding:24}}>{children}</div>;
-  const PH=({title,sub})=><div style={{marginBottom:22}}><div style={{fontFamily:"var(--font-serif)",fontSize:20,color:"var(--text)",marginBottom:3}}>{title}</div>{sub&&<div style={{fontSize:11,color:"var(--text3)"}}>{sub}</div>}</div>;
+  const PH=({title,sub})=><div style={{marginBottom:22}}><div style={{fontFamily:"var(--font)",fontSize:20,color:"var(--text)",marginBottom:3}}>{title}</div>{sub&&<div style={{fontSize:11,color:"var(--text3)"}}>{sub}</div>}</div>;
   const TH=({cols,labels})=><div style={{display:"grid",gridTemplateColumns:cols,padding:"8px 18px",borderBottom:"0.5px solid var(--line)",background:"var(--ink)"}}>{labels.map(h=><span key={h} style={S.label}>{h}</span>)}</div>;
 
   return <div style={{display:"flex",minHeight:"100vh",background:"var(--ink)"}}>
@@ -862,11 +856,11 @@ function AdminApp({onLogout}){
         <CardHead title="Record payout" sub={partners.find(p=>p.id===payoutModal)?.name}/>
         <div style={{padding:18}}>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
-            <F label="Amount ($) *"><input type="number" value={newPayout.amount} onChange={e=>setNewPayout(p=>({...p,amount:e.target.value}))} placeholder="0.00" style={{fontFamily:"var(--font-mono)",fontSize:16}}/></F>
+            <F label="Amount ($) *"><input type="number" value={newPayout.amount} onChange={e=>setNewPayout(p=>({...p,amount:e.target.value}))} placeholder="0.00" style={{fontFamily:"var(--mono)",fontSize:16}}/></F>
             <F label="Period label"><input value={newPayout.period_label} onChange={e=>setNewPayout(p=>({...p,period_label:e.target.value}))} placeholder="e.g. June 2026"/></F>
             <F label="Period start"><input type="date" value={newPayout.period_start} onChange={e=>setNewPayout(p=>({...p,period_start:e.target.value}))}/></F>
             <F label="Period end"><input type="date" value={newPayout.period_end} onChange={e=>setNewPayout(p=>({...p,period_end:e.target.value}))}/></F>
-            <F label="Reference # (check / wire / ACH)"><input value={newPayout.reference} onChange={e=>setNewPayout(p=>({...p,reference:e.target.value}))} placeholder="e.g. CHK-1042" style={{fontFamily:"var(--font-mono)"}}/></F>
+            <F label="Reference # (check / wire / ACH)"><input value={newPayout.reference} onChange={e=>setNewPayout(p=>({...p,reference:e.target.value}))} placeholder="e.g. CHK-1042" style={{fontFamily:"var(--mono)"}}/></F>
             <F label="Notes"><input value={newPayout.notes} onChange={e=>setNewPayout(p=>({...p,notes:e.target.value}))} placeholder="Optional"/></F>
           </div>
           <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><Btn onClick={()=>setPayoutModal(null)} variant="ghost">Cancel</Btn><Btn onClick={recordPayout} variant="success" disabled={!newPayout.amount}>Record payout</Btn></div>
@@ -879,7 +873,7 @@ function AdminApp({onLogout}){
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>
         <KPI label="Total partners" value={partners.length} sub={`${active.length} active`}/>
         <KPI label="Total active AUM" value={fmtK(totalActiveAUM)} sub="All active client spend" mono/>
-        <KPI label="Monthly comp due" value={fmt$(totalComp)} sub="10% of total AUM" accent="gold" mono/>
+        <KPI label="Monthly comp due" value={fmt$(totalComp)} sub="10% of total AUM" accent="blue" mono/>
         <KPI label="Total paid out" value={fmt$(totalPaidOut)} sub="All recorded payouts" accent="green" mono/>
       </div>
       {partners.length===0?<Empty icon="users-group" title="No managing partners yet" sub="Create your first managing partner to get started." cta="Admit first partner →" onCta={()=>setView("admissions")}/>
@@ -894,10 +888,10 @@ function AdminApp({onLogout}){
           return <div key={p.id} style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr 1fr 1fr",padding:"13px 18px",borderBottom:i<partners.length-1?"0.5px solid var(--line)":"none",alignItems:"center"}}>
             <div style={{display:"flex",alignItems:"center",gap:10}}><Avatar name={p.name} size={30}/><div><div style={{fontSize:13,fontWeight:500,color:"var(--text)"}}>{p.name}</div><div style={{fontSize:10,color:"var(--text3)"}}>{p.vertical} · Day {daysIn(p.start_date)}</div></div></div>
             <StatusBadge s={p.status}/>
-            <span style={{fontFamily:"var(--font-mono)",fontSize:12,color:"var(--text2)"}}>{myActive.length}</span>
-            <span style={{fontFamily:"var(--font-mono)",fontSize:12,color:"var(--silver)"}}>{fmtK(myAUM)}</span>
-            <span style={{fontFamily:"var(--font-mono)",fontSize:12,color:"var(--green)"}}>{fmt$(myAUM*REV_RATE)}</span>
-            <span style={{fontFamily:"var(--font-mono)",fontSize:12,color:"var(--gold)"}}>{fmt$(myPaid)}</span>
+            <span style={{fontFamily:"var(--mono)",fontSize:12,color:"var(--text2)"}}>{myActive.length}</span>
+            <span style={{fontFamily:"var(--mono)",fontSize:12,color:"var(--text2)"}}>{fmtK(myAUM)}</span>
+            <span style={{fontFamily:"var(--mono)",fontSize:12,color:"var(--green)"}}>{fmt$(myAUM*REV_RATE)}</span>
+            <span style={{fontFamily:"var(--mono)",fontSize:12,color:"var(--blue-lt)"}}>{fmt$(myPaid)}</span>
           </div>;
         })}
       </Card>}
@@ -963,9 +957,9 @@ function AdminApp({onLogout}){
               <div style={{fontSize:11,color:"var(--text3)"}}>{p.email} · {p.vertical} · Day {daysIn(p.start_date)}</div>
             </div>
             <StatusBadge s={p.status}/>
-            <span style={S.pill("var(--gold-bg)","var(--gold)")}>{eq.total.toFixed(1)}% equity</span>
-            <div style={{textAlign:"right",minWidth:90}}><div style={{fontFamily:"var(--font-mono)",fontSize:13,color:"var(--silver)"}}>{fmtK(myAUM)}</div><div style={{fontSize:10,color:"var(--text3)"}}>active AUM</div></div>
-            <div style={{textAlign:"right",minWidth:80}}><div style={{fontFamily:"var(--font-mono)",fontSize:13,color:"var(--green)"}}>{fmt$(myAUM*REV_RATE)}</div><div style={{fontSize:10,color:"var(--text3)"}}>comp/mo</div></div>
+            <span style={S.pill("var(--blue-bg)","var(--blue-lt)")}>{eq.total.toFixed(1)}% equity</span>
+            <div style={{textAlign:"right",minWidth:90}}><div style={{fontFamily:"var(--mono)",fontSize:13,color:"var(--text2)"}}>{fmtK(myAUM)}</div><div style={{fontSize:10,color:"var(--text3)"}}>active AUM</div></div>
+            <div style={{textAlign:"right",minWidth:80}}><div style={{fontFamily:"var(--mono)",fontSize:13,color:"var(--green)"}}>{fmt$(myAUM*REV_RATE)}</div><div style={{fontSize:10,color:"var(--text3)"}}>comp/mo</div></div>
             <i className={`ti ti-chevron-${open?"up":"down"}`} style={{fontSize:14,color:"var(--text3)",marginLeft:4}}/>
           </div>
           {open&&<div style={{padding:18,borderTop:"0.5px solid var(--line)",background:"var(--ink3)"}}>
@@ -973,7 +967,7 @@ function AdminApp({onLogout}){
               <KPI label="Active clients" value={myActive.length} sub={`${myClients.length} total`}/>
               <KPI label="Active AUM" value={fmtK(myAUM)} mono/>
               <KPI label="Monthly comp" value={fmt$(myAUM*REV_RATE)} accent="green" mono/>
-              <KPI label="Total paid" value={fmt$(myPaid)} accent="gold" mono/>
+              <KPI label="Total paid" value={fmt$(myPaid)} accent="blue" mono/>
             </div>
             {myActive.length>0&&<>
               <div style={{...S.label,marginBottom:8}}>Active clients</div>
@@ -981,8 +975,8 @@ function AdminApp({onLogout}){
                 <TH cols="2fr 1fr 1fr" labels={["Client","Type","Monthly spend"]}/>
                 {myActive.map((c,i)=><div key={c.id} style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr",padding:"10px 18px",borderBottom:i<myActive.length-1?"0.5px solid var(--line)":"none",alignItems:"center"}}>
                   <span style={{fontSize:12,fontWeight:500,color:"var(--text)"}}>{c.name}</span>
-                  <span style={S.pill(c.type==="brand"?"var(--blue-bg)":"var(--gold-bg)",c.type==="brand"?"var(--blue)":"var(--gold)")}>{c.type}</span>
-                  <span style={{fontFamily:"var(--font-mono)",fontSize:12,color:"var(--green)"}}>{fmtK(c.monthly_spend||0)}</span>
+                  <span style={S.pill(c.type==="brand"?"var(--blue-bg)":"var(--blue-bg)",c.type==="brand"?"var(--blue)":"var(--blue-lt)")}>{c.type}</span>
+                  <span style={{fontFamily:"var(--mono)",fontSize:12,color:"var(--green)"}}>{fmtK(c.monthly_spend||0)}</span>
                 </div>)}
               </Card>
             </>}
@@ -990,7 +984,7 @@ function AdminApp({onLogout}){
             <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:14}}>
               {[{label:"Monthly spend ($)",f:"monthly_spend"},{label:"Annual AUM ($)",f:"annual_aum"},{label:"Day 30 AUM ($)",f:"day30_aum"},{label:"Day 60 AUM ($)",f:"day60_aum"},{label:"Day 90 AUM ($)",f:"day90_aum"}].map(({label,f})=><div key={f}>
                 <label style={{...S.label,display:"block",marginBottom:5}}>{label}</label>
-                <input type="number" defaultValue={p[f]||0} onBlur={e=>updatePartner(p.id,{[f]:parseFloat(e.target.value)||0})} style={{fontFamily:"var(--font-mono)"}}/>
+                <input type="number" defaultValue={p[f]||0} onBlur={e=>updatePartner(p.id,{[f]:parseFloat(e.target.value)||0})} style={{fontFamily:"var(--mono)"}}/>
               </div>)}
             </div>
             <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
@@ -1005,8 +999,8 @@ function AdminApp({onLogout}){
                 {myPayouts.map((py,i)=><div key={py.id} style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",padding:"10px 18px",borderBottom:i<myPayouts.length-1?"0.5px solid var(--line)":"none",alignItems:"center",fontSize:12}}>
                   <span style={{color:"var(--text3)"}}>{fmtDate(py.created_at)}</span>
                   <span style={{color:"var(--text2)"}}>{py.period_label||"—"}</span>
-                  <span style={{fontFamily:"var(--font-mono)",color:"var(--green)",fontWeight:500}}>{fmt$(py.amount)}</span>
-                  <span style={{fontFamily:"var(--font-mono)",color:"var(--text3)"}}>{py.reference||"—"}</span>
+                  <span style={{fontFamily:"var(--mono)",color:"var(--green)",fontWeight:500}}>{fmt$(py.amount)}</span>
+                  <span style={{fontFamily:"var(--mono)",color:"var(--text3)"}}>{py.reference||"—"}</span>
                 </div>)}
               </Card>
             </div>}
@@ -1024,14 +1018,14 @@ function AdminApp({onLogout}){
           {pipeline.filter(c=>c.type===(view==="admin-brands"?"brand":"agency")).map((c,i,arr)=><div key={c.id} style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr 1fr 1fr",padding:"12px 18px",borderBottom:i<arr.length-1?"0.5px solid var(--line)":"none",alignItems:"center"}}>
             <div><div style={{fontSize:13,fontWeight:500,color:"var(--text)"}}>{c.name}</div>{c.notes&&<div style={{fontSize:10,color:"var(--text3)"}}>{c.notes}</div>}</div>
             <div style={{fontSize:11,color:"var(--text3)"}}>{c.contact_name||"—"}</div>
-            <div style={{fontFamily:"var(--font-mono)",fontSize:12,color:c.stage==="Active"?"var(--green)":"var(--silver)"}}>{fmtK(c.monthly_spend||0)}</div>
+            <div style={{fontFamily:"var(--mono)",fontSize:12,color:c.stage==="Active"?"var(--green)":"var(--text2)"}}>{fmtK(c.monthly_spend||0)}</div>
             <select value={c.stage} onChange={e=>movePipelineStage(c.id,e.target.value)} style={{fontSize:11,padding:"3px 6px",borderRadius:4,border:"0.5px solid var(--line2)",background:"var(--ink3)",color:"var(--text)",width:"auto"}}>{PIPELINE_STAGES.map(s=><option key={s}>{s}</option>)}</select>
             <div style={{fontSize:11,color:"var(--text3)"}}>{c.partner_name}</div>
             <div style={{fontSize:11,color:"var(--text3)"}}>{(c.created_at||"").slice(0,10)}</div>
           </div>)}
           <div style={{padding:"10px 18px",background:"var(--ink)",borderTop:"0.5px solid var(--line)",display:"flex",justifyContent:"space-between"}}>
             <span style={S.label}>Total active AUM</span>
-            <span style={{fontFamily:"var(--font-mono)",fontSize:12,color:"var(--green)",fontWeight:500}}>{fmtK(pipeline.filter(c=>c.type===(view==="admin-brands"?"brand":"agency")&&c.stage==="Active").reduce((s,c)=>s+(c.monthly_spend||0),0))}/mo</span>
+            <span style={{fontFamily:"var(--mono)",fontSize:12,color:"var(--green)",fontWeight:500}}>{fmtK(pipeline.filter(c=>c.type===(view==="admin-brands"?"brand":"agency")&&c.stage==="Active").reduce((s,c)=>s+(c.monthly_spend||0),0))}/mo</span>
           </div>
         </Card>}
     </div>}
@@ -1041,10 +1035,10 @@ function AdminApp({onLogout}){
       {pendingApprovals.length===0?<Empty icon="circle-check" title="No pending approvals" sub="Client submissions in Review will appear here."/>
       :pendingApprovals.map(c=><Card key={c.id} style={{marginBottom:10}}>
         <div style={{display:"flex",alignItems:"center",gap:12,padding:"14px 18px"}}>
-          <span style={S.pill(c.type==="brand"?"var(--blue-bg)":"var(--gold-bg)",c.type==="brand"?"var(--blue)":"var(--gold)")}>{c.type}</span>
+          <span style={S.pill(c.type==="brand"?"var(--blue-bg)":"var(--blue-bg)",c.type==="brand"?"var(--blue)":"var(--blue-lt)")}>{c.type}</span>
           <div style={{flex:1}}>
             <div style={{fontSize:13,fontWeight:500,color:"var(--text)"}}>{c.name}</div>
-            <div style={{fontSize:11,color:"var(--text3)"}}>Partner: {c.partner_name} · {c.contact_name||""} · <span style={{fontFamily:"var(--font-mono)",color:"var(--silver)"}}>{fmtK(c.monthly_spend||0)}/mo</span></div>
+            <div style={{fontSize:11,color:"var(--text3)"}}>Partner: {c.partner_name} · {c.contact_name||""} · <span style={{fontFamily:"var(--mono)",color:"var(--text2)"}}>{fmtK(c.monthly_spend||0)}/mo</span></div>
             {c.notes&&<div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>{c.notes}</div>}
           </div>
           <Btn onClick={()=>movePipelineStage(c.id,"Approved")} variant="success" size="sm">Approve</Btn>
@@ -1057,7 +1051,7 @@ function AdminApp({onLogout}){
       <PH title="Compensation" sub="Active client ad spend · 10% revenue share"/>
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>
         <KPI label="Total active AUM" value={fmtK(totalActiveAUM)} mono/>
-        <KPI label="Monthly comp due" value={fmt$(totalComp)} accent="gold" mono/>
+        <KPI label="Monthly comp due" value={fmt$(totalComp)} accent="blue" mono/>
         <KPI label="Total paid out" value={fmt$(totalPaidOut)} accent="green" mono/>
         <KPI label="Active partners" value={active.length}/>
       </div>
@@ -1074,7 +1068,7 @@ function AdminApp({onLogout}){
           <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)"}}>
             {[{l:"Active clients",v:myActive.length},{l:"Active AUM/mo",v:fmtK(myAUM),m:true},{l:"Annual AUM",v:fmtK(myAUM*12),m:true},{l:"Monthly comp (10%)",v:fmt$(myAUM*REV_RATE),m:true,g:true},{l:"Total paid out",v:fmt$(myPaid),m:true,g:true}].map((item,i)=><div key={item.l} style={{padding:"12px 18px",borderRight:i<4?"0.5px solid var(--line)":"none"}}>
               <div style={S.label}>{item.l}</div>
-              <div style={{marginTop:6,fontFamily:item.m?"var(--font-mono)":"var(--font-sans)",fontSize:14,fontWeight:500,color:item.g?"var(--green)":"var(--text)"}}>{item.v}</div>
+              <div style={{marginTop:6,fontFamily:item.m?"var(--mono)":"var(--font)",fontSize:14,fontWeight:500,color:item.g?"var(--green)":"var(--text)"}}>{item.v}</div>
             </div>)}
           </div>
         </Card>;
@@ -1084,7 +1078,7 @@ function AdminApp({onLogout}){
     {view==="payouts"&&<div>
       <PH title="Payout Records" sub="All recorded disbursements"/>
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:20}}>
-        <KPI label="Total paid (all time)" value={fmt$(totalPaidOut)} accent="gold" mono/>
+        <KPI label="Total paid (all time)" value={fmt$(totalPaidOut)} accent="blue" mono/>
         <KPI label="Paid this month" value={fmt$(payouts.filter(p=>{const d=new Date(p.created_at);const n=new Date();return d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear();}).reduce((s,p)=>s+(p.amount||0),0))} accent="green" mono/>
         <KPI label="Total records" value={payouts.length}/>
       </div>
@@ -1095,13 +1089,13 @@ function AdminApp({onLogout}){
           <span style={{fontSize:11,color:"var(--text3)"}}>{fmtDate(p.created_at)}</span>
           <span style={{fontSize:12,fontWeight:500,color:"var(--text)"}}>{p.partner_name}</span>
           <span style={{fontSize:12,color:"var(--text2)"}}>{p.period_label||"—"}</span>
-          <span style={{fontFamily:"var(--font-mono)",fontSize:13,color:"var(--green)",fontWeight:500}}>{fmt$(p.amount)}</span>
-          <span style={{fontFamily:"var(--font-mono)",fontSize:11,color:"var(--silver)"}}>{p.reference||"—"}</span>
+          <span style={{fontFamily:"var(--mono)",fontSize:13,color:"var(--green)",fontWeight:500}}>{fmt$(p.amount)}</span>
+          <span style={{fontFamily:"var(--mono)",fontSize:11,color:"var(--text2)"}}>{p.reference||"—"}</span>
           <span style={{fontSize:11,color:"var(--text3)"}}>{p.notes||"—"}</span>
         </div>)}
         <div style={{padding:"10px 18px",background:"var(--ink)",borderTop:"0.5px solid var(--line)",display:"flex",justifyContent:"space-between"}}>
           <span style={S.label}>Grand total</span>
-          <span style={{fontFamily:"var(--font-mono)",fontSize:13,color:"var(--green)",fontWeight:500}}>{fmt$(totalPaidOut)}</span>
+          <span style={{fontFamily:"var(--mono)",fontSize:13,color:"var(--green)",fontWeight:500}}>{fmt$(totalPaidOut)}</span>
         </div>
       </Card>}
     </div>}
@@ -1125,12 +1119,12 @@ function AdminApp({onLogout}){
         </div>
       </Card>}
       {["training","sops","documents"].map(cat=><div key={cat} style={{marginBottom:20}}>
-        <div style={{...S.label,marginBottom:10,display:"flex",alignItems:"center",gap:8}}><span style={{textTransform:"capitalize"}}>{cat}</span><span style={{fontFamily:"var(--font-mono)",color:"var(--text3)"}}>{resources.filter(r=>r.category===cat).length}</span></div>
+        <div style={{...S.label,marginBottom:10,display:"flex",alignItems:"center",gap:8}}><span style={{textTransform:"capitalize"}}>{cat}</span><span style={{fontFamily:"var(--mono)",color:"var(--text3)"}}>{resources.filter(r=>r.category===cat).length}</span></div>
         {resources.filter(r=>r.category===cat).length===0?<div style={{fontSize:12,color:"var(--text3)",padding:"8px 0"}}>No {cat} resources yet.</div>
         :resources.filter(r=>r.category===cat).map(r=><Card key={r.id} style={{marginBottom:8}}>
           <div style={{display:"flex",alignItems:"center",gap:12,padding:"12px 18px"}}>
-            <div style={{width:32,height:32,background:"var(--gold-bg)",borderRadius:5,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><i className={`ti ti-${r.type==="video"?"player-play":"file-text"}`} style={{fontSize:14,color:"var(--gold)"}}/></div>
-            <div style={{flex:1}}><div style={{fontSize:13,fontWeight:500,color:"var(--text)"}}>{r.title}</div><div style={{fontSize:10,color:"var(--text3)",textTransform:"uppercase",letterSpacing:"0.3px"}}>{r.type}{r.description?` · ${r.description}`:""}</div>{r.url&&<div style={{fontSize:10,color:"var(--gold)",marginTop:2}}>{r.url}</div>}</div>
+            <div style={{width:32,height:32,background:"var(--blue-bg)",borderRadius:5,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><i className={`ti ti-${r.type==="video"?"player-play":"file-text"}`} style={{fontSize:14,color:"var(--blue-lt)"}}/></div>
+            <div style={{flex:1}}><div style={{fontSize:13,fontWeight:500,color:"var(--text)"}}>{r.title}</div><div style={{fontSize:10,color:"var(--text3)",textTransform:"uppercase",letterSpacing:"0.3px"}}>{r.type}{r.description?` · ${r.description}`:""}</div>{r.url&&<div style={{fontSize:10,color:"var(--blue-lt)",marginTop:2}}>{r.url}</div>}</div>
             <Btn onClick={()=>deleteResource(r.id)} variant="danger" size="sm">Delete</Btn>
           </div>
         </Card>)}
@@ -1188,12 +1182,12 @@ function AdminApp({onLogout}){
           <div style={{background:"var(--ink)",border:"0.5px solid var(--line)",borderRadius:6,padding:12,maxHeight:220,overflowY:"auto",marginBottom:12,display:"flex",flexDirection:"column",gap:6}}>
             {slackMsgs.length===0?<div style={{fontSize:12,color:"var(--text3)",textAlign:"center",padding:"20px 0"}}>No notifications sent this session.</div>
             :slackMsgs.map((m,i)=><div key={i} style={{padding:"8px 10px",background:"var(--ink2)",borderRadius:4,border:"0.5px solid var(--line)"}}>
-              <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}><span style={{fontFamily:"var(--font-mono)",fontSize:10,color:"var(--gold)"}}>{m.channel}</span><span style={{fontFamily:"var(--font-mono)",fontSize:10,color:"var(--text3)"}}>{m.time}</span></div>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}><span style={{fontFamily:"var(--mono)",fontSize:10,color:"var(--blue-lt)"}}>{m.channel}</span><span style={{fontFamily:"var(--mono)",fontSize:10,color:"var(--text3)"}}>{m.time}</span></div>
               <div style={{fontSize:12,color:"var(--text2)"}}>{m.message}</div>
             </div>)}
           </div>
           <div style={{display:"flex",gap:8}}>
-            <select value={slackCh} onChange={e=>setSlackCh(e.target.value)} style={{width:"auto",fontSize:12,fontFamily:"var(--font-mono)"}}><option>#partner-revenue</option><option>#partner-payouts</option><option>#partner-updates</option></select>
+            <select value={slackCh} onChange={e=>setSlackCh(e.target.value)} style={{width:"auto",fontSize:12,fontFamily:"var(--mono)"}}><option>#partner-revenue</option><option>#partner-payouts</option><option>#partner-updates</option></select>
             <input value={slackMsg} onChange={e=>setSlackMsg(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"&&slackMsg.trim()){sendSlack(slackCh,slackMsg);setSlackMsg("");}}} placeholder="Send message…" style={{flex:1}}/>
             <Btn onClick={()=>{if(slackMsg.trim()){sendSlack(slackCh,slackMsg);setSlackMsg("");}}} variant="primary">Send</Btn>
           </div>
