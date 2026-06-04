@@ -145,7 +145,7 @@ function ResourceCard({resource,onClick}){
   return <div onClick={onClick} style={{...S.card,cursor:"pointer",overflow:"hidden"}} onMouseEnter={e=>e.currentTarget.style.boxShadow="0 4px 12px rgba(0,0,0,0.10)"} onMouseLeave={e=>e.currentTarget.style.boxShadow=S.card.boxShadow}>
     {ytId?<div style={{position:"relative",paddingBottom:"48%",background:"#000",overflow:"hidden"}}>
       <img src={`https://img.youtube.com/vi/${ytId}/mqdefault.jpg`} alt="" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",opacity:0.85}}/>
-      <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}><div style={{width:44,height:44,background:"rgba(255,0,0,0.9)",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center"}}><i className="ti ti-player-play-filled" style={{fontSize:18,color:"#fff",marginLeft:2}}/></div></div>
+      <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}><div style={{width:44,height:44,background:"rgba(255,0,0,0.9)",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center"}}><i className="ti ti-player-play" style={{fontSize:18,color:"#fff",marginLeft:2}}/></div></div>
     </div>:<div style={{height:80,background:"var(--bg2)",display:"flex",alignItems:"center",justifyContent:"center",borderBottom:"0.5px solid var(--line)"}}><i className={`ti ti-${type==="pdf"?"file-type-pdf":"external-link"}`} style={{fontSize:32,color:"var(--blue)"}}/></div>}
     <div style={{padding:"12px 14px"}}>
       <div style={{fontSize:13,fontWeight:500,marginBottom:3}}>{resource.title}</div>
@@ -1148,7 +1148,7 @@ function AdminApp({onLogout}){
             return <div key={r.id} style={{...S.card,overflow:"hidden"}}>
               {ytId?<div style={{position:"relative",paddingBottom:"40%",background:"#000",overflow:"hidden"}}>
                 <img src={`https://img.youtube.com/vi/${ytId}/mqdefault.jpg`} alt="" style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",opacity:0.7}}/>
-                <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}><div style={{width:36,height:36,background:"rgba(255,0,0,0.85)",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center"}}><i className="ti ti-player-play-filled" style={{fontSize:14,color:"#fff",marginLeft:2}}/></div></div>
+                <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}><div style={{width:36,height:36,background:"rgba(255,0,0,0.85)",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center"}}><i className="ti ti-player-play" style={{fontSize:14,color:"#fff",marginLeft:2}}/></div></div>
               </div>:<div style={{height:60,background:"var(--bg2)",display:"flex",alignItems:"center",justifyContent:"center",borderBottom:"0.5px solid var(--line)"}}><i className={`ti ti-${type==="pdf"?"file-type-pdf":"external-link"}`} style={{fontSize:22,color:"var(--blue)"}}/></div>}
               <div style={{padding:"10px 12px"}}>
                 <div style={{fontSize:12,fontWeight:500,marginBottom:3}}>{r.title}</div>
