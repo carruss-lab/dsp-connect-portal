@@ -41,6 +41,25 @@ function calcScore(p,pipeline){
   return Math.min(s,100);
 }
 
+
+function detectType(url="",typeHint=""){
+  if(typeHint==="video")return"video";
+  const u=url.toLowerCase();
+  if(u.includes("youtube.com")||u.includes("youtu.be"))return"youtube";
+  if(u.includes("vimeo.com"))return"vimeo";
+  if(u.endsWith(".pdf")||u.includes("drive.google.com"))return"pdf";
+  if(typeHint==="pdf")return"pdf";
+  return"link";
+}
+function getYouTubeId(url=""){
+  const m=url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/);
+  return m?m[1]:null;
+}
+function getVimeoId(url=""){
+  const m=url.match(/vimeo\.com\/(\d+)/);
+  return m?m[1]:null;
+}
+
 // ── DESIGN TOKENS ─────────────────────────────────────────────────────────
 const S = {
   card: {background:"var(--ink2)",border:"0.5px solid var(--line2)",borderRadius:"var(--r-lg)"},
@@ -96,7 +115,7 @@ function CardHead({title,sub,action,border=true}){
   </div>;
 }
 
-function Bar({pct,color="var(--blue-lt)"}){
+function Bar({pct,color="var(--blue)"}){
   return <div style={{height:3,background:"var(--line2)",borderRadius:2,overflow:"hidden"}}>
     <div style={{height:"100%",width:`${Math.min(pct||0,100)}%`,background:color,borderRadius:2,transition:"width 0.6s ease"}}/>
   </div>;
@@ -104,7 +123,7 @@ function Bar({pct,color="var(--blue-lt)"}){
 
 function Btn({onClick,children,variant="ghost",size="md",disabled}){
   const variants={
-    primary:{background:"var(--blue)",color:"var(--white)",border:"none",fontWeight:500},
+    primary:{background:"var(--blue)",color:"#fff",border:"none",fontWeight:500},
     success:{background:"var(--green-bg)",color:"var(--green)",border:"0.5px solid rgba(29,184,122,0.25)"},
     danger:{background:"var(--red-bg)",color:"var(--red)",border:"0.5px solid rgba(217,79,79,0.25)"},
     ghost:{background:"transparent",color:"var(--text2)",border:"0.5px solid var(--line3)"},
@@ -139,6 +158,45 @@ function Field({label,children,full}){
   return <div style={full?{gridColumn:"1/-1"}:{}}>
     <label style={{...S.label,display:"block",marginBottom:6}}>{label}</label>
     {children}
+  </div>;
+}
+
+
+function ResourceEmbed({resource,onClose}){
+  const type=detectType(resource.url||"",resource.type);
+  const ytId=type==="youtube"?getYouTubeId(resource.url||""):null;
+  const viId=type==="vimeo"?getVimeoId(resource.url||""):null;
+  return <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:2000,padding:24}}>
+    <div style={{...S.card,width:"100%",maxWidth:900,maxHeight:"90vh",display:"flex",flexDirection:"column",overflow:"hidden"}}>
+      <div style={{padding:"13px 16px",borderBottom:"0.5px solid var(--line)",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0}}>
+        <div><div style={{fontSize:14,fontWeight:500}}>{resource.title}</div>{resource.description&&<div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>{resource.description}</div>}</div>
+        <Btn onClick={onClose} variant="ghost" size="sm"><i className="ti ti-x" style={{fontSize:13}}/></Btn>
+      </div>
+      <div style={{flex:1,overflow:"auto",background:"var(--bg2)"}}>
+        {ytId&&<div style={{position:"relative",paddingBottom:"56.25%",height:0}}><iframe src={"https://www.youtube.com/embed/"+ytId+"?rel=0&modestbranding=1"} style={{position:"absolute",top:0,left:0,width:"100%",height:"100%",border:"none"}} allowFullScreen title={resource.title}/></div>}
+        {viId&&<div style={{position:"relative",paddingBottom:"56.25%",height:0}}><iframe src={"https://player.vimeo.com/video/"+viId+"?byline=0&portrait=0"} style={{position:"absolute",top:0,left:0,width:"100%",height:"100%",border:"none"}} allowFullScreen title={resource.title}/></div>}
+        {!ytId&&!viId&&resource.url&&<div style={{padding:24,textAlign:"center"}}><i className={"ti ti-"+(type==="pdf"?"file-type-pdf":"external-link")} style={{fontSize:40,color:"var(--blue)",display:"block",marginBottom:14}}/><div style={{fontSize:13,color:"var(--text2)",marginBottom:16}}>{type==="pdf"?"PDF document":"External resource"}</div><a href={resource.url} target="_blank" rel="noreferrer" style={{textDecoration:"none"}}><Btn variant="primary">Open resource →</Btn></a></div>}
+      </div>
+    </div>
+  </div>;
+}
+
+function ResourceCard({resource,onClick}){
+  const type=detectType(resource.url||"",resource.type);
+  const ytId=type==="youtube"?getYouTubeId(resource.url||""):null;
+  return <div onClick={onClick} style={{...S.card,cursor:"pointer",overflow:"hidden",transition:"box-shadow 0.15s"}} onMouseEnter={e=>e.currentTarget.style.boxShadow="0 4px 12px rgba(0,0,0,0.10)"} onMouseLeave={e=>e.currentTarget.style.boxShadow="0 1px 3px rgba(0,0,0,0.04)"}>
+    {ytId?<div style={{position:"relative",paddingBottom:"48%",background:"#000",overflow:"hidden"}}>
+      <img src={"https://img.youtube.com/vi/"+ytId+"/mqdefault.jpg"} alt={resource.title} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",opacity:0.85}}/>
+      <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}><div style={{width:44,height:44,background:"rgba(255,0,0,0.9)",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center"}}><i className="ti ti-player-play-filled" style={{fontSize:18,color:"#fff",marginLeft:2}}/></div></div>
+    </div>:<div style={{height:80,background:"var(--bg2)",display:"flex",alignItems:"center",justifyContent:"center",borderBottom:"0.5px solid var(--line)"}}><i className={"ti ti-"+(type==="pdf"?"file-type-pdf":type==="video"?"player-play":"external-link")} style={{fontSize:32,color:"var(--blue)"}}/></div>}
+    <div style={{padding:"12px 14px"}}>
+      <div style={{fontSize:13,fontWeight:500,marginBottom:3}}>{resource.title}</div>
+      {resource.description&&<div style={{fontSize:11,color:"var(--text3)",marginBottom:5,lineHeight:1.5}}>{resource.description}</div>}
+      <div style={{display:"flex",alignItems:"center",gap:6,marginTop:4}}>
+        <span style={S.pill("var(--blue-bg)","var(--blue)")}>{type==="youtube"?"YouTube":type==="vimeo"?"Vimeo":type.toUpperCase()}</span>
+        <span style={{fontSize:10,color:"var(--text3)"}}>{(resource.created_at||"").slice(0,10)}</span>
+      </div>
+    </div>
   </div>;
 }
 
@@ -334,6 +392,7 @@ function PartnerApp({partner,onLogout}){
   const[newTicket,setNewTicket]=useState({type:"Client Issue",subject:"",details:""});
   const[showTicket,setShowTicket]=useState(false);
   const[payView,setPayView]=useState("all");
+  const[activeResource,setActiveResource]=useState(null);
 
   useEffect(()=>{
     Promise.all([
@@ -664,23 +723,12 @@ function PartnerApp({partner,onLogout}){
       </div>}
 
       {["training","sops","documents"].includes(view)&&<div>
-        <PH title={view==="training"?"Training":view==="sops"?"SOPs":"Documents"}/>
+        {activeResource&&<ResourceEmbed resource={activeResource} onClose={()=>setActiveResource(null)}/>}
+        <PH title={view==="training"?"Training":view==="sops"?"SOPs":"Documents"} sub={view==="training"?"Click any resource to open it":""}/>
         {resources.filter(r=>r.category===view).length===0
           ?<Empty icon="file-description" title="No resources yet" sub="Admin will upload materials here shortly."/>
-          :<div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:12}}>
-            {resources.filter(r=>r.category===view).map(r=><Card key={r.id} style={{padding:16}}>
-              <div style={{display:"flex",alignItems:"flex-start",gap:12}}>
-                <div style={{width:36,height:36,background:"var(--blue-bg)",borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                  <i className={`ti ti-${r.type==="video"?"player-play":r.type==="article"?"article":"file-text"}`} style={{fontSize:16,color:"var(--blue-lt)"}}/>
-                </div>
-                <div style={{flex:1}}>
-                  <div style={{fontSize:13,fontWeight:500,color:"var(--text)",marginBottom:3}}>{r.title}</div>
-                  <div style={{fontSize:10,color:"var(--text3)",letterSpacing:"0.3px",textTransform:"uppercase"}}>{r.type} · {(r.created_at||"").slice(0,10)}</div>
-                  {r.description&&<div style={{fontSize:12,color:"var(--text3)",marginTop:6}}>{r.description}</div>}
-                  {r.url&&<a href={r.url} target="_blank" rel="noreferrer" style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:"var(--blue-lt)",marginTop:8,textDecoration:"none"}}><i className="ti ti-external-link" style={{fontSize:11}}/>Open resource</a>}
-                </div>
-              </div>
-            </Card>)}
+          :<div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
+            {resources.filter(r=>r.category===view).map(r=><ResourceCard key={r.id} resource={r} onClick={()=>setActiveResource(r)}/>)}
           </div>}
       </div>}
 

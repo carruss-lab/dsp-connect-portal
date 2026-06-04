@@ -3,36 +3,40 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --ink:       #08090C;
-  --ink2:      #0F1117;
-  --ink3:      #161921;
-  --ink4:      #1E2130;
-  --line:      rgba(255,255,255,0.055);
-  --line2:     rgba(255,255,255,0.09);
-  --line3:     rgba(255,255,255,0.14);
-  --blue:      #2B1FE8;
-  --blue-lt:   #4B40FF;
-  --blue-bg:   rgba(43,31,232,0.12);
-  --blue-bg2:  rgba(43,31,232,0.20);
-  --text:      #E4E6EC;
-  --text2:     #8B92A8;
-  --text3:     #4A5068;
-  --green:     #1DB87A;
-  --green-bg:  rgba(29,184,122,0.10);
-  --red:       #D94F4F;
-  --red-bg:    rgba(217,79,79,0.10);
-  --amber:     #D4871A;
-  --amber-bg:  rgba(212,135,26,0.10);
+  --bg:        #FFFFFF;
+  --bg2:       #F5F6F8;
+  --bg3:       #ECEEF2;
+  --bg4:       #E2E4EA;
+  --ink:       #0D0F1A;
+  --ink2:      #1A1D2E;
+  --ink3:      #2A2D3E;
+  --line:      rgba(0,0,0,0.07);
+  --line2:     rgba(0,0,0,0.11);
+  --line3:     rgba(0,0,0,0.16);
+  --blue:      #1A14D4;
+  --blue-lt:   #3528F5;
+  --blue-bg:   rgba(26,20,212,0.07);
+  --blue-bg2:  rgba(26,20,212,0.13);
+  --text:      #0D0F1A;
+  --text2:     #4A4E68;
+  --text3:     #8A8EA8;
+  --green:     #0F7A52;
+  --green-bg:  rgba(15,122,82,0.08);
+  --red:       #B83232;
+  --red-bg:    rgba(184,50,50,0.08);
+  --amber:     #9A5F0A;
+  --amber-bg:  rgba(154,95,10,0.08);
   --white:     #FFFFFF;
   --r:         5px;
   --r-lg:      8px;
   --font:      'Inter', -apple-system, sans-serif;
   --mono:      'IBM Plex Mono', monospace;
+  --sidebar-w: 200px;
 }
 
 html, body, #root {
   height: 100%;
-  background: var(--ink);
+  background: var(--bg2);
   color: var(--text);
   font-family: var(--font);
   font-size: 13px;
@@ -44,7 +48,7 @@ html, body, #root {
 input, select, textarea, button { font-family: var(--font); font-size: 13px; }
 
 input, select, textarea {
-  background: var(--ink3);
+  background: var(--bg);
   border: 0.5px solid var(--line3);
   border-radius: var(--r);
   color: var(--text);
@@ -54,15 +58,15 @@ input, select, textarea {
   transition: border-color 0.12s, box-shadow 0.12s;
 }
 input:focus, select:focus, textarea:focus {
-  border-color: var(--blue-lt);
+  border-color: var(--blue);
   box-shadow: 0 0 0 3px var(--blue-bg);
 }
 input::placeholder, textarea::placeholder { color: var(--text3); }
-select option { background: var(--ink3); color: var(--text); }
+select option { background: var(--bg); color: var(--text); }
 
 ::-webkit-scrollbar { width: 3px; height: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--line3); border-radius: 2px; }
 
-@keyframes spin  { to { transform: rotate(360deg); } }
-@keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+@keyframes spin   { to { transform: rotate(360deg); } }
+@keyframes fadeUp { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
