@@ -4,12 +4,19 @@
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#0A0C10" />
+    <meta name="theme-color" content="#F5F6F8" />
     <title>DSP Connect · Partner Portal</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.31.0/css/tabler-icons.min.css"/>
   </head>
-  <body>
+  <body style="background:#F5F6F8">
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
+    <script>
+      // Disable Vercel toolbar
+      window.__vercel_toolbar = false;
+      if (window.parent !== window) {
+        try { window.parent.postMessage({type:'disable-vercel-toolbar'},'*'); } catch(e){}
+      }
+    </script>
   </body>
 </html>
