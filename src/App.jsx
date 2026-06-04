@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "./supabase";
+import { Tip, HelpDrawer, HelpBtn, GlobalHelpBtn } from "./help";
 import { sendWelcomeEmail, sendOnboardingCompleteEmail, sendClientApprovedEmail, sendPayoutEmail, sendTicketReplyEmail } from "./emails";
 
 const REV_RATE=0.10,MIN_AUM=5000000;
@@ -281,21 +282,6 @@ function Login({onLogin}){
 }
 
 
-function Tip({text,children}){
-  const[show,setShow]=useState(false);
-  return <span style={{position:"relative",display:"inline-flex",alignItems:"center",gap:4}}>
-    {children}
-    <span
-      onMouseEnter={()=>setShow(true)}
-      onMouseLeave={()=>setShow(false)}
-      style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:14,height:14,borderRadius:"50%",background:"var(--bg3)",color:"var(--text3)",fontSize:9,fontWeight:700,cursor:"help",flexShrink:0,border:"0.5px solid var(--line3)",fontFamily:"var(--font)"}}>?</span>
-    {show&&<span style={{position:"absolute",bottom:"calc(100% + 6px)",left:"50%",transform:"translateX(-50%)",background:"var(--ink2,#1A1D2E)",color:"#fff",fontSize:11,lineHeight:1.5,padding:"7px 10px",borderRadius:6,whiteSpace:"pre-wrap",maxWidth:220,minWidth:120,zIndex:999,boxShadow:"0 4px 16px rgba(0,0,0,0.2)",pointerEvents:"none",textAlign:"left"}}>
-      {text}
-      <span style={{position:"absolute",top:"100%",left:"50%",transform:"translateX(-50%)",borderLeft:"5px solid transparent",borderRight:"5px solid transparent",borderTop:"5px solid #1A1D2E"}}/>
-    </span>}
-  </span>;
-}
-
 function Row({k,v}){return <div style={{display:"flex",gap:14,padding:"8px 0",borderBottom:"0.5px solid var(--line)",fontSize:13}}><span style={{...S.label,minWidth:155,flexShrink:0,paddingTop:1}}>{k}</span><span style={{color:"var(--text)"}}>{v}</span></div>;}
 
 // ── ONBOARDING ────────────────────────────────────────────────────────────────
@@ -416,6 +402,7 @@ function PartnerApp({partner,onLogout}){
   const[showTicket,setShowTicket]=useState(false);
   const[payView,setPayView]=useState("all");
   const[activeResource,setActiveResource]=useState(null);
+  const[helpTopic,setHelpTopic]=useState(null);
 
   useEffect(()=>{
     Promise.all([
@@ -483,21 +470,22 @@ function PartnerApp({partner,onLogout}){
     <div style={{display:"flex",alignItems:"center",gap:9}}><Avatar name={partner.name} size={30}/>
     <div><div style={{fontSize:12,fontWeight:500}}>{(partner.name||"").split(" ")[0]}</div><div style={{fontSize:10,color:"var(--text3)"}}>{partner.agency||partner.vertical}</div></div>
     </div></div></div>;
-  const sideBottom=<div><div style={{fontFamily:"var(--mono)",fontSize:10,color:"var(--text3)",marginBottom:7}}>Day {days}</div>
+  const sideBottom=<div><GlobalHelpBtn setHelp={setHelpTopic}/><div style={{fontFamily:"var(--mono)",fontSize:10,color:"var(--text3)",marginBottom:7}}>Day {days}</div>
     <button onClick={onLogout} style={{fontSize:11,color:"var(--text3)",background:"none",border:"none",cursor:"pointer",display:"flex",alignItems:"center",gap:6,padding:0,fontFamily:"var(--font)"}}><i className="ti ti-logout" style={{fontSize:12}}/>Sign out</button></div>;
 
   if(loading)return <div style={{display:"flex",minHeight:"100vh"}}><Sidebar groups={PNAV} active={view} onSelect={setView} top={sideTop} bottom={sideBottom}/><div style={{flex:1}}><Spinner/></div></div>;
 
   const wrap=ch=><div style={{flex:1,overflowY:"auto",padding:22,background:"var(--bg2)"}}>{ch}</div>;
-  const ph=(t,s)=><div style={{marginBottom:20}}><div style={{fontSize:18,fontWeight:500,marginBottom:2}}>{t}</div>{s&&<div style={{fontSize:11,color:"var(--text3)"}}>{s}</div>}</div>;
+  const ph=(t,s,action)=><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}><div><div style={{fontSize:18,fontWeight:500,marginBottom:2}}>{t}</div>{s&&<div style={{fontSize:11,color:"var(--text3)"}}>{s}</div>}</div>{action&&<div style={{marginLeft:12,flexShrink:0}}>{action}</div>}</div>;
 
   return <div style={{display:"flex",minHeight:"100vh",background:"var(--bg2)"}}>
+    {helpTopic&&<HelpDrawer topic={helpTopic} onClose={()=>setHelpTopic(null)}/>}
     {activeResource&&<ResourceEmbed resource={activeResource} onClose={()=>setActiveResource(null)}/>}
     <Sidebar groups={PNAV} active={view} onSelect={setView} top={sideTop} bottom={sideBottom}/>
     {wrap(<>
 
     {view==="dashboard"&&<div>
-      {ph("Dashboard",`${partner.vertical} · Day ${days}`)}
+      {ph("Dashboard",`${partner.vertical} · Day ${days}`,<HelpBtn topic="dashboard" setHelp={setHelpTopic}/>)}
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:16}}>
         <KPI label={<Tip text={"Your total monthly ad spend under management across all Active clients. Only clients in Active status count toward your compensation."}>Active AUM</Tip>} value={fmtK(totalAUM)} sub={`${active.length} active clients`}/>
         <KPI label={<Tip text={"Your monthly cash compensation — 10% of your total Active AUM. Paid monthly after DSP Connect collects from advertisers."}>Monthly comp</Tip>} value={fmt$(comp)} sub="10% of active AUM" accent="green"/>
@@ -551,7 +539,7 @@ function PartnerApp({partner,onLogout}){
 
     {(view==="brand-clients"||view==="agency-clients")&&<div>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
-        {ph(view==="brand-clients"?"Brand Clients":"Agency Clients",view==="brand-clients"?"Direct advertisers under management":"Agencies and their managed spend")}
+        {ph(view==="brand-clients"?"Brand Clients":"Agency Clients",view==="brand-clients"?"Direct advertisers under management":"Agencies and their managed spend",<HelpBtn topic="clients" setHelp={setHelpTopic}/>)}
         <Btn onClick={()=>{setClientType(view==="brand-clients"?"brand":"agency");setShowAdd(true);}} variant="primary">+ Add {view==="brand-clients"?"client":"agency"}</Btn>
       </div>
       {showAdd&&<BriefForm type={view==="brand-clients"?"brand":"agency"} step={briefStep} setStep={setBriefStep} nc={nc} setNc={setNc} brief={brief} setBrief={setBrief} onNext={()=>startBrief(view==="brand-clients"?"brand":"agency")} onSubmit={submitBrief} onCancel={resetAdd}/>}
@@ -573,7 +561,7 @@ function PartnerApp({partner,onLogout}){
     </div>}
 
     {view==="pipeline"&&<div>
-      {ph("Pipeline","All clients by stage — move a client forward using the dropdown on each card")}
+      {ph("Pipeline","All clients by stage — move a client forward using the dropdown on each card",<HelpBtn topic="pipeline" setHelp={setHelpTopic}/>)}
       {["brand","agency"].map(type=><div key={type} style={{marginBottom:24}}>
         <div style={{...S.label,marginBottom:8}}>{type==="brand"?"Brand":"Agency"} clients <span style={{fontFamily:"var(--mono)"}}>{pipeline.filter(c=>c.type===type).length}</span></div>
         <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:8}}>
@@ -595,7 +583,7 @@ function PartnerApp({partner,onLogout}){
     </div>}
 
     {view==="compensation"&&<div>
-      {ph("Compensation","Cash Compensation Policy (Exhibit B) · 10% of Active AUM")}
+      {ph("Compensation","Cash Compensation Policy (Exhibit B) · 10% of Active AUM",<HelpBtn topic="compensation" setHelp={setHelpTopic}/>)}
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:16}}>
         <KPI label={<Tip text={"Total monthly ad spend across all your Active clients. This is the base for your 10% compensation calculation."}>Active AUM</Tip>} value={fmtK(totalAUM)} sub="Monthly managed spend"/>
         <KPI label={<Tip text={"10% of your Active AUM. Paid monthly after DSP Connect collects advertiser funds."}>Monthly comp</Tip>} value={fmt$(comp)} accent="green"/>
@@ -648,7 +636,7 @@ function PartnerApp({partner,onLogout}){
     </div>}
 
     {view==="equity"&&<div>
-      {ph("Ownership","Equity Vesting, Performance & Acceleration Policy (Exhibit A)")}
+      {ph("Ownership","Equity Vesting, Performance & Acceleration Policy (Exhibit A)",<HelpBtn topic="equity" setHelp={setHelpTopic}/>)}
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:16}}>
         <KPI label={<Tip text={"Your current LLC membership interest percentage. Vests after 1 year if you hit $5M AUM. Maximum 15% in Year 1."}>Ownership stake</Tip>} value={`${eq.total.toFixed(2)}%`} accent="blue"/>
         <KPI label={<Tip text={"To qualify for equity, you must reach $5M in annual AUM within your first 12 months. Until then, equity is held in reserve."}>Vesting status</Tip>} value={eq.qualifies?"Qualified":"Pending"} sub={eq.qualifies?"$5M AUM met":"$5M AUM required"} accent={eq.qualifies?"green":undefined}/>
@@ -684,7 +672,7 @@ function PartnerApp({partner,onLogout}){
     </div>}
 
     {["training","sops","documents"].includes(view)&&<div>
-      {ph(view==="training"?"Training":view==="sops"?"SOPs":"Documents",view==="training"?"Click any resource to open it":"")}
+      {ph(view==="training"?"Training":view==="sops"?"SOPs":"Documents",view==="training"?"Click any resource to open it":"",<HelpBtn topic="resources" setHelp={setHelpTopic}/>)}
       {!resources.filter(r=>r.category===view).length?<Empty icon="file-description" title="No resources yet" sub="Admin will upload materials here shortly."/>
       :<div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
         {resources.filter(r=>r.category===view).map(r=><ResourceCard key={r.id} resource={r} onClick={()=>setActiveResource(r)}/>)}
@@ -693,7 +681,7 @@ function PartnerApp({partner,onLogout}){
 
     {view==="support"&&<div>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
-        {ph("Help Desk","Submit issues to the DSP Connect operations team — we respond within 1 business day")}
+        {ph("Help Desk","Submit issues to the DSP Connect operations team — we respond within 1 business day",<HelpBtn topic="support" setHelp={setHelpTopic}/>)}
         <Btn onClick={()=>setShowTicket(true)} variant="primary">+ New ticket</Btn>
       </div>
       {showTicket&&<Card style={{marginBottom:14}}>
@@ -850,7 +838,7 @@ function AdminApp({onLogout}){
   if(loading)return <div style={{display:"flex",minHeight:"100vh"}}><Sidebar groups={navGroups} active={view} onSelect={setView} top={sideTop} bottom={sideBottom}/><div style={{flex:1}}><Spinner/></div></div>;
 
   const wrap=ch=><div style={{flex:1,overflowY:"auto",padding:22,background:"var(--bg2)"}}>{ch}</div>;
-  const ph=(t,s)=><div style={{marginBottom:20}}><div style={{fontSize:18,fontWeight:500,marginBottom:2}}>{t}</div>{s&&<div style={{fontSize:11,color:"var(--text3)"}}>{s}</div>}</div>;
+  const ph=(t,s,action)=><div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}><div><div style={{fontSize:18,fontWeight:500,marginBottom:2}}>{t}</div>{s&&<div style={{fontSize:11,color:"var(--text3)"}}>{s}</div>}</div>{action&&<div style={{marginLeft:12,flexShrink:0}}>{action}</div>}</div>;
 
   return <div style={{display:"flex",minHeight:"100vh",background:"var(--bg2)"}}>
     <Sidebar groups={navGroups} active={view} onSelect={setView} top={sideTop} bottom={sideBottom}/>
