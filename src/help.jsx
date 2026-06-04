@@ -8,7 +8,7 @@ export const HELP = {
     sections: [
       {
         heading: "Active AUM",
-        body: "AUM = Assets Under Management — your total monthly ad spend across all Active clients. This is the number your 10% compensation is calculated from. Only clients in Active status count. Clients in Lead, Review, or Approved do NOT count yet."
+        body: "AUM = Ad Spend Under Management — your total monthly ad spend across all Active clients. This is the number your 10% compensation is calculated from. Only clients in Active status count. Clients in Lead, Review, or Approved do NOT count yet."
       },
       {
         heading: "Monthly Compensation",
