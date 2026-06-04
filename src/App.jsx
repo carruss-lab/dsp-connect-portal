@@ -487,9 +487,9 @@ function PartnerApp({partner,onLogout}){
     {view==="dashboard"&&<div>
       {ph("Dashboard",`${partner.vertical} · Day ${days}`,<HelpBtn topic="dashboard" setHelp={setHelpTopic}/>)}
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:16}}>
-        <KPI label={<Tip text={"Your total monthly ad spend under management across all Active clients. Only clients in Active status count toward your compensation."}>Active AUM</Tip>} value={fmtK(totalAUM)} sub={`${active.length} active clients`}/>
-        <KPI label={<Tip text={"Your monthly cash compensation — 10% of your total Active AUM. Paid monthly after DSP Connect collects from advertisers."}>Monthly comp</Tip>} value={fmt$(comp)} sub="10% of active AUM" accent="green"/>
-        <KPI label={<Tip text={"Total payouts recorded for you this month by DSP Connect admin. Check Compensation for full history."}>Paid this month</Tip>} value={fmt$(paidMonth)} accent="blue"/>
+        <KPI label="Active AUM" value={fmtK(totalAUM)} sub={`${active.length} active clients`}/>
+        <KPI label="Monthly comp" value={fmt$(comp)} sub="10% of active AUM" accent="green"/>
+        <KPI label="Paid this month" value={fmt$(paidMonth)} accent="blue"/>
         <div style={{...S.card,padding:"16px 18px"}}>
           <div style={{...S.label,marginBottom:8}}><Tip text={"Composite score 0–100 based on your AUM, number of clients, and active client count. Higher score = stronger partner standing."}>Partner score</Tip></div>
           <div style={{fontFamily:"var(--mono)",fontSize:22,fontWeight:500,color:score>=70?"var(--green)":score>=40?"var(--amber)":"var(--red)",lineHeight:1}}>{score}<span style={{fontSize:12,color:"var(--text3)",fontFamily:"var(--font)"}}>/ 100</span></div>
@@ -507,7 +507,7 @@ function PartnerApp({partner,onLogout}){
           </div>
         </Card>
         <Card>
-          <CardHead title={<Tip text={"You have 3 windows to earn bonus equity on top of your 5% base grant. Each window has AUM targets — hit them to earn up to 10% extra. Missed windows are permanently forfeited."}>90-Day Acceleration</Tip>} sub={`Day ${Math.min(days,90)} of 90`}/>
+          <CardHead title="90-Day Acceleration" sub={`Day ${Math.min(days,90)} of 90`}/>
           <div style={{padding:12}}>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:12}}>
               {[{l:"Day 1–30",done:days>30,on:days<=30,award:(D30.find(t=>(partner.day30_aum||0)>=t.aum)||{award:0}).award,max:3},
@@ -585,10 +585,10 @@ function PartnerApp({partner,onLogout}){
     {view==="compensation"&&<div>
       {ph("Compensation","Cash Compensation Policy (Exhibit B) · 10% of Active AUM",<HelpBtn topic="compensation" setHelp={setHelpTopic}/>)}
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:16}}>
-        <KPI label={<Tip text={"Total monthly ad spend across all your Active clients. This is the base for your 10% compensation calculation."}>Active AUM</Tip>} value={fmtK(totalAUM)} sub="Monthly managed spend"/>
-        <KPI label={<Tip text={"10% of your Active AUM. Paid monthly after DSP Connect collects advertiser funds."}>Monthly comp</Tip>} value={fmt$(comp)} accent="green"/>
-        <KPI label={<Tip text={"Total payouts recorded for you this month by DSP Connect admin. Check Compensation for full history."}>Paid this month</Tip>} value={fmt$(paidMonth)} accent="blue"/>
-        <KPI label={<Tip text={"All payouts ever recorded on your account since your start date."}>Total paid (lifetime)</Tip>} value={fmt$(paidTotal)} accent="green"/>
+        <KPI label="Active AUM" value={fmtK(totalAUM)} sub="Monthly managed spend"/>
+        <KPI label="Monthly comp" value={fmt$(comp)} accent="green"/>
+        <KPI label="Paid this month" value={fmt$(paidMonth)} accent="blue"/>
+        <KPI label="Total paid (lifetime)" value={fmt$(paidTotal)} accent="green"/>
       </div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
         <Card>
@@ -638,9 +638,9 @@ function PartnerApp({partner,onLogout}){
     {view==="equity"&&<div>
       {ph("Ownership","Equity Vesting, Performance & Acceleration Policy (Exhibit A)",<HelpBtn topic="equity" setHelp={setHelpTopic}/>)}
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:16}}>
-        <KPI label={<Tip text={"Your current LLC membership interest percentage. Vests after 1 year if you hit $5M AUM. Maximum 15% in Year 1."}>Ownership stake</Tip>} value={`${eq.total.toFixed(2)}%`} accent="blue"/>
-        <KPI label={<Tip text={"To qualify for equity, you must reach $5M in annual AUM within your first 12 months. Until then, equity is held in reserve."}>Vesting status</Tip>} value={eq.qualifies?"Qualified":"Pending"} sub={eq.qualifies?"$5M AUM met":"$5M AUM required"} accent={eq.qualifies?"green":undefined}/>
-        <KPI label={<Tip text={"Additional annual AUM you need to reach the $5M equity qualification threshold."}>AUM to qualify</Tip>} value={eq.qualifies?"✓ Met":fmtK(Math.max(0,5000000-(partner.annual_aum||0)))} sub={eq.qualifies?"":"remaining"}/>
+        <KPI label="Ownership stake" value={`${eq.total.toFixed(2)}%`} accent="blue"/>
+        <KPI label="Vesting status" value={eq.qualifies?"Qualified":"Pending"} sub={eq.qualifies?"$5M AUM met":"$5M AUM required"} accent={eq.qualifies?"green":undefined}/>
+        <KPI label="AUM to qualify" value={eq.qualifies?"✓ Met":fmtK(Math.max(0,5000000-(partner.annual_aum||0)))} sub={eq.qualifies?"":"remaining"}/>
         <KPI label="Max equity Yr 1" value="15.00%" sub="5% base + 10% acceleration"/>
       </div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>

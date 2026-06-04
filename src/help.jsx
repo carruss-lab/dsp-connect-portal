@@ -190,16 +190,17 @@ const S_LABEL = {
 
 export function Tip({ text, children }) {
   const [show, setShow] = useState(false);
+  const ref = useState(null);
   return (
     <span style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 4 }}>
       {children}
       <span
         onMouseEnter={() => setShow(true)}
         onMouseLeave={() => setShow(false)}
-        style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 14, height: 14, borderRadius: "50%", background: "var(--bg3)", color: "var(--text3)", fontSize: 9, fontWeight: 700, cursor: "help", flexShrink: 0, border: "0.5px solid var(--line3)", fontFamily: "var(--font)", position: "relative", zIndex: 1 }}
+        style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 15, height: 15, borderRadius: "50%", background: "var(--blue-bg)", color: "var(--blue)", fontSize: 9, fontWeight: 700, cursor: "help", flexShrink: 0, border: "0.5px solid rgba(26,20,212,0.2)", fontFamily: "var(--font)" }}
       >?</span>
       {show && (
-        <span style={{ position: "fixed", background: "#1A1D2E", color: "#fff", fontSize: 11, lineHeight: 1.5, padding: "8px 11px", borderRadius: 6, whiteSpace: "normal", maxWidth: 240, minWidth: 150, zIndex: 99999, boxShadow: "0 4px 20px rgba(0,0,0,0.25)", pointerEvents: "none", textAlign: "left", marginTop: -40, marginLeft: -100 }}>
+        <span style={{ position: "absolute", bottom: "calc(100% + 8px)", left: 0, background: "#1A1D2E", color: "#fff", fontSize: 11, lineHeight: 1.6, padding: "9px 12px", borderRadius: 6, whiteSpace: "normal", maxWidth: 260, minWidth: 160, zIndex: 99999, boxShadow: "0 4px 20px rgba(0,0,0,0.3)", pointerEvents: "none", textAlign: "left", display: "block" }}>
           {text}
         </span>
       )}
