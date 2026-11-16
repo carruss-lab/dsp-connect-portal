@@ -85,7 +85,10 @@ export async function POST(req: Request) {
   if (client) {
     try {
       const origin = new URL(req.url).origin;
-      const session = await client.checkout.sessions.create({
+      // An ad budget is a prepayment, not a product Stripe sells on our behalf,
+      // so Stripe's Managed Payments is switched off for this payment.
+      const params = {
+        managed_payments: { enabled: false },
         mode: "payment",
         client_reference_id: id,
         customer_email: email,
@@ -100,7 +103,8 @@ export async function POST(req: Request) {
         metadata: { lead_id: id },
         success_url: `${origin}/open-account/thanks?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${origin}/open-account`,
-      });
+      } as unknown as Parameters<typeof client.checkout.sessions.create>[0];
+      const session = await client.checkout.sessions.create(params);
       if (session.url) return NextResponse.json({ ok: true, pay: session.url });
     } catch (err) {
       console.error("checkout session failed", err);
