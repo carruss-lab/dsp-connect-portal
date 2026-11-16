@@ -1,7 +1,7 @@
 import { SETUP_DAYS } from "./site";
 
 // Sends through Resend. Does nothing until RESEND_API_KEY is set, so forms keep working without it.
-const FROM = process.env.EMAIL_FROM || "DSP Connect <support@getdspconnect.com>";
+const FROM = process.env.EMAIL_FROM || "DSP Connect <dspsupport@getdspconnect.com>";
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
 async function send(to: string, subject: string, html: string, replyTo?: string) {
