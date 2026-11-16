@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Footer, Header } from "@/components/Chrome";
+import { Footer, Header, TalkBand } from "@/components/Chrome";
 import LeadForm from "@/components/LeadForm";
 import { SETUP_DAYS, SHARE_PCT } from "@/lib/site";
 import { JsonLd, crumbs } from "@/lib/seo";
@@ -56,6 +56,7 @@ export default function Agencies() {
             ))}
           </div>
         </section>
+        <TalkBand />
       </main>
       <Footer />
     </>

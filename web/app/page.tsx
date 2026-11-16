@@ -3,8 +3,10 @@ import Link from "next/link";
 import { Footer, Header } from "@/components/Chrome";
 import LeadForm from "@/components/LeadForm";
 import { COMPARISONS } from "@/lib/compare";
-import { EXCHANGES, INDUSTRIES, MIN_BUDGET, SETUP_DAYS, SHARE_PCT } from "@/lib/site";
+import { EXCHANGES, MIN_BUDGET, SETUP_DAYS, SHARE_PCT } from "@/lib/site";
 import { JsonLd, faqGraph, siteGraph } from "@/lib/seo";
+import { INDUSTRY_PAGES } from "@/lib/industries";
+import { MEETING_URL } from "@/lib/site";
 
 const STEPS = [
   ["See the demo", "Open a sample account set up for a business like yours, before you spend anything."],
@@ -17,6 +19,12 @@ const SETUP = [
   ["Place your tracking", "So leads and sales from your ads are counted on your own website."],
   ["Review your ads", "Checked against exchange rules so they are approved the first time."],
   ["Build your audience", "Your area, your customers, the apps and sites that fit your business."],
+];
+const TRUST: [string, string, string, string][] = [
+  ["The account itself", "Open the demo and click through every screen you will use, before you give us a card.", "/#market", "Open the demo"],
+  ["A person", "Book a 20-minute call and ask us anything about your market, your ads or the setup.", MEETING_URL, "Book a call"],
+  ["Your way out", "No long-term contract. Cancel any time and your unspent ad budget is refunded.", "/refunds", "Read the refund policy"],
+  ["The terms", "Short, plain client terms. Payment is taken by Stripe; we never see your card details.", "/terms", "Read the client terms"],
 ];
 const FAQ = [
   ["What is the smallest budget I can start with?", `$${MIN_BUDGET}.`],
@@ -130,7 +138,7 @@ export default function Home() {
           <div className="wrap" style={{ display: "flex", flexWrap: "wrap", gap: 32, alignItems: "baseline" }}>
             <h2 className="h3" style={{ fontSize: 20, flex: "1 1 240px" }}>Industries we set up most</h2>
             <div className="chips" style={{ flex: "999 1 560px" }}>
-              {INDUSTRIES.filter((i) => i !== "Other").map((i) => <span className="chip" key={i}>{i}</span>)}
+              {INDUSTRY_PAGES.map((i) => <Link className="chip" key={i.slug} href={`/industries/${i.slug}`} style={{ textDecoration: "none", color: "inherit" }}>{i.name}</Link>)}
             </div>
           </div>
         </section>
@@ -151,6 +159,18 @@ export default function Home() {
           </div>
         </section>
 
+        <section className="section band" style={{ padding: "64px 0" }}>
+          <div className="wrap stack g24">
+            <h2 className="h2" style={{ fontSize: 28 }}>What you can check before you pay.</h2>
+            <div className="grid cols-4">
+              {TRUST.map(([t, d, href, label]) => (
+                <div className="step stack g8" key={t}><h3 className="h3">{t}</h3><p className="p" style={{ fontSize: 14 }}>{d}</p>
+                  {href.startsWith("http") ? <a href={href} target="_blank" rel="noopener" style={{ fontSize: 14 }}>{label}</a> : <Link href={href} style={{ fontSize: 14 }}>{label}</Link>}</div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <section className="section dark" style={{ padding: "72px 0" }}>
           <div className="wrap" style={{ display: "flex", flexWrap: "wrap", gap: 40, alignItems: "center", justifyContent: "space-between" }}>
             <div className="stack g12" style={{ flex: "1 1 480px", minWidth: 0 }}>
@@ -158,7 +178,10 @@ export default function Home() {
               <h2 className="h2">Open your account today. Be live within {SETUP_DAYS} days.</h2>
               <p className="p" style={{ fontSize: 16 }}>Fill in your details, pay your ad budget online, and we set up the rest.</p>
             </div>
-            <Link className="btn btn-white" href="/open-account">Open your account</Link>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+              <Link className="btn btn-white" href="/open-account">Open your account</Link>
+              <a className="btn btn-line" style={{ borderColor: "#fff", color: "#fff" }} href={MEETING_URL} target="_blank" rel="noopener">Book a call first</a>
+            </div>
           </div>
         </section>
 

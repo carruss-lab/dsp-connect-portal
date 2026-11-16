@@ -11,3 +11,11 @@ export const INDUSTRIES = [
   "Home Services", "Franchise", "Hospitality", "Political", "Other",
 ];
 export const LOGIN_URL = process.env.NEXT_PUBLIC_CLIENT_LOGIN_URL || "/open-account";
+
+// Where a visitor books a call with a person.
+export const MEETING_URL = process.env.NEXT_PUBLIC_MEETING_URL || "https://calendly.com/carmichaelruss/dsp-connect-onboarding";
+export const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@mail.getdspconnect.com";
+// The company's mailing address. Shown in the footer, legal pages and reminder emails once set.
+export const BUSINESS_ADDRESS = process.env.NEXT_PUBLIC_BUSINESS_ADDRESS || "";
+// The date the legal pages were last changed.
+export const LEGAL_UPDATED = "November 16, 2026";

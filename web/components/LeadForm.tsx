@@ -1,4 +1,5 @@
 "use client";
+import { track } from "@vercel/analytics";
 import { useEffect, useState } from "react";
 import { INDUSTRIES, MIN_BUDGET, SETUP_DAYS } from "@/lib/site";
 
@@ -19,6 +20,14 @@ export default function LeadForm({ kind, cta }: { kind: Kind; cta: string }) {
     for (const k of ["budget", "formats", "goals", "market", "industry"]) { const v = q.get(k); if (v) o[k] = v.slice(0, 200); }
     if (Object.keys(o).length) setPre(o);
     // A partner's link (?p=CODE) is remembered for this visit so their client is credited to them.
+    // Remember how this visitor first arrived (campaign tags, referring site, first page) for the whole visit.
+    try {
+      if (!sessionStorage.getItem("first_touch")) {
+        const ref = document.referrer && !document.referrer.includes(location.host) ? new URL(document.referrer).hostname : "";
+        const tags = ["utm_source", "utm_medium", "utm_campaign"].map((k) => q.get(k)).filter(Boolean).join("/");
+        sessionStorage.setItem("first_touch", [tags || ref || "direct", location.pathname].join(" | ").slice(0, 180));
+      }
+    } catch {}
     const code = q.get("p");
     if (code && /^[A-Za-z0-9]{4,20}$/.test(code)) { try { sessionStorage.setItem("partner_code", code.toUpperCase()); } catch {} }
   }, []);
@@ -29,16 +38,17 @@ export default function LeadForm({ kind, cta }: { kind: Kind; cta: string }) {
     setState("busy");
     const data = Object.fromEntries(new FormData(e.currentTarget).entries());
     const formats = new FormData(e.currentTarget).getAll("formats").join(", ");
-    let partner_code = "";
-    try { partner_code = sessionStorage.getItem("partner_code") || ""; } catch {}
+    let partner_code = "", first = "";
+    try { partner_code = sessionStorage.getItem("partner_code") || ""; first = sessionStorage.getItem("first_touch") || ""; } catch {}
     try {
       const res = await fetch("/api/lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, formats, terms: data.terms === "on", kind, source: location.pathname, partner_code }),
+        body: JSON.stringify({ ...data, formats, terms: data.terms === "on", kind, source: [first, location.pathname].filter(Boolean).join(" > ").slice(0, 240), partner_code }),
       });
       const out = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(out.error || "Something went wrong. Please try again.");
+      track(kind === "market_check" ? "demo_opened" : kind === "account" ? "signup_started" : "agency_enquiry");
       if (out.pay) { location.assign(out.pay); return; }
       if (kind === "market_check") {
         try { sessionStorage.setItem("demo_ok", "1"); } catch {}
@@ -126,7 +136,7 @@ export default function LeadForm({ kind, cta }: { kind: Kind; cta: string }) {
           </div>
           <label style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 14, color: "var(--body)", lineHeight: 1.5 }}>
             <input type="checkbox" name="terms" required style={{ width: 20, height: 20, marginTop: 2, flexShrink: 0 }} />
-            <span>I agree to the DSP Connect client terms.</span>
+            <span>I agree to the DSP Connect <a href="/terms" target="_blank">client terms</a> and <a href="/refunds" target="_blank">refund policy</a>.</span>
           </label>
         </>
       )}

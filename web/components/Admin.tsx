@@ -5,7 +5,7 @@ import { INDUSTRIES, SETUP_DAYS } from "@/lib/site";
 
 type Lead = {
   id: string; created_at: string; kind: string; email: string; name: string | null; business: string | null; phone: string | null;
-  industry: string | null; market: string | null; budget: number | null; formats: string | null; goals: string | null; monthly_spend: string | null;
+  industry: string | null; market: string | null; budget: number | null; formats: string | null; goals: string | null; monthly_spend: string | null; source: string | null;
   status: string; partner_id: string | null; paid_at: string | null; amount_paid: number | null; setup_due: string | null;
   step_account_at: string | null; step_tracking_at: string | null; step_ads_at: string | null; step_audience_at: string | null; live_at: string | null;
 };
@@ -292,7 +292,7 @@ export default function Admin() {
             <button className="btn btn-line" disabled={busy} onClick={() => tell({ weekly: true })}>Send weekly summaries now</button>
           </div>
         </div>
-        <p className="small">Clients are emailed when a setup step is ticked, when they go live, when their budget runs low, and every Monday with a summary. Managing Partners get a Monday brief on each of their clients. The team gets one list each morning. These run by themselves; the buttons are for running them early. Nothing is ever sent twice.</p>
+        <p className="small">Clients are emailed when a setup step is ticked, when they go live, when their budget runs low, and every Monday with a summary. Someone who starts opening an account and does not pay gets one reminder the next day. Managing Partners get a Monday brief on each of their clients. The team gets one list each morning. These run by themselves; the buttons are for running them early. Nothing is ever sent twice.</p>
         {notices.length === 0 ? <p className="p">No messages yet.</p> : (
           <div className="tablebox"><table>
             <thead><tr><th scope="col">When</th><th scope="col">To</th><th scope="col">Message</th><th scope="col">Result</th></tr></thead>
@@ -306,10 +306,10 @@ export default function Admin() {
       <section className="stack g16">
         <h2 className="h3" style={{ fontSize: 18 }}>Leads not yet paid ({others.length})</h2>
         <div className="tablebox"><table>
-          <thead><tr><th scope="col">When</th><th scope="col">What</th><th scope="col">Who</th><th scope="col">Email</th><th scope="col">Details</th></tr></thead>
+          <thead><tr><th scope="col">When</th><th scope="col">What</th><th scope="col">Who</th><th scope="col">Email</th><th scope="col">Details</th><th scope="col">Came from</th></tr></thead>
           <tbody>{others.map((l) => (
             <tr key={l.id}><th scope="row">{day(l.created_at)}</th><td>{KIND[l.kind] || l.kind}</td><td>{[l.name, l.business].filter(Boolean).join(", ")}</td><td><a href={`mailto:${l.email}`}>{l.email}</a></td>
-              <td>{[l.industry, l.market, l.budget ? usd(l.budget) : "", l.monthly_spend].filter(Boolean).join(" · ")}</td></tr>
+              <td>{[l.industry, l.market, l.budget ? usd(l.budget) : "", l.monthly_spend].filter(Boolean).join(" · ")}</td><td className="small">{l.source}</td></tr>
           ))}</tbody>
         </table></div>
       </section>

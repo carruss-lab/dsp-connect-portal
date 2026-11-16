@@ -146,3 +146,4 @@ button.dm-pill{font:inherit;cursor:pointer}
 .shot img{display:block;width:100%;height:auto}
 .bo-soon{border-color:#B45309;box-shadow:inset 4px 0 0 #B45309}
 .bo-late{border-color:#B42318;box-shadow:inset 4px 0 0 #B42318}
+.footer nav{display:flex;flex-wrap:wrap;gap:8px 18px}.footer nav a{margin-left:0;white-space:nowrap}

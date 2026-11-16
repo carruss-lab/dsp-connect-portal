@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "@fontsource-variable/inter";
 import "@fontsource-variable/jetbrains-mono";
+import { Analytics } from "@vercel/analytics/next";
 import Intercom from "@/components/Intercom";
 import { SITE_URL } from "@/lib/seo";
 import "./globals.css";
@@ -22,6 +23,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body>
         {children}
         <Intercom />
+        <Analytics />
       </body>
     </html>
   );

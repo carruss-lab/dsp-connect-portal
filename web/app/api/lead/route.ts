@@ -56,7 +56,7 @@ export async function POST(req: Request) {
     formats: clean(body.formats, 120),
     goals: clean(body.goals, 2000),
     monthly_spend: clean(body.monthly_spend, 60),
-    source: clean(body.source, 120),
+    source: clean(body.source, 240),
     partner_code: clean(body.partner_code, 20).toUpperCase() || null,
   };
 

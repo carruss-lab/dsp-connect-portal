@@ -1,7 +1,7 @@
 import { emailOn, esc, send, wrap } from "./email";
 import { ensureAttributes, syncPerson } from "./intercom";
 import { secretRpc } from "./server";
-import { LOGIN_URL, SETUP_DAYS } from "./site";
+import { BUSINESS_ADDRESS, LEGAL_ENTITY, LOGIN_URL, MEETING_URL, SETUP_DAYS } from "./site";
 
 // The proactive side: emails to clients at each setup step, a weekly account summary,
 // low-budget warnings, and a daily list for the team. Every message is recorded in the
@@ -14,7 +14,8 @@ type FeedLead = {
   partner_id: string | null; partner_name: string | null; partner_email: string | null;
   spent_total: number; spent_7d: number; last_spend_day: string | null;
 };
-type Feed = { today: string; leads: FeedLead[]; pending_commission: number; due_commission: number; partners_not_ready: string[] };
+type Unpaid = { id: string; email: string; name: string | null; business: string | null; budget: number | null };
+type Feed = { today: string; leads: FeedLead[]; unpaid?: Unpaid[]; pending_commission: number; due_commission: number; partners_not_ready: string[] };
 export type Report = { sent: string[]; failed: string[]; emailOn: boolean };
 
 const TEAM = "00000000-0000-0000-0000-000000000000";
@@ -186,6 +187,19 @@ async function teamDigest(r: Report, f: Feed) {
     `<p>Today's list from the back office:</p><ul>${lines.map((x) => `<li style="margin:6px 0">${x}</li>`).join("")}</ul>`);
 }
 
+// The address links in emails point to: the real site once live, the preview until then.
+const origin = () => (process.env.VERCEL_ENV === "production" || !process.env.VERCEL_BRANCH_URL ? "https://getdspconnect.com" : `https://${process.env.VERCEL_BRANCH_URL}`);
+
+/** One reminder to someone who started opening an account and did not pay. Needs our mailing address, by law. */
+async function finishSignup(r: Report, u: Unpaid) {
+  if (!BUSINESS_ADDRESS) return;
+  await deliver(r, u.id, "lead", "finish_signup", u.email, "Your DSP Connect account is one step from starting",
+    `<p>Hello${u.name ? " " + esc(u.name.split(" ")[0]) : ""},</p><p>You started opening a DSP Connect account${u.business ? ` for ${esc(u.business)}` : ""} and stopped before payment. Nothing has been charged.</p>` +
+    `<p>If you would like to carry on, your ${SETUP_DAYS}-day setup starts the day your ad budget is paid: <a href="${origin()}/open-account">finish opening your account</a>.</p>` +
+    `<p>If you have questions first, <a href="${MEETING_URL}">book a 20-minute call</a> or reply to this email. Our <a href="${origin()}/refunds">refund policy</a> explains what happens if you change your mind later.</p>` +
+    `<p style="color:#5B6577;font-size:12px;margin-top:28px">This is the only reminder we will send. ${esc(LEGAL_ENTITY)}, ${esc(BUSINESS_ADDRESS)}. <a href="${origin()}/unsubscribe?id=${u.id}">Unsubscribe</a>.</p>`);
+}
+
 /** Keeps Intercom's record of a client current, so Fin answers from the same facts the emails use. */
 async function sync(l: FeedLead) {
   const b = budget(l);
@@ -217,6 +231,7 @@ export async function runNotices(opts: { lead?: string; weekly?: boolean } = {})
       r.failed.push(`${l.business || l.email}: ${err instanceof Error ? err.message : "error"}`);
     }
   }
+  if (!opts.lead) for (const u of f.unpaid || []) await finishSignup(r, u).catch((err) => console.error("reminder failed", u.id, err));
   if (!opts.lead && opts.weekly) await partnerBriefs(r, f);
   if (!opts.lead) await teamDigest(r, f);
   return r;
