@@ -1,0 +1,166 @@
+import Link from "next/link";
+import { Footer, Header } from "@/components/Chrome";
+import LeadForm from "@/components/LeadForm";
+import { COMPARISONS } from "@/lib/compare";
+import { EXCHANGES, INDUSTRIES, MIN_BUDGET, SETUP_DAYS, SHARE_PCT } from "@/lib/site";
+
+const STEPS = [
+  ["Check your market", "See how many people you can reach in your area before you spend anything."],
+  ["Tell us about your business", "Fill in one short form online: your goals, your area and the ads you want to run."],
+  ["Pay online", `Agree to the terms and pay your ad budget by card or bank transfer. Budgets start at $${MIN_BUDGET}.`],
+  [`Live within ${SETUP_DAYS} days`, "We set up your account and launch your ads. Log in any time to see views, clicks, leads and spend."],
+];
+const SETUP = [
+  ["Create your account", "Your login, your budget loaded, your reporting ready."],
+  ["Place your tracking", "So leads and sales from your ads are counted on your own website."],
+  ["Review your ads", "Checked against exchange rules so they are approved the first time."],
+  ["Build your audience", "Your area, your customers, the apps and sites that fit your business."],
+];
+const FAQ = [
+  ["What is the smallest budget I can start with?", `$${MIN_BUDGET}.`],
+  ["How long until my ads are running?", `Within ${SETUP_DAYS} days of paying. We use that time to set up your account, tracking, ads and audience for you.`],
+  ["Where do my ads appear?", `On apps and websites reached through ${EXCHANGES} ad exchanges. You can approve or block specific apps and sites.`],
+  ["How do I know it is working?", "You get your own login showing views, clicks and spend, plus tracking on your website that counts leads and sales."],
+  ["How does the campaign improve over time?", "Automatic rules drop the apps and sites that are not performing and move your budget to the ones that are."],
+  ["What does it cost?", "There is no monthly platform fee. Our fee is included in the price of your ads."],
+];
+
+export default function Home() {
+  return (
+    <>
+      <Header />
+      <main>
+        <section className="hero">
+          <div className="wrap">
+            <div className="hero-copy stack g24">
+              <div className="eyebrow">Advertising on apps and websites</div>
+              <h1 className="h1">See your market before you spend a dollar.</h1>
+              <p className="lead" style={{ maxWidth: 560 }}>
+                DSP Connect puts your business in front of local customers on the apps and sites they already use.
+                Check how many you can reach, then start from ${MIN_BUDGET}.
+              </p>
+              <div className="ticks">
+                <span>Start from ${MIN_BUDGET}</span>
+                <span>Live within {SETUP_DAYS} days</span>
+                <span>Done-for-you setup</span>
+                <span>Your own reporting login</span>
+              </div>
+            </div>
+            <div id="market" className="card formcard stack g16" style={{ scrollMarginTop: 90 }}>
+              <div className="stack g8">
+                <h2 className="h3" style={{ fontSize: 18 }}>Check your market</h2>
+                <p className="small">Tell us your industry and area. We email your market report. No card needed.</p>
+              </div>
+              <LeadForm kind="market_check" cta="Show me my market" />
+            </div>
+          </div>
+        </section>
+
+        <section id="how" className="section" style={{ scrollMarginTop: 70, paddingTop: 40 }}>
+          <div className="wrap stack g32">
+            <div className="stack g12" style={{ maxWidth: 680 }}>
+              <h2 className="h2">Done-for-you setup. Live in {SETUP_DAYS} days.</h2>
+              <p className="p" style={{ fontSize: 16 }}>You fill in one form and pay. We build everything else and hand you the keys.</p>
+            </div>
+            <div className="grid cols-4">
+              {STEPS.map(([t, d], i) => (
+                <div className="step stack g8" key={t}>
+                  <div className="num">0{i + 1}</div><h3 className="h3">{t}</h3><p className="p" style={{ fontSize: 14 }}>{d}</p>
+                </div>
+              ))}
+            </div>
+            <div className="card stack g24" style={{ background: "var(--ground)" }}>
+              <h3 className="h3" style={{ fontSize: 16 }}>What we do for you in those {SETUP_DAYS} days</h3>
+              <div className="grid cols-4" style={{ gap: 20 }}>
+                {SETUP.map(([t, d]) => (
+                  <div className="stack" style={{ gap: 4 }} key={t}><div style={{ fontSize: 14, fontWeight: 600 }}>{t}</div><p className="small" style={{ color: "var(--body)" }}>{d}</p></div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="who" className="section band" style={{ scrollMarginTop: 70 }}>
+          <div className="wrap stack g32">
+            <h2 className="h2">Built for two kinds of customer.</h2>
+            <div className="grid cols-2">
+              <article className="card card-strong stack g16">
+                <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
+                  <h3 className="h2" style={{ fontSize: 22 }}>Business owners</h3><span className="mono" style={{ fontSize: 14, color: "var(--body)" }}>from ${MIN_BUDGET}</span>
+                </div>
+                <p className="p">Used to running ads on Facebook or Google? Reach the same customers on the apps and websites they use the rest of the day.</p>
+                <ul className="list">
+                  <li>Account and tracking set up for you</li>
+                  <li>Video, banner and native ads, run by you</li>
+                  <li>Live within {SETUP_DAYS} days of paying</li>
+                </ul>
+                <Link className="btn btn-blue" href="/open-account" style={{ alignSelf: "flex-start" }}>Open your account</Link>
+              </article>
+              <article className="card stack g16">
+                <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
+                  <h3 className="h2" style={{ fontSize: 22 }}>Agencies</h3><span className="mono" style={{ fontSize: 14, color: "var(--body)" }}>{SHARE_PCT}% revenue share</span>
+                </div>
+                <p className="p">Run your clients&apos; campaigns on our platform under a revenue share agreement. Your clients stay yours.</p>
+                <ul className="list">
+                  <li>All your clients in one account, each with their own login</li>
+                  <li>{SHARE_PCT}% of the ad spend you manage</li>
+                  <li>Each client set up within {SETUP_DAYS} days</li>
+                </ul>
+                <Link className="btn btn-line" href="/agencies" style={{ alignSelf: "flex-start" }}>Ask about an agency agreement</Link>
+              </article>
+            </div>
+            <p className="small">No monthly platform fee. Our fee is included in the price of your ads.</p>
+          </div>
+        </section>
+
+        <section className="section" style={{ padding: "56px 0" }}>
+          <div className="wrap" style={{ display: "flex", flexWrap: "wrap", gap: 32, alignItems: "baseline" }}>
+            <h2 className="h3" style={{ fontSize: 20, flex: "1 1 240px" }}>Industries we set up most</h2>
+            <div className="chips" style={{ flex: "999 1 560px" }}>
+              {INDUSTRIES.filter((i) => i !== "Other").map((i) => <span className="chip" key={i}>{i}</span>)}
+            </div>
+          </div>
+        </section>
+
+        <section className="section" style={{ borderTop: "1px solid var(--line)", padding: "72px 0" }}>
+          <div className="wrap stack g24">
+            <div className="stack g12" style={{ maxWidth: 680 }}>
+              <h2 className="h2">How we compare.</h2>
+              <p className="p" style={{ fontSize: 16 }}>Already looked at another platform? See setup, minimums and fees side by side.</p>
+            </div>
+            <div className="grid cols-3" style={{ gap: 12 }}>
+              {COMPARISONS.map((c) => (
+                <Link key={c.slug} className="linkrow" href={`/${c.slug}`}>
+                  <span>DSP Connect vs {c.name}</span><span aria-hidden="true" style={{ color: "var(--blue)" }}>→</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="section dark" style={{ padding: "72px 0" }}>
+          <div className="wrap" style={{ display: "flex", flexWrap: "wrap", gap: 40, alignItems: "center", justifyContent: "space-between" }}>
+            <div className="stack g12" style={{ flex: "1 1 480px", minWidth: 0 }}>
+              <div className="eyebrow" style={{ color: "var(--soft)" }}>Ready when you are</div>
+              <h2 className="h2">Open your account today. Be live within {SETUP_DAYS} days.</h2>
+              <p className="p" style={{ fontSize: 16 }}>Fill in your details, pay your ad budget online, and we set up the rest.</p>
+            </div>
+            <Link className="btn btn-white" href="/open-account">Open your account</Link>
+          </div>
+        </section>
+
+        <section className="section">
+          <div className="wrap stack g24" style={{ maxWidth: 880 }}>
+            <h2 className="h2" style={{ fontSize: 28 }}>Common questions</h2>
+            <div>
+              {FAQ.map(([q, a]) => (
+                <div className="faq stack g8" key={q}><h3 className="h3" style={{ fontSize: 16 }}>{q}</h3><p className="p">{a}</p></div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </main>
+      <Footer />
+    </>
+  );
+}
