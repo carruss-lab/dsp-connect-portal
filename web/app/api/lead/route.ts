@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { stripe } from "@/lib/payments";
 import { MIN_BUDGET } from "@/lib/site";
 
 const KINDS = ["market_check", "account", "agency"] as const;
@@ -38,7 +39,9 @@ export async function POST(req: Request) {
     }
   }
 
+  const id = crypto.randomUUID();
   const row = {
+    id,
     kind,
     email,
     name: clean(body.name, 120),
@@ -74,6 +77,35 @@ export async function POST(req: Request) {
   } catch (err) {
     console.error("lead insert failed", err);
     return fail;
+  }
+
+  // Account sign-ups go on to pay their ad budget. If Stripe is not connected yet,
+  // the form falls back to its thank-you message.
+  const client = kind === "account" && budget ? stripe() : null;
+  if (client) {
+    try {
+      const origin = new URL(req.url).origin;
+      const session = await client.checkout.sessions.create({
+        mode: "payment",
+        client_reference_id: id,
+        customer_email: email,
+        line_items: [{
+          quantity: 1,
+          price_data: {
+            currency: "usd",
+            unit_amount: Math.round(budget! * 100),
+            product_data: { name: "DSP Connect ad budget", description: `Starting ad budget for ${row.business}` },
+          },
+        }],
+        metadata: { lead_id: id },
+        success_url: `${origin}/open-account/thanks?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${origin}/open-account`,
+      });
+      if (session.url) return NextResponse.json({ ok: true, pay: session.url });
+    } catch (err) {
+      console.error("checkout session failed", err);
+      return NextResponse.json({ error: "We saved your details but could not open the payment page. Please try again." }, { status: 502 });
+    }
   }
   return NextResponse.json({ ok: true });
 }

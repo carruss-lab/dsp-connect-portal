@@ -34,6 +34,7 @@ export default function LeadForm({ kind, cta }: { kind: Kind; cta: string }) {
       });
       const out = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(out.error || "Something went wrong. Please try again.");
+      if (out.pay) { location.assign(out.pay); return; }
       if (kind === "market_check") {
         try { sessionStorage.setItem("demo_ok", "1"); } catch {}
         const q = new URLSearchParams({ industry: String(data.industry || ""), market: String(data.market || "") });
