@@ -9,6 +9,7 @@ type Lead = {
   status: string; paid_at: string | null; amount_paid: number | null; setup_due: string | null;
   step_account_at: string | null; step_tracking_at: string | null; step_ads_at: string | null; step_audience_at: string | null; live_at: string | null;
 };
+type Partner = { id: string; created_at: string; status: string; name: string; email: string; phone: string | null; location: string | null; vertical: string | null; linkedin: string | null; experience: string | null; network: string | null };
 const STEPS: [keyof Lead, string][] = [
   ["step_account_at", "Account created"], ["step_tracking_at", "Tracking placed"], ["step_ads_at", "Ads approved"], ["step_audience_at", "Audience built"],
 ];
@@ -23,6 +24,7 @@ export default function Admin() {
   }, []);
   const [session, setSession] = useState<Session | null | undefined>(undefined);
   const [leads, setLeads] = useState<Lead[] | null>(null);
+  const [partners, setPartners] = useState<Partner[]>([]);
   const [msg, setMsg] = useState("");
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
@@ -39,6 +41,8 @@ export default function Admin() {
     const { data, error } = await supabase.from("leads").select("*").order("created_at", { ascending: false }).limit(500);
     if (error) setMsg("Could not load: " + error.message);
     else setLeads(data as Lead[]);
+    const p = await supabase.from("partners").select("*").order("created_at", { ascending: false }).limit(500);
+    if (!p.error) setPartners(p.data as Partner[]);
   }, [supabase]);
   useEffect(() => { if (session) load(); }, [session, load]);
 
@@ -79,6 +83,15 @@ export default function Admin() {
     const { error } = await supabase!.from("leads").update(change).eq("id", id);
     if (error) { setMsg("Could not save: " + error.message); load(); }
   }
+
+  async function decide(id: string, status: "approved" | "declined") {
+    setMsg("");
+    setPartners((ps) => ps.map((p) => (p.id === id ? { ...p, status } : p)));
+    const { error } = await supabase!.from("partners").update({ status, decided_at: new Date().toISOString() }).eq("id", id);
+    if (error) { setMsg("Could not save: " + error.message); load(); }
+  }
+  const applied = partners.filter((p) => p.status === "applied");
+  const decided = partners.filter((p) => p.status !== "applied");
 
   return (
     <main className="wrap stack g32" style={{ padding: "40px 32px 80px" }}>
@@ -135,6 +148,31 @@ export default function Admin() {
               <tr key={l.id}><th scope="row">{l.business}</th><td>{l.email}</td><td>{usd(l.amount_paid || 0)}</td><td>{day(l.live_at!)}</td>
                 <td>{l.setup_due && l.live_at!.slice(0, 10) <= l.setup_due ? "Yes" : "No"}</td></tr>
             ))}</tbody>
+          </table></div>
+        )}
+      </section>
+
+      <section className="stack g16">
+        <h2 className="h3" style={{ fontSize: 18 }}>Managing Partner applications ({applied.length} to review)</h2>
+        {applied.length === 0 && <p className="p">No applications waiting.</p>}
+        {applied.map((p) => (
+          <article key={p.id} className="card stack g12">
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "space-between", alignItems: "baseline" }}>
+              <div><div className="h3">{p.name}</div><div className="small"><a href={`mailto:${p.email}`}>{p.email}</a>{p.phone ? ` · ${p.phone}` : ""} · {[p.vertical, p.location].filter(Boolean).join(" · ")} · applied {day(p.created_at)}</div></div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button className="btn btn-blue" onClick={() => decide(p.id, "approved")}>Approve</button>
+                <button className="btn btn-line" onClick={() => decide(p.id, "declined")}>Decline</button>
+              </div>
+            </div>
+            {p.experience && <p className="p"><b>Background:</b> {p.experience}</p>}
+            {p.network && <p className="p"><b>Would bring:</b> {p.network}</p>}
+            {p.linkedin && <p className="small">{p.linkedin}</p>}
+          </article>
+        ))}
+        {decided.length > 0 && (
+          <div className="tablebox"><table>
+            <thead><tr><th scope="col">Name</th><th scope="col">Email</th><th scope="col">Industry</th><th scope="col">Decision</th></tr></thead>
+            <tbody>{decided.map((p) => <tr key={p.id}><th scope="row">{p.name}</th><td>{p.email}</td><td>{p.vertical}</td><td>{p.status === "approved" ? "Approved" : "Declined"}</td></tr>)}</tbody>
           </table></div>
         )}
       </section>
