@@ -3,8 +3,10 @@ import Link from "next/link";
 import { Footer, Header } from "@/components/Chrome";
 import LeadForm from "@/components/LeadForm";
 import { SETUP_DAYS, SHARE_PCT } from "@/lib/site";
+import { JsonLd, crumbs } from "@/lib/seo";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/agencies" },
   title: "For agencies",
   description: `Run client campaigns on DSP Connect and earn ${SHARE_PCT}% of the ad spend you manage.`,
 };
@@ -20,6 +22,7 @@ const money = (s: number) => `$${((s * SHARE_PCT) / 100).toLocaleString("en-US")
 export default function Agencies() {
   return (
     <>
+      <JsonLd data={crumbs([["Home", "/"], ["For agencies", "/agencies"]])} />
       <Header />
       <main>
         <section className="hero">

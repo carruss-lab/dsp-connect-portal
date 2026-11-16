@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Footer, Header } from "@/components/Chrome";
 import { COMPARISONS } from "@/lib/compare";
+import { JsonLd, crumbs } from "@/lib/seo";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/compare" },
   title: "How we compare",
   description: "DSP Connect side by side with other advertising platforms: setup, minimums and fees.",
 };
@@ -11,6 +13,7 @@ export const metadata: Metadata = {
 export default function CompareHub() {
   return (
     <>
+      <JsonLd data={crumbs([["Home", "/"], ["How we compare", "/compare"]])} />
       <Header />
       <main className="wrap narrow stack g32" style={{ padding: "64px 32px 80px" }}>
         <div className="stack g12" style={{ maxWidth: 680 }}>

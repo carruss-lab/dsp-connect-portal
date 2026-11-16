@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import { Footer, Header } from "@/components/Chrome";
 import LeadForm from "@/components/LeadForm";
 import { MIN_BUDGET, SETUP_DAYS } from "@/lib/site";
+import { JsonLd, crumbs } from "@/lib/seo";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/open-account" },
   title: "Open your account",
   description: `Fill in your details, pay your ad budget online, and be live within ${SETUP_DAYS} days.`,
 };
@@ -11,6 +13,7 @@ export const metadata: Metadata = {
 export default function OpenAccount() {
   return (
     <>
+      <JsonLd data={crumbs([["Home", "/"], ["Open your account", "/open-account"]])} />
       <Header />
       <main className="wrap" style={{ padding: "64px 32px 80px", display: "flex", flexWrap: "wrap", gap: 56, alignItems: "flex-start" }}>
         <div className="stack g24" style={{ flex: "1 1 380px", minWidth: 0 }}>

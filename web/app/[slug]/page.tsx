@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Footer, Header } from "@/components/Chrome";
 import { CHECKED, COMPARISONS } from "@/lib/compare";
+import { JsonLd, ORG, SITE_URL, crumbs } from "@/lib/seo";
 import { SHARE_PCT } from "@/lib/site";
 
 export const dynamicParams = false;
@@ -14,7 +15,7 @@ const find = (slug: string) => COMPARISONS.find((c) => c.slug === decodeURICompo
 
 export async function generateMetadata({ params }: PageProps<"/[slug]">): Promise<Metadata> {
   const c = find((await params).slug);
-  return c ? { title: `DSP Connect vs ${c.name}`, description: c.intro } : {};
+  return c ? { title: `DSP Connect vs ${c.name}`, description: c.intro, alternates: { canonical: `/${c.slug}` }, openGraph: { title: `DSP Connect vs ${c.name}: ${c.headline}`, description: c.intro, url: `/${c.slug}`, type: "article" } } : {};
 }
 
 const money = (spend: number) => `$${((spend * SHARE_PCT) / 100).toLocaleString("en-US")}`;
@@ -24,6 +25,8 @@ export default async function ComparePage({ params }: PageProps<"/[slug]">) {
   if (!c) notFound();
   return (
     <>
+      <JsonLd data={crumbs([["Home", "/"], ["How we compare", "/compare"], [`DSP Connect vs ${c.name}`, `/${c.slug}`]])} />
+      <JsonLd data={{ "@context": "https://schema.org", "@type": "WebPage", name: `DSP Connect vs ${c.name}: ${c.headline}`, description: c.intro, url: `${SITE_URL}/${c.slug}`, about: [{ "@type": "Thing", name: "DSP Connect" }, { "@type": "Thing", name: c.name }], publisher: ORG }} />
       <Header />
       <main className="wrap narrow stack g56" style={{ padding: "64px 32px 80px" }}>
         <section className="stack g16">

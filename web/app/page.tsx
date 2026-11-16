@@ -4,6 +4,7 @@ import { Footer, Header } from "@/components/Chrome";
 import LeadForm from "@/components/LeadForm";
 import { COMPARISONS } from "@/lib/compare";
 import { EXCHANGES, INDUSTRIES, MIN_BUDGET, SETUP_DAYS, SHARE_PCT } from "@/lib/site";
+import { JsonLd, faqGraph, siteGraph } from "@/lib/seo";
 
 const STEPS = [
   ["See the demo", "Open a sample account set up for a business like yours, before you spend anything."],
@@ -29,6 +30,8 @@ const FAQ = [
 export default function Home() {
   return (
     <>
+      <JsonLd data={siteGraph} />
+      <JsonLd data={faqGraph(FAQ as unknown as [string, string][])} />
       <Header />
       <main>
         <section className="hero">
