@@ -4,11 +4,13 @@ import { LEGAL_ENTITY, SETUP_DAYS } from "./site";
 const FROM = process.env.EMAIL_FROM || "DSP Connect <dspsupport@getdspconnect.com>";
 export const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
-export const emailOn = () => !!process.env.RESEND_API_KEY;
+// The newer key name wins, so replacing a key never needs the old one deleted first.
+const apiKey = () => process.env.RESEND_API_KEY_1 || process.env.RESEND_API_KEY;
+export const emailOn = () => !!apiKey();
 
 /** Sends one email. Answers whether the mail service accepted it. */
 export async function send(to: string, subject: string, html: string, replyTo?: string): Promise<{ ok: boolean; error?: string }> {
-  const key = process.env.RESEND_API_KEY;
+  const key = apiKey();
   if (!key || !to) return { ok: false, error: "email is not connected" };
   try {
     const res = await fetch("https://api.resend.com/emails", {
@@ -16,7 +18,7 @@ export async function send(to: string, subject: string, html: string, replyTo?: 
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
       body: JSON.stringify({ from: FROM, to: to.split(",").map((t) => t.trim()).filter(Boolean), subject, html, ...(replyTo ? { reply_to: replyTo } : {}) }),
     });
-    if (res.ok) return { ok: true };
+    if (res.ok) { console.log("email accepted", subject, (await res.json().catch(() => ({}))).id); return { ok: true }; }
     const error = `${res.status} ${await res.text()}`;
     console.error("email failed", error);
     return { ok: false, error };
