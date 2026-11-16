@@ -3,13 +3,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import LeadForm from "./LeadForm";
+import { MIN_BUDGET } from "@/lib/site";
 
 /* The demo follows the layout of the client platform screen for screen.
    Every figure below is sample data, fixed so the account is consistent. */
 
 type Sec =
   | "Explore" | "Dashboard" | "Campaigns" | "Audience" | "Conversion Tracking" | "Analytics" | "Traffic Funnel"
-  | "Creative Assets" | "Allowlist / Blocklist" | "Retargeting" | "Custom Locations" | "Billing" | "Media plannings" | "Autopilot";
+  | "Create new campaign" | "Creative Assets" | "Allowlist / Blocklist" | "Retargeting" | "Custom Locations" | "Billing" | "Media plannings" | "Autopilot";
 
 const NAV: { label: string; sec?: Sec; icon: string; children?: Sec[] }[] = [
   { label: "Explore", sec: "Explore", icon: "M4 20l4-10 6 6-10 4zm9-11l5-5 2 2-5 5" },
@@ -83,10 +84,95 @@ function Table({ head, rows }: { head: string[]; rows: (string | number)[][] }) 
 }
 const Badge = ({ children, tone = "g" }: { children: React.ReactNode; tone?: "g" | "p" | "n" }) => <span className={`dm-badge dm-badge-${tone}`}>{children}</span>;
 
+const TOUR: [Sec, string, string][] = [
+  ["Dashboard", "Your results", "Spend, impressions, clicks and conversions for every campaign, updated as they run."],
+  ["Analytics", "Where your ads ran", "Group results by date, campaign or the apps and sites that showed your ads."],
+  ["Audience", "Who saw them", "Reusable audiences: your area, the people you want, and visitors to your website."],
+  ["Billing", "What it cost", "Your ad budget, what has been spent and what is left. Every transaction is listed."],
+];
+const GOALS: [string, string][] = [
+  ["Awareness", "Show your ads to as many relevant people as possible."],
+  ["Website visits", "Drive visits and traffic to your website or landing page."],
+  ["Conversions", "Get more conversions (sign-ups, purchases, leads)."],
+];
+const FORMATS: [string, string][] = [
+  ["Banner", "Standard display ads across websites and apps."],
+  ["Video", "Video ads shown in or around video content."],
+  ["Native", "Ads fitting naturally with surrounding content."],
+];
+const STEPS = ["General", "Audience", "Price & Optimization", "Budgets", "Traffic source"];
+
+function Builder({ industry, market, onCancel }: { industry: string; market: string; onCancel: () => void }) {
+  const [step, setStep] = useState(0);
+  const [f, setF] = useState({ name: `${industry} · ${market}`, goal: "Conversions", format: "Banner", audience: `${market} · Adults 25 to 64`, optimize: true, budget: String(MIN_BUDGET), source: "All exchanges" });
+  const set = (k: keyof typeof f, v: string | boolean) => setF((o) => ({ ...o, [k]: v }));
+  const budget = Number(f.budget);
+  const badBudget = !Number.isFinite(budget) || budget < MIN_BUDGET;
+  const Choice = ({ k, items }: { k: "goal" | "format" | "audience" | "source"; items: [string, string][] }) => (
+    <div className="dm-choices" role="radiogroup">
+      {items.map(([t, d]) => (
+        <button key={t} type="button" role="radio" aria-checked={f[k] === t} className="dm-choice" data-on={f[k] === t || undefined} onClick={() => set(k, t)}>
+          <strong>{t}</strong><span>{d}</span>
+        </button>
+      ))}
+    </div>
+  );
+  const q = new URLSearchParams({ budget: String(badBudget ? MIN_BUDGET : budget), formats: f.format, goals: f.goal, market, industry });
+
+  if (step === 5) {
+    return (
+      <div className="dm-card" style={{ padding: 32, maxWidth: 640 }}>
+        <h1>That is a campaign, set up.</h1>
+        <p style={{ marginTop: 10 }}>In the demo nothing is saved. Open your account and we build this for real: {f.format.toLowerCase()} ads for {f.goal.toLowerCase()} in {market}, starting at {usd(badBudget ? MIN_BUDGET : budget)}.</p>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 20 }}>
+          <Link className="dm-btn dm-btn-blue" href={`/open-account?${q}`}>Open your account with these settings</Link>
+          <button type="button" className="dm-btn dm-btn-line" onClick={onCancel}>Back to campaigns</button>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="dm-builder">
+      <div className="dm-col" style={{ paddingTop: 0 }}>
+        <ol className="dm-stepper">{STEPS.map((t, i) => <li key={t} data-on={i === step || undefined} data-done={i < step || undefined}><span>{i + 1}</span>{t}</li>)}</ol>
+        {step === 0 && (
+          <>
+            <div className="dm-card stack g12"><h3>Basic Info</h3>
+              <label className="dm-k" htmlFor="b-name">Name *</label>
+              <input id="b-name" className="dm-input" value={f.name} onChange={(e) => set("name", e.target.value)} />
+            </div>
+            <div className="dm-card stack g12"><h3>Goal *</h3><Choice k="goal" items={GOALS} /></div>
+            <div className="dm-card stack g12"><h3>Ad Format *</h3><Choice k="format" items={FORMATS} /></div>
+          </>
+        )}
+        {step === 1 && <div className="dm-card stack g12"><h3>Audience *</h3><p>Pick who should see this campaign. In your own account we build these for you.</p>
+          <Choice k="audience" items={[[`${market} · Adults 25 to 64`, "Everyone in your area in the age range you choose."], ["Website visitors · last 30 days", "People who already visited your website."], [`${industry} intent · ${market}`, `People showing interest in ${industry.toLowerCase()} services.`]]} /></div>}
+        {step === 2 && <div className="dm-card stack g12"><h3>Price &amp; Optimization</h3><p>You are charged per 1,000 impressions, and you pay just above the next-highest bid, not your maximum.</p>
+          <label style={{ display: "flex", gap: 10, alignItems: "center", minHeight: 44 }}><input type="checkbox" checked={f.optimize} onChange={(e) => set("optimize", e.target.checked)} style={{ width: 20, height: 20 }} /> Optimize automatically toward {f.goal.toLowerCase()}</label></div>}
+        {step === 3 && <div className="dm-card stack g12"><h3>Budgets</h3>
+          <label className="dm-k" htmlFor="b-budget">Total budget (US dollars) *</label>
+          <input id="b-budget" className="dm-input" type="number" min={MIN_BUDGET} step={50} value={f.budget} onChange={(e) => set("budget", e.target.value)} style={{ maxWidth: 240 }} />
+          {badBudget ? <p role="alert" style={{ color: "#9A3B00" }}>The smallest budget is ${MIN_BUDGET}.</p> : <p>Spend is paced evenly across the campaign.</p>}</div>}
+        {step === 4 && <div className="dm-card stack g12"><h3>Traffic source</h3>
+          <Choice k="source" items={[["All exchanges", "Run across every connected ad exchange."], ["Allowlist only", "Run only on the apps and sites you approve."]]} /></div>}
+        <div className="dm-card" style={{ display: "flex", justifyContent: "flex-end", gap: 12, flexWrap: "wrap" }}>
+          <button type="button" className="dm-btn dm-btn-line" onClick={step === 0 ? onCancel : () => setStep(step - 1)}>{step === 0 ? "Cancel" : "Back"}</button>
+          <button type="button" className="dm-btn dm-btn-dark" disabled={step === 3 && badBudget} onClick={() => setStep(step + 1)}>{step === 4 ? "Finish" : "Next"}</button>
+        </div>
+      </div>
+      <aside className="dm-summary"><h3>Summary</h3>
+        <dl>{[["Status", "On"], ["Name", f.name], ["Goal", f.goal], ["Ad Format", f.format], ["Audience", f.audience], ["Budget", badBudget ? "" : usd(budget)], ["Traffic source", f.source]].map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v || "Not set"}</dd></div>)}</dl>
+      </aside>
+    </div>
+  );
+}
+
 export default function Demo({ industry, market }: { industry: string; market: string }) {
   const [sec, setSec] = useState<Sec>("Explore");
   const [open, setOpen] = useState<Record<string, boolean>>({ Analytics: false, Planning: false });
   const [toast, setToast] = useState(false);
+  const [tour, setTour] = useState<number | null>(-1);
+  const [group, setGroup] = useState<"Date" | "Campaign" | "App">("Date");
   const [allowed, setAllowed] = useState<boolean | null>(null);
   useEffect(() => {
     let ok = false;
@@ -118,9 +204,13 @@ export default function Demo({ industry, market }: { industry: string; market: s
   }
 
   const go = (s: Sec) => { setSec(s); setToast(false); };
+  const stop = (i: number) => {
+    setTour(i); setToast(false); setSec(TOUR[i][0]);
+    if (TOUR[i][0] === "Analytics") { setOpen((o) => ({ ...o, Analytics: true })); setGroup("App"); }
+  };
   const quick: [string, string, Sec | null, string][] = [
     ["1. Add a Tracking pixel URL", "Add a Tracking pixel URL to measure campaign performance accurately.", "Conversion Tracking", "Add the Tracking pixel URL"],
-    ["2. Create a Campaign", "Start by creating your first Campaign to launch ads.", "Campaigns", "Create a Campaign"],
+    ["2. Create a Campaign", "Start by creating your first Campaign to launch ads.", "Create new campaign", "Create a Campaign"],
     ["3. Find an Audience", "Build your first Audience using targeting segments, demographics, interests, and other data to improve campaign performance.", "Audience", "Create an Audience"],
     ["4. Set the Budgets", "Set daily and total Budgets so your spend is paced across the campaign.", null, ""],
     ["5. Add a Creative", "Upload or select a Creative from a 3rd Party Ad Tag, Creative Library, HTML5, or upload a file.", "Creative Assets", "Add a Creative"],
@@ -163,6 +253,28 @@ export default function Demo({ industry, market }: { industry: string; market: s
         <div className="dm-note">Demo account with sample data for a {industry.toLowerCase()} business in {market}. Not real results.</div>
 
         <div className="dm-body">
+          {tour !== null && sec !== "Create new campaign" && (
+            <div className="dm-tour" role="region" aria-label="Guided tour">
+              {tour === -1 ? (
+                <>
+                  <div><strong>New here?</strong> Take the one-minute tour of what you get.</div>
+                  <div className="dm-tour-b"><button type="button" className="dm-btn dm-btn-line" onClick={() => setTour(null)}>No thanks</button><button type="button" className="dm-btn dm-btn-blue" onClick={() => stop(0)}>Start the tour</button></div>
+                </>
+              ) : (
+                <>
+                  <div><span className="dm-k">Stop {tour + 1} of {TOUR.length}</span><br /><strong>{TOUR[tour][1]}.</strong> {TOUR[tour][2]}</div>
+                  <div className="dm-tour-b">
+                    {tour > 0 && <button type="button" className="dm-btn dm-btn-line" onClick={() => stop(tour - 1)}>Back</button>}
+                    {tour < TOUR.length - 1
+                      ? <button type="button" className="dm-btn dm-btn-blue" onClick={() => stop(tour + 1)}>Next</button>
+                      : <button type="button" className="dm-btn dm-btn-blue" onClick={() => { setTour(null); go("Create new campaign"); }}>Now build a campaign</button>}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+          {sec === "Create new campaign" && <Builder industry={industry} market={market} onCancel={() => go("Campaigns")} />}
+
           {toast && <div className="dm-toast" role="status">This is a demo, so nothing is saved. <Link href="/open-account">Open your account</Link> to do this for real.</div>}
 
           {sec === "Explore" && (
@@ -213,7 +325,7 @@ export default function Demo({ industry, market }: { industry: string; market: s
                 <div className="dm-folder">Unsorted (0)</div>
               </div>
               <div className="dm-col">
-                <Head title="All campaigns" action={<Act>⊕ Create new Campaign</Act>} />
+                <Head title="All campaigns" action={<button type="button" className="dm-btn dm-btn-dark" onClick={() => go("Create new campaign")}>⊕ Create new Campaign</button>} />
                 <div className="dm-card dm-filters"><Search /><span className="dm-pill">Status: Active, Inactive</span><span className="dm-pill">Budget: All</span></div>
                 <Table head={["ID", "Name", "Status", "Media type", "Total budget", "Spend", "Impressions", "Clicks"]}
                   rows={campaigns.map((c) => [c.id, c.name, c.status, c.format, usd(c.budget), usd(c.spend), n(c.imp), n(c.clicks)])} />
@@ -256,12 +368,13 @@ export default function Demo({ industry, market }: { industry: string; market: s
             <>
               <Head title="Analytics" action={<span className="dm-date">Last 14 days</span>} />
               <div className="dm-card dm-filters">
-                <span className="dm-pill">Group by: Date</span><span className="dm-pill">Time offset: UTC-07:00</span>
+                <span>Group by:</span>
+                {(["Date", "Campaign", "App"] as const).map((g) => <button key={g} type="button" className="dm-pill" data-on={group === g || undefined} aria-pressed={group === g} onClick={() => setGroup(g)}>{g === "App" ? "App or site" : g}</button>)}
                 <span style={{ marginLeft: "auto", display: "flex", gap: 8, flexWrap: "wrap" }}><Act kind="line">Export to CSV</Act><Act>Get Report</Act></span>
               </div>
-              <div className="dm-card"><Chart days={days} /></div>
-              <Table head={["Date", "Impressions", "Clicks", "CTR", "Conversions", "Spend", "eCPM"]}
-                rows={days.map((d) => [d.day, n(d.imp), n(d.clicks), pct(d.clicks / d.imp), n(d.conv), usd(d.spend), usd(CPM)])} />
+              {group === "Date" && <div className="dm-card"><Chart days={days} /></div>}
+              <Table head={[group === "App" ? "App or site" : group, "Impressions", "Clicks", "CTR", "Spend"]}
+                rows={(group === "Date" ? days.map((d) => ({ name: d.day, ...d })) : group === "Campaign" ? campaigns : apps).map((r) => [r.name, n(r.imp), n(r.clicks), pct(r.clicks / r.imp), usd(r.spend)])} />
             </>
           )}
 

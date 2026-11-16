@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { INDUSTRIES, MIN_BUDGET, SETUP_DAYS } from "@/lib/site";
 
 type Kind = "market_check" | "account" | "agency";
@@ -12,6 +12,13 @@ const DONE: Record<Kind, string> = {
 export default function LeadForm({ kind, cta }: { kind: Kind; cta: string }) {
   const [state, setState] = useState<"idle" | "busy" | "done">("idle");
   const [error, setError] = useState("");
+  const [pre, setPre] = useState<Record<string, string>>({});
+  useEffect(() => {
+    const q = new URLSearchParams(location.search);
+    const o: Record<string, string> = {};
+    for (const k of ["budget", "formats", "goals", "market", "industry"]) { const v = q.get(k); if (v) o[k] = v.slice(0, 200); }
+    if (Object.keys(o).length) setPre(o);
+  }, []);
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -45,7 +52,7 @@ export default function LeadForm({ kind, cta }: { kind: Kind; cta: string }) {
 
   const full = kind !== "market_check";
   return (
-    <form onSubmit={submit} className="stack g16" noValidate={false}>
+    <form key={JSON.stringify(pre)} onSubmit={submit} className="stack g16">
       {full && (
         <>
           <div className="field">
@@ -72,13 +79,13 @@ export default function LeadForm({ kind, cta }: { kind: Kind; cta: string }) {
         <>
           <div className="field">
             <label htmlFor={`${kind}-industry`}>Your industry</label>
-            <select className="input" id={`${kind}-industry`} name="industry" defaultValue={INDUSTRIES[0]}>
+            <select className="input" id={`${kind}-industry`} name="industry" defaultValue={INDUSTRIES.includes(pre.industry) ? pre.industry : INDUSTRIES[0]}>
               {INDUSTRIES.map((i) => <option key={i}>{i}</option>)}
             </select>
           </div>
           <div className="field">
             <label htmlFor={`${kind}-market`}>Where your customers are</label>
-            <input className="input" id={`${kind}-market`} name="market" required placeholder="City or state" />
+            <input className="input" id={`${kind}-market`} name="market" required placeholder="City or state" defaultValue={pre.market || ""} />
           </div>
         </>
       )}
@@ -93,19 +100,19 @@ export default function LeadForm({ kind, cta }: { kind: Kind; cta: string }) {
             <div className="ticks">
               {["Video", "Banner", "Native"].map((f) => (
                 <label key={f} style={{ display: "flex", alignItems: "center", gap: 8, minHeight: 44 }}>
-                  <input type="checkbox" name="formats" value={f} style={{ width: 20, height: 20 }} /> {f}
+                  <input type="checkbox" name="formats" value={f} defaultChecked={(pre.formats || "").split(", ").includes(f)} style={{ width: 20, height: 20 }} /> {f}
                 </label>
               ))}
             </div>
           </fieldset>
           <div className="field">
             <label htmlFor="account-budget">Starting ad budget (US dollars)</label>
-            <input className="input mono" id="account-budget" name="budget" type="number" min={MIN_BUDGET} step={50} defaultValue={MIN_BUDGET} required />
+            <input className="input mono" id="account-budget" name="budget" type="number" min={MIN_BUDGET} step={50} defaultValue={Number(pre.budget) >= MIN_BUDGET ? Number(pre.budget) : MIN_BUDGET} required />
             <span className="small">Minimum ${MIN_BUDGET}. Paid by card or bank transfer.</span>
           </div>
           <div className="field">
             <label htmlFor="account-goals">What do you want the ads to do?</label>
-            <textarea className="input" id="account-goals" name="goals" placeholder="More calls, bookings, store visits, online sales" />
+            <textarea className="input" id="account-goals" name="goals" defaultValue={pre.goals || ""} placeholder="More calls, bookings, store visits, online sales" />
           </div>
           <label style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 14, color: "var(--body)", lineHeight: 1.5 }}>
             <input type="checkbox" name="terms" required style={{ width: 20, height: 20, marginTop: 2, flexShrink: 0 }} />

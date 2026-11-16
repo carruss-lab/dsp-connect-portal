@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Footer, Header } from "@/components/Chrome";
 import LeadForm from "@/components/LeadForm";
@@ -53,6 +54,15 @@ export default function Home() {
               </div>
               <LeadForm kind="market_check" cta="Open the demo" />
             </div>
+          </div>
+        </section>
+
+        <section style={{ paddingBottom: 40 }}>
+          <div className="wrap stack g16">
+            <div className="shot">
+              <Image src="/demo-dashboard.png" alt="The DSP Connect dashboard in the demo account, showing spend, impressions, clicks, conversions and a chart of impressions by day for three campaigns." width={2560} height={1520} sizes="(max-width: 1240px) 100vw, 1176px" priority />
+            </div>
+            <p className="small">The demo account, with sample data. Enter your industry and area above to open it set up for a business like yours.</p>
           </div>
         </section>
 
