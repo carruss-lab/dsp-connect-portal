@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { notifyTeam } from "@/lib/email";
 import { stripe } from "@/lib/payments";
 import { MIN_BUDGET } from "@/lib/site";
 
@@ -78,6 +79,8 @@ export async function POST(req: Request) {
     console.error("lead insert failed", err);
     return fail;
   }
+
+  await notifyTeam(kind, { ...row, id: undefined });
 
   // Account sign-ups go on to pay their ad budget. If Stripe is not connected yet,
   // the form falls back to its thank-you message.
