@@ -10,6 +10,7 @@ type Lead = {
   step_account_at: string | null; step_tracking_at: string | null; step_ads_at: string | null; step_audience_at: string | null; live_at: string | null;
 };
 type Partner = { id: string; created_at: string; status: string; name: string; email: string; phone: string | null; location: string | null; vertical: string | null; linkedin: string | null; experience: string | null; network: string | null; code: string; invite_token: string; stripe_account_id: string | null; payouts_ready: boolean };
+type Notice = { id: string; kind: string; to_email: string; title: string | null; created_at: string; sent_at: string | null; error: string | null };
 type Line = { id: string; partner_id: string; lead_id: string; day: string; spend: number; amount: number; release_on: string; status: string };
 const STEPS: [keyof Lead, string][] = [
   ["step_account_at", "Account created"], ["step_tracking_at", "Tracking placed"], ["step_ads_at", "Ads approved"], ["step_audience_at", "Audience built"],
@@ -27,6 +28,8 @@ export default function Admin() {
   const [leads, setLeads] = useState<Lead[] | null>(null);
   const [partners, setPartners] = useState<Partner[]>([]);
   const [lines, setLines] = useState<Line[]>([]);
+  const [notices, setNotices] = useState<Notice[]>([]);
+  const [ask, setAsk] = useState<{ id: string; key: keyof Lead; label: string } | null>(null);
   const [note, setNote] = useState("");
   const [msg, setMsg] = useState("");
   const [email, setEmail] = useState("");
@@ -48,6 +51,8 @@ export default function Admin() {
     if (!p.error) setPartners(p.data as Partner[]);
     const c = await supabase.from("commissions").select("*").order("day", { ascending: false }).limit(1000);
     if (!c.error) setLines(c.data as Line[]);
+    const n = await supabase.from("notices").select("*").order("created_at", { ascending: false }).limit(40);
+    if (!n.error) setNotices(n.data as Notice[]);
   }, [supabase]);
   useEffect(() => { if (session) load(); }, [session, load]);
 
@@ -86,7 +91,25 @@ export default function Admin() {
     setMsg("");
     setLeads((ls) => (ls || []).map((l) => (l.id === id ? { ...l, ...change } : l)));
     const { error } = await supabase!.from("leads").update(change).eq("id", id);
-    if (error) { setMsg("Could not save: " + error.message); load(); }
+    if (error) { setMsg("Could not save: " + error.message); load(); return false; }
+    return true;
+  }
+  /** Saves a change the client should hear about, then sends their email straight away. */
+  async function patchAndTell(id: string, change: Partial<Lead>) {
+    setAsk(null); setNote("");
+    if (!(await patch(id, change))) return;
+    await tell({ lead: id });
+  }
+  async function tell(body: { lead?: string; weekly?: boolean }) {
+    setBusy(true);
+    try {
+      const res = await fetch("/api/admin/notify", { method: "POST", headers: { Authorization: `Bearer ${session!.access_token}`, "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const out = await res.json();
+      if (!res.ok) throw new Error(out.error || "Could not send.");
+      setNote(!out.emailOn ? "Saved. Email is not connected yet, so no message was sent."
+        : [out.sent.length ? `Sent: ${out.sent.join("; ")}` : "Saved. No new messages were due.", out.failed.length ? `Failed: ${out.failed.join("; ")}` : ""].filter(Boolean).join(" "));
+    } catch (err) { setMsg(err instanceof Error ? err.message : "Could not send."); }
+    setBusy(false); load();
   }
 
   async function invite(e: React.FormEvent<HTMLFormElement>) {
@@ -170,12 +193,19 @@ export default function Admin() {
               <div className="ticks">
                 {STEPS.map(([k, label]) => (
                   <label key={k} style={{ display: "flex", alignItems: "center", gap: 8, minHeight: 44 }}>
-                    <input type="checkbox" checked={!!l[k]} onChange={(e) => patch(l.id, { [k]: e.target.checked ? new Date().toISOString() : null })} style={{ width: 20, height: 20 }} /> {label}
+                    <input type="checkbox" checked={!!l[k]} onChange={(e) => (e.target.checked ? setAsk({ id: l.id, key: k, label }) : patch(l.id, { [k]: null }))} style={{ width: 20, height: 20 }} /> {label}
                   </label>
                 ))}
               </div>
+              {ask?.id === l.id && (
+                <div className="note note-ok" role="alertdialog" aria-label="Confirm" style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+                  <span>Mark &ldquo;{ask.label}&rdquo; as done? {l.email} will be emailed.</span>
+                  <button className="btn btn-blue" style={{ minHeight: 36 }} disabled={busy} onClick={() => patchAndTell(l.id, ask.key === "live_at" ? { live_at: new Date().toISOString(), status: "live" } : { [ask.key]: new Date().toISOString() })}>Yes, save and email</button>
+                  <button className="btn btn-line" style={{ minHeight: 36 }} onClick={() => setAsk(null)}>Cancel</button>
+                </div>
+              )}
               <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-                <button className="btn btn-blue" disabled={done < STEPS.length} onClick={() => patch(l.id, { live_at: new Date().toISOString(), status: "live" })}>Mark as live</button>
+                <button className="btn btn-blue" disabled={done < STEPS.length} onClick={() => setAsk({ id: l.id, key: "live_at", label: "Live" })}>Mark as live</button>
                 <span className="small">{done} of {STEPS.length} steps done{done < STEPS.length ? ". Finish all four to mark as live." : ""}</span>
               </div>
             </article>
@@ -252,6 +282,25 @@ export default function Admin() {
           </table></div>
         )}
         {lines.some((l) => l.status === "paid") && <p className="small">Paid to date: <b>{usd(sum(lines.filter((l) => l.status === "paid")))}</b></p>}
+      </section>
+
+      <section className="stack g16">
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center", justifyContent: "space-between" }}>
+          <h2 className="h3" style={{ fontSize: 18 }}>Messages sent by the system</h2>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <button className="btn btn-line" disabled={busy} onClick={() => tell({})}>Run today&apos;s checks now</button>
+            <button className="btn btn-line" disabled={busy} onClick={() => tell({ weekly: true })}>Send weekly summaries now</button>
+          </div>
+        </div>
+        <p className="small">Clients are emailed when a setup step is ticked, when they go live, when their budget runs low, and every Monday with a summary. The team gets one list each morning. These run by themselves; the buttons are for running them early. Nothing is ever sent twice.</p>
+        {notices.length === 0 ? <p className="p">No messages yet.</p> : (
+          <div className="tablebox"><table>
+            <thead><tr><th scope="col">When</th><th scope="col">To</th><th scope="col">Message</th><th scope="col">Result</th></tr></thead>
+            <tbody>{notices.map((n) => (
+              <tr key={n.id}><th scope="row">{day(n.created_at)}</th><td>{n.to_email}</td><td>{n.title}</td><td>{n.sent_at ? "Sent" : n.error ? `Failed: ${n.error.slice(0, 80)}` : "Sending"}</td></tr>
+            ))}</tbody>
+          </table></div>
+        )}
       </section>
 
       <section className="stack g16">

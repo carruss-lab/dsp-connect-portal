@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { createHash } from "node:crypto";
 import { stripe } from "@/lib/payments";
+import { notifyPayout } from "@/lib/notices";
 import { authEmail, rest, secretRpc } from "@/lib/server";
 
 type Line = { id: string; partner_id: string; amount: number; release_on: string };
-type Partner = { id: string; name: string; stripe_account_id: string | null; payouts_ready: boolean };
+type Partner = { id: string; name: string; email: string; stripe_account_id: string | null; payouts_ready: boolean };
 
 // Pays every approved commission line that has reached its release date. Staff only.
 export async function POST(req: Request) {
@@ -20,7 +21,7 @@ export async function POST(req: Request) {
     const today = new Date().toISOString().slice(0, 10);
     const lines = (await (await rest(`commissions?select=id,partner_id,amount,release_on&status=eq.approved&release_on=lte.${today}`, { jwt })).json()) as Line[];
     if (!Array.isArray(lines) || lines.length === 0) return NextResponse.json({ paid: [], skipped: [], message: "Nothing is approved and due for payment." });
-    const partners = (await (await rest("partners?select=id,name,stripe_account_id,payouts_ready", { jwt })).json()) as Partner[];
+    const partners = (await (await rest("partners?select=id,name,email,stripe_account_id,payouts_ready", { jwt })).json()) as Partner[];
 
     const paid: { partner: string; amount: number }[] = [];
     const skipped: { partner: string; reason: string }[] = [];
@@ -41,6 +42,7 @@ export async function POST(req: Request) {
         );
         await secretRpc("payout_record", { p_partner: pid, p_amount: cents / 100, p_transfer: t.id, p_ids: ids, p_by: by });
         paid.push({ partner: name, amount: cents / 100 });
+        await notifyPayout(p, cents / 100, t.id).catch((e) => console.error("payout email failed", e));
       } catch (err) {
         console.error("transfer failed", pid, err);
         skipped.push({ partner: name, reason: err instanceof Error ? err.message : "Stripe refused the transfer." });

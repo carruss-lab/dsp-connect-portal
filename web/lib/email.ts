@@ -2,24 +2,31 @@ import { LEGAL_ENTITY, SETUP_DAYS } from "./site";
 
 // Sends through Resend. Does nothing until RESEND_API_KEY is set, so forms keep working without it.
 const FROM = process.env.EMAIL_FROM || "DSP Connect <dspsupport@getdspconnect.com>";
-const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+export const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
-async function send(to: string, subject: string, html: string, replyTo?: string) {
+export const emailOn = () => !!process.env.RESEND_API_KEY;
+
+/** Sends one email. Answers whether the mail service accepted it. */
+export async function send(to: string, subject: string, html: string, replyTo?: string): Promise<{ ok: boolean; error?: string }> {
   const key = process.env.RESEND_API_KEY;
-  if (!key || !to) return;
+  if (!key || !to) return { ok: false, error: "email is not connected" };
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
       body: JSON.stringify({ from: FROM, to: to.split(",").map((t) => t.trim()).filter(Boolean), subject, html, ...(replyTo ? { reply_to: replyTo } : {}) }),
     });
-    if (!res.ok) console.error("email failed", res.status, await res.text());
+    if (res.ok) return { ok: true };
+    const error = `${res.status} ${await res.text()}`;
+    console.error("email failed", error);
+    return { ok: false, error };
   } catch (err) {
     console.error("email failed", err);
+    return { ok: false, error: String(err) };
   }
 }
 
-const wrap = (body: string) =>
+export const wrap = (body: string) =>
   `<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#0B1220;max-width:560px">${body}<p style="color:#5B6577;font-size:13px;margin-top:28px">DSP Connect, a service of ${LEGAL_ENTITY}</p></div>`;
 
 type Lead = Record<string, string | number | null | undefined>;
