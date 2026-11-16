@@ -1,4 +1,4 @@
-import { SETUP_DAYS } from "./site";
+import { LEGAL_ENTITY, SETUP_DAYS } from "./site";
 
 // Sends through Resend. Does nothing until RESEND_API_KEY is set, so forms keep working without it.
 const FROM = process.env.EMAIL_FROM || "DSP Connect <dspsupport@getdspconnect.com>";
@@ -20,7 +20,7 @@ async function send(to: string, subject: string, html: string, replyTo?: string)
 }
 
 const wrap = (body: string) =>
-  `<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#0B1220;max-width:560px">${body}<p style="color:#5B6577;font-size:13px;margin-top:28px">DSP Connect</p></div>`;
+  `<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#0B1220;max-width:560px">${body}<p style="color:#5B6577;font-size:13px;margin-top:28px">DSP Connect, a service of ${LEGAL_ENTITY}</p></div>`;
 
 type Lead = Record<string, string | number | null | undefined>;
 

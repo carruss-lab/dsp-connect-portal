@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { notifyTeam } from "@/lib/email";
 import { stripe } from "@/lib/payments";
-import { MIN_BUDGET } from "@/lib/site";
+import { LEGAL_ENTITY, MIN_BUDGET } from "@/lib/site";
 
 const KINDS = ["market_check", "account", "agency"] as const;
 const clean = (v: unknown, max = 500) => (typeof v === "string" ? v.trim().slice(0, max) : "");
@@ -100,7 +100,7 @@ export async function POST(req: Request) {
           price_data: {
             currency: "usd",
             unit_amount: Math.round(budget! * 100),
-            product_data: { name: "DSP Connect ad budget", description: `Starting ad budget for ${row.business}` },
+            product_data: { name: "DSP Connect ad budget", description: `Starting ad budget for ${row.business}. Sold by ${LEGAL_ENTITY}.` },
           },
         }],
         metadata: { lead_id: id },

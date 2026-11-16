@@ -1,4 +1,6 @@
 // One place for the facts every page repeats. Change here, changes everywhere.
+// The company behind DSP Connect. Used in footers, emails and partner documents.
+export const LEGAL_ENTITY = "Influence Crafters LLC";
 export const MIN_BUDGET = 750;
 export const SETUP_DAYS = 14;
 export const SHARE_PCT = 10;

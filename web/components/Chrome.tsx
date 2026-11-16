@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { LOGIN_URL } from "@/lib/site";
+import { LEGAL_ENTITY, LOGIN_URL } from "@/lib/site";
 
 export function Header() {
   return (
@@ -27,7 +27,7 @@ export function Footer() {
   return (
     <footer className="footer">
       <div className="wrap">
-        <div>© {new Date().getFullYear()} DSP Connect</div>
+        <div>© {new Date().getFullYear()} {LEGAL_ENTITY}. DSP Connect is a service of {LEGAL_ENTITY}.</div>
         <nav aria-label="Footer">
           <a href={LOGIN_URL}>Client log in</a>
           <Link href="/agencies">Agencies</Link>

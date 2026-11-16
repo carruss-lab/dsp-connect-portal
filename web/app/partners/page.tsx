@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { INDUSTRIES, MIN_BUDGET, SETUP_DAYS, SHARE_PCT } from "@/lib/site";
+import { INDUSTRIES, LEGAL_ENTITY, MIN_BUDGET, SETUP_DAYS, SHARE_PCT } from "@/lib/site";
 
 // Private program page: not linked from the public site and hidden from search engines.
 export const metadata: Metadata = {
@@ -68,7 +68,7 @@ export default function Partners() {
           <p className="p" style={{ fontSize: 16 }}>Use the link in your invitation email to review your admission documents and set up your weekly payouts. There is no public application. If you were expecting an invitation and have not received it, reply to the person who contacted you.</p>
         </div></section>
       </main>
-      <footer className="footer"><div className="wrap"><div>© {new Date().getFullYear()} DSP Connect</div><div>Managing Partners are independent contractors, not employees.</div></div></footer>
+      <footer className="footer"><div className="wrap"><div>© {new Date().getFullYear()} {LEGAL_ENTITY}. DSP Connect is a service of {LEGAL_ENTITY}.</div><div>Managing Partners are independent contractors, not employees.</div></div></footer>
     </>
   );
 }
