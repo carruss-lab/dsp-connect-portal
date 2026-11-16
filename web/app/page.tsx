@@ -5,7 +5,7 @@ import { COMPARISONS } from "@/lib/compare";
 import { EXCHANGES, INDUSTRIES, MIN_BUDGET, SETUP_DAYS, SHARE_PCT } from "@/lib/site";
 
 const STEPS = [
-  ["Check your market", "See how many people you can reach in your area before you spend anything."],
+  ["See the demo", "Open a sample account set up for a business like yours, before you spend anything."],
   ["Tell us about your business", "Fill in one short form online: your goals, your area and the ads you want to run."],
   ["Pay online", `Agree to the terms and pay your ad budget by card or bank transfer. Budgets start at $${MIN_BUDGET}.`],
   [`Live within ${SETUP_DAYS} days`, "We set up your account and launch your ads. Log in any time to see views, clicks, leads and spend."],
@@ -34,10 +34,10 @@ export default function Home() {
           <div className="wrap">
             <div className="hero-copy stack g24">
               <div className="eyebrow">Advertising on apps and websites</div>
-              <h1 className="h1">See your market before you spend a dollar.</h1>
+              <h1 className="h1">See exactly what you get before you spend a dollar.</h1>
               <p className="lead" style={{ maxWidth: 560 }}>
                 DSP Connect puts your business in front of local customers on the apps and sites they already use.
-                Check how many you can reach, then start from ${MIN_BUDGET}.
+                Look inside a sample account first, then start from ${MIN_BUDGET}.
               </p>
               <div className="ticks">
                 <span>Start from ${MIN_BUDGET}</span>
@@ -48,10 +48,10 @@ export default function Home() {
             </div>
             <div id="market" className="card formcard stack g16" style={{ scrollMarginTop: 90 }}>
               <div className="stack g8">
-                <h2 className="h3" style={{ fontSize: 18 }}>Check your market</h2>
-                <p className="small">Tell us your industry and area. We email your market report. No card needed.</p>
+                <h2 className="h3" style={{ fontSize: 18 }}>See the demo</h2>
+                <p className="small">Tell us your industry and area and we open a sample account for a business like yours. No card needed.</p>
               </div>
-              <LeadForm kind="market_check" cta="Show me my market" />
+              <LeadForm kind="market_check" cta="Open the demo" />
             </div>
           </div>
         </section>

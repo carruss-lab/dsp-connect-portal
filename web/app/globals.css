@@ -75,3 +75,13 @@ td.us{font-weight:600}td.them{color:var(--body)}
 .note-ok{background:#E8F3EC;color:#14532D}.note-err{background:#FDECEA;color:#8A1C0E}
 .money{font-family:var(--font-mono),monospace;font-size:20px;font-weight:500}
 @media (max-width:640px){.wrap{padding:0 20px}.section{padding:56px 0}.cta{padding:28px}.footer a{margin:0 16px 0 0}}
+.demo{display:flex;flex-wrap:wrap;min-height:100vh;background:var(--ground)}
+.demo-side{flex:0 0 220px;background:#000;color:#fff;padding:20px 12px}
+.demo-nav{display:flex;flex-direction:column;gap:2px}
+.demo-nav button{min-height:44px;text-align:left;padding:0 12px;border:0;border-radius:6px;background:transparent;color:#C9D2E0;font:inherit;font-size:14px;font-weight:500;cursor:pointer}
+.demo-nav button:hover{color:#fff}
+.demo-nav button[aria-current=page]{background:#1A2436;color:#fff}
+.demo-main{flex:999 1 560px;min-width:0}
+.demo-top{background:#fff;border-bottom:1px solid var(--line);padding:12px 24px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;font-size:14px}
+.demo-body{padding:28px 24px 48px;max-width:1100px}
+@media (max-width:760px){.demo-side{flex:1 1 100%;padding:12px}.demo-nav{flex-direction:row;flex-wrap:wrap}.demo-side .brand{padding-bottom:8px!important}}

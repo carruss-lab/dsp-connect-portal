@@ -4,7 +4,7 @@ import { INDUSTRIES, MIN_BUDGET, SETUP_DAYS } from "@/lib/site";
 
 type Kind = "market_check" | "account" | "agency";
 const DONE: Record<Kind, string> = {
-  market_check: "Thank you. Your market report is on its way to your inbox.",
+  market_check: "Thank you. Opening the demo.",
   account: `Thank you. We have your details. We will email you the payment link, and your ${SETUP_DAYS}-day setup starts when payment is received.`,
   agency: "Thank you. We will be in touch about an agency agreement within one business day.",
 };
@@ -27,6 +27,13 @@ export default function LeadForm({ kind, cta }: { kind: Kind; cta: string }) {
       });
       const out = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(out.error || "Something went wrong. Please try again.");
+      if (kind === "market_check") {
+        try { sessionStorage.setItem("demo_ok", "1"); } catch {}
+        const q = new URLSearchParams({ industry: String(data.industry || ""), market: String(data.market || "") });
+        if (location.pathname === "/demo") location.reload();
+        else location.assign(`/demo?${q}`);
+        return;
+      }
       setState("done");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");

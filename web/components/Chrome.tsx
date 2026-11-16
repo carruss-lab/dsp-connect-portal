@@ -17,7 +17,7 @@ export function Header() {
           <Link href="/compare">How we compare</Link>
         </nav>
         <a className="navlink" href={LOGIN_URL} style={{ color: "var(--ink)" }}>Log in</a>
-        <Link className="btn btn-blue" href="/#market">Check your market</Link>
+        <Link className="btn btn-blue" href="/#market">See the demo</Link>
       </div>
     </header>
   );

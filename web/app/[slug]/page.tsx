@@ -80,10 +80,10 @@ export default async function ComparePage({ params }: PageProps<"/[slug]">) {
 
         <section className="cta dark">
           <div className="stack g8" style={{ flex: "1 1 360px", minWidth: 0 }}>
-            <h2 className="h2" style={{ fontSize: 26 }}>See your market before you decide.</h2>
-            <p className="p">Audience numbers for your area. No call required.</p>
+            <h2 className="h2" style={{ fontSize: 26 }}>See inside before you decide.</h2>
+            <p className="p">Open a sample account set up for a business like yours. No call required.</p>
           </div>
-          <Link className="btn btn-white" href="/#market">Check your market</Link>
+          <Link className="btn btn-white" href="/#market">See the demo</Link>
         </section>
       </main>
       <Footer />
