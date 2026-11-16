@@ -11,7 +11,7 @@ async function send(to: string, subject: string, html: string, replyTo?: string)
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: FROM, to: [to], subject, html, ...(replyTo ? { reply_to: replyTo } : {}) }),
+      body: JSON.stringify({ from: FROM, to: to.split(",").map((t) => t.trim()).filter(Boolean), subject, html, ...(replyTo ? { reply_to: replyTo } : {}) }),
     });
     if (!res.ok) console.error("email failed", res.status, await res.text());
   } catch (err) {
