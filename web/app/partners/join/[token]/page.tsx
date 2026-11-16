@@ -19,9 +19,9 @@ export default async function Join({ params }: PageProps<"/partners/join/[token]
   const client = stripe();
   if (partner?.stripe_account_id && client && !ready) {
     try {
-      const acct = await client.accounts.retrieve(partner.stripe_account_id);
-      started = !!acct.details_submitted;
-      ready = !!acct.payouts_enabled && acct.capabilities?.transfers === "active";
+      const acct = await client.v2.core.accounts.retrieve(partner.stripe_account_id, { include: ["configuration.recipient"] });
+      started = true;
+      ready = acct.configuration?.recipient?.capabilities?.stripe_balance?.stripe_transfers?.status === "active";
       if (ready) await secretRpc("partner_set_payouts", { p_token: token, p_account: null, p_ready: true });
     } catch (err) { console.error("join stripe check failed", err); }
   }

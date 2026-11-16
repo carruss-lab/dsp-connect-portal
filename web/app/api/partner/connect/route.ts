@@ -16,19 +16,21 @@ export async function POST(req: Request) {
     if (!partner || partner.status === "ended") return NextResponse.json({ error: "This invitation link is not valid." }, { status: 404 });
     let account = partner.stripe_account_id;
     if (!account) {
-      const created = await client.accounts.create({
-        type: "express", country: "US", email: partner.email, business_type: "individual",
-        capabilities: { transfers: { requested: true } },
-        business_profile: { product_description: `Independent Managing Partner for DSP Connect (${LEGAL_ENTITY})` },
-        metadata: { partner_id: partner.id },
+      // Partners only receive commission, so the account is set up to receive transfers and nothing else.
+      const created = await client.v2.core.accounts.create({
+        contact_email: partner.email, display_name: partner.name, dashboard: "express",
+        identity: { country: "us", entity_type: "individual" },
+        defaults: { responsibilities: { fees_collector: "application", losses_collector: "application" } },
+        configuration: { recipient: { capabilities: { stripe_balance: { stripe_transfers: { requested: true } } } } },
+        metadata: { partner_id: partner.id, role: `Managing Partner for DSP Connect (${LEGAL_ENTITY})` },
       });
       account = created.id;
       await secretRpc("partner_set_payouts", { p_token: token, p_account: account, p_ready: false });
     }
     const origin = new URL(req.url).origin;
-    const link = await client.accountLinks.create({
-      account, type: "account_onboarding",
-      refresh_url: `${origin}/partners/join/${token}`, return_url: `${origin}/partners/join/${token}?back=1`,
+    const link = await client.v2.core.accountLinks.create({
+      account,
+      use_case: { type: "account_onboarding", account_onboarding: { refresh_url: `${origin}/partners/join/${token}`, return_url: `${origin}/partners/join/${token}?back=1` } },
     });
     return NextResponse.json({ url: link.url });
   } catch (err) {
