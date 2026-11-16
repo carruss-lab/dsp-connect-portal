@@ -86,8 +86,7 @@ async function clientNotices(r: Report, l: FeedLead, today: string) {
     await deliver(r, l.id, "lead", `low_budget_${Math.round(b.paid)}`, l.email, "Your ad budget is running low",
       hi(l) + `<p>You have <b>${usd(b.left)}</b> of your ${usd(b.paid)} ad budget left.` +
       (b.daysLeft !== null ? ` At your current pace that is about <b>${b.daysLeft} more day${b.daysLeft === 1 ? "" : "s"}</b> of advertising.` : "") + `</p>` +
-      `<p><b>What we recommend:</b> add budget now so your ads keep running without a break. Ads that stop and restart lose some of what the system has learned.</p>` +
-      `<p>Reply to this email with the amount you would like to add and we will send you a payment link.</p>`);
+      `<p>This is for your information. When the budget is used, your ads pause until you decide what to do next. Reply to this email if you have questions.</p>`);
   }
   if (l.partner_id && l.partner_email && paidDays <= 3) {
     await deliver(r, l.id, "lead", "partner_client_paid", l.partner_email, `New client: ${l.business || "a client you referred"} has opened an account`,
@@ -96,13 +95,62 @@ async function clientNotices(r: Report, l: FeedLead, today: string) {
   }
 }
 
+// Recommendations never include adding money. They are about getting more from the budget already there.
+function clientTips(l: FeedLead, today: string): string[] {
+  const live = daysSince(l.live_at, today);
+  const tips: string[] = [];
+  if (live < 14) tips.push(`<b>Leave your ads as they are for now.</b> You are in the first two weeks, when the system is still learning who responds. Changes now reset that learning.`);
+  if (live >= 14 && live < 21) tips.push(`<b>Check we are counting the right result.</b> Tell us what a good lead looks like for you (a call, a form, a booking), so we can aim your ads at more of them.`);
+  if (live >= 42) tips.push(`<b>Send us fresh ads.</b> Your ads have run for six weeks. Response usually falls once the same people have seen the same ad many times.`);
+  if (!tips.length) tips.push(`<b>No action needed this week.</b>`);
+  return tips;
+}
+
+/** What a Managing Partner should raise with one of their clients, as a consultant would. Never about adding money. */
+function partnerAdvice(l: FeedLead, today: string): string[] {
+  const out: string[] = [];
+  const who = esc(l.business || "the client");
+  if (!l.live_at) {
+    const left = l.setup_due ? Math.round((Date.parse(l.setup_due) - Date.parse(today)) / 86400000) : null;
+    if (!l.step_ads_at) out.push(`Their ads are not approved yet. Ask ${who} for their images or video, logo and the web page people should land on. Missing ads are the most common reason a launch runs late.`);
+    if (!l.step_tracking_at) out.push(`Tracking is not on their website yet. Find out who manages the site and introduce that person to us.`);
+    if (left !== null && left <= 3) out.push(left < 0 ? `Their launch is ${-left} day${left === -1 ? "" : "s"} late. Call them today so they hear it from you first.` : `Their launch is due in ${left} day${left === 1 ? "" : "s"}. Check nothing is waiting on them.`);
+    if (!out.length) out.push(`Setup is on track. Tell them what the first two weeks will look like, so early numbers do not worry them.`);
+    return out;
+  }
+  const live = daysSince(l.live_at, today);
+  const b = budget(l);
+  if (live < 14) out.push(`They are in the two-week learning period. Set the expectation that results settle after it, and advise against changing ads or audience until then.`);
+  if (b.week <= 0 && live >= 3) out.push(`No ad spend is on record for the last 7 days. Check in: their ads may be paused or waiting on approval.`);
+  if (live >= 14 && live < 28) out.push(`Ask what counts as a good lead for them, and confirm that is what tracking is counting. Results can only be improved against the right target.`);
+  if (live >= 28) out.push(`Book a results review. Walk through which ads and placements bring leads, and agree one change to test over the next two weeks.`);
+  if (live >= 42) out.push(`Their ads have run for six weeks. Recommend fresh ads; response usually falls once the same people have seen the same ad many times.`);
+  if (!out.length) out.push(`Nothing needs raising this week. A short check-in still helps the relationship.`);
+  return out;
+}
+
+/** Monday brief for each Managing Partner: every client credited to them, with what to raise. */
+async function partnerBriefs(r: Report, f: Feed) {
+  const mine = new Map<string, FeedLead[]>();
+  for (const l of f.leads) if (l.partner_id && l.partner_email) mine.set(l.partner_id, [...(mine.get(l.partner_id) || []), l]);
+  for (const [pid, leads] of mine) {
+    const first = leads[0];
+    const blocks = leads.map((l) => {
+      const b = budget(l);
+      const state = l.live_at ? `Live since ${longDay(l.live_at)} · ${usd(b.week)} ad spend in the last 7 days` : `In setup · ${STEPS.filter(([k]) => l[k]).length} of ${STEPS.length} steps done${l.setup_due ? ` · due live ${longDay(l.setup_due)}` : ""}`;
+      return `<p style="margin:20px 0 4px"><b>${esc(l.business || l.email)}</b><br><span style="color:#5B6577">${state}</span></p><ul>${partnerAdvice(l, f.today).map((t) => `<li style="margin:4px 0">${t}</li>`).join("")}</ul>`;
+    }).join("");
+    await deliver(r, pid, "partner", `brief_${f.today}`, first.partner_email!, `Your client brief: ${leads.length} account${leads.length === 1 ? "" : "s"}`,
+      `<p>Hello${first.partner_name ? " " + esc(first.partner_name.split(" ")[0]) : ""},</p><p>Here is what to raise with each of your clients this week.</p>${blocks}` +
+      `<p>Want help preparing for a client conversation? Use the chat on our website.</p>`);
+    await syncPerson({ email: first.partner_email!, name: first.partner_name, role: "managing_partner" });
+  }
+}
+
 async function weekly(r: Report, l: FeedLead, today: string) {
   const b = budget(l);
   if (!l.live_at || b.week <= 0) return; // no spend on record for the week: the team is told instead
-  const tips: string[] = [];
-  if (b.daysLeft !== null && b.daysLeft < 14) tips.push(`<b>Add budget this week.</b> At your current pace your budget lasts about ${b.daysLeft} more day${b.daysLeft === 1 ? "" : "s"}. Topping up before it runs out keeps your ads running without a break.`);
-  if (daysSince(l.live_at, today) < 14) tips.push(`<b>Leave your ads as they are for now.</b> You are in the first two weeks, when the system is still learning who responds. Changes now reset that learning.`);
-  if (!tips.length) tips.push(`<b>No action needed this week.</b> Your budget is on pace.`);
+  const tips = clientTips(l, today);
   await deliver(r, l.id, "lead", `weekly_${today}`, l.email, `Your weekly summary: ${usd(b.week)} spent, ${usd(b.left)} left`,
     hi(l) + `<p>Here is your account for the last 7 days.</p>` +
     `<table style="border-collapse:collapse"><tr><td style="padding:4px 16px 4px 0;color:#5B6577">Spent in the last 7 days</td><td><b>${usd(b.week)}</b></td></tr>` +
@@ -169,6 +217,7 @@ export async function runNotices(opts: { lead?: string; weekly?: boolean } = {})
       r.failed.push(`${l.business || l.email}: ${err instanceof Error ? err.message : "error"}`);
     }
   }
+  if (!opts.lead && opts.weekly) await partnerBriefs(r, f);
   if (!opts.lead) await teamDigest(r, f);
   return r;
 }

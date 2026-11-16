@@ -292,7 +292,7 @@ export default function Admin() {
             <button className="btn btn-line" disabled={busy} onClick={() => tell({ weekly: true })}>Send weekly summaries now</button>
           </div>
         </div>
-        <p className="small">Clients are emailed when a setup step is ticked, when they go live, when their budget runs low, and every Monday with a summary. The team gets one list each morning. These run by themselves; the buttons are for running them early. Nothing is ever sent twice.</p>
+        <p className="small">Clients are emailed when a setup step is ticked, when they go live, when their budget runs low, and every Monday with a summary. Managing Partners get a Monday brief on each of their clients. The team gets one list each morning. These run by themselves; the buttons are for running them early. Nothing is ever sent twice.</p>
         {notices.length === 0 ? <p className="p">No messages yet.</p> : (
           <div className="tablebox"><table>
             <thead><tr><th scope="col">When</th><th scope="col">To</th><th scope="col">Message</th><th scope="col">Result</th></tr></thead>
