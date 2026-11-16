@@ -9,5 +9,5 @@ export default async function DemoPage({ searchParams }: PageProps<"/demo">) {
   const pick = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) || "";
   const industry = INDUSTRIES.includes(pick(q.industry)) && pick(q.industry) !== "Other" ? pick(q.industry) : "Local";
   const market = pick(q.market).replace(/[^\p{L}\p{N} ,.'-]/gu, "").slice(0, 60) || "your area";
-  return <Demo industry={industry} market={market} />;
+  return <Demo industry={industry} market={market} agency={pick(q.view) === "agency"} />;
 }

@@ -52,7 +52,7 @@ export default async function ComparePage({ params }: PageProps<"/[slug]">) {
               </tbody>
             </table>
           </div>
-          <p className="small">{c.name} details as of {CHECKED}. Check their site for current terms.</p>
+          <p className="small">{c.name} details are from public sources as of {CHECKED} and may have changed. Check their site for current terms.</p>
         </section>
 
         <section className="grid cols-2">

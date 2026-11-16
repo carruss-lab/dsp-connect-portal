@@ -37,7 +37,11 @@ export default function LeadForm({ kind, cta }: { kind: Kind; cta: string }) {
       if (kind === "market_check") {
         try { sessionStorage.setItem("demo_ok", "1"); } catch {}
         const q = new URLSearchParams({ industry: String(data.industry || ""), market: String(data.market || "") });
-        if (location.pathname === "/demo") location.reload();
+        if (location.pathname === "/demo") {
+          const cur = new URLSearchParams(location.search);
+          if (cur.get("view")) q.set("view", cur.get("view")!);
+          location.assign(`/demo?${q}`);
+        }
         else location.assign(`/demo?${q}`);
         return;
       }

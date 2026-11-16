@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Footer, Header } from "@/components/Chrome";
 import LeadForm from "@/components/LeadForm";
 import { SETUP_DAYS, SHARE_PCT } from "@/lib/site";
@@ -29,6 +30,7 @@ export default function Agencies() {
               <p className="lead" style={{ maxWidth: 560 }}>
                 Run your clients&apos; advertising across apps and websites on our platform, under a revenue share agreement.
               </p>
+              <Link className="btn btn-line" href="/demo?view=agency" style={{ alignSelf: "flex-start" }}>See the agency demo</Link>
               <div className="grid" style={{ gridTemplateColumns: "repeat(3,minmax(0,1fr))", gap: 16, maxWidth: 520 }}>
                 {[50000, 150000, 500000].map((s) => (
                   <div key={s}><div className="money" style={{ fontSize: 24 }}>{money(s)}</div><div className="small">a month at ${s / 1000}k managed spend</div></div>

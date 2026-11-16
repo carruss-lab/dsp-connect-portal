@@ -3,13 +3,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import LeadForm from "./LeadForm";
-import { MIN_BUDGET } from "@/lib/site";
+import { MIN_BUDGET, SHARE_PCT } from "@/lib/site";
 
 /* The demo follows the layout of the client platform screen for screen.
    Every figure below is sample data, fixed so the account is consistent. */
 
 type Sec =
-  | "Explore" | "Dashboard" | "Campaigns" | "Audience" | "Conversion Tracking" | "Analytics" | "Traffic Funnel"
+  | "Clients" | "Explore" | "Dashboard" | "Campaigns" | "Audience" | "Conversion Tracking" | "Analytics" | "Traffic Funnel"
   | "Create new campaign" | "Creative Assets" | "Allowlist / Blocklist" | "Retargeting" | "Custom Locations" | "Billing" | "Media plannings" | "Autopilot";
 
 const NAV: { label: string; sec?: Sec; icon: string; children?: Sec[] }[] = [
@@ -167,8 +167,10 @@ function Builder({ industry, market, onCancel }: { industry: string; market: str
   );
 }
 
-export default function Demo({ industry, market }: { industry: string; market: string }) {
-  const [sec, setSec] = useState<Sec>("Explore");
+const CLIENTS_ICON = "M4 20V8l8-4 8 4v12zM9 20v-6h6v6";
+
+export default function Demo({ industry, market, agency = false }: { industry: string; market: string; agency?: boolean }) {
+  const [sec, setSec] = useState<Sec>(agency ? "Clients" : "Explore");
   const [open, setOpen] = useState<Record<string, boolean>>({ Analytics: false, Planning: false });
   const [toast, setToast] = useState(false);
   const [tour, setTour] = useState<number | null>(-1);
@@ -221,7 +223,7 @@ export default function Demo({ industry, market }: { industry: string; market: s
       <aside className="dm-side">
         <div className="dm-logo"><Image src="/logo.png" alt="" width={28} height={28} style={{ background: "#fff", borderRadius: 6, padding: 2 }} /> DSP Connect</div>
         <nav aria-label="Platform sections">
-          {NAV.map((item) =>
+          {(agency ? [{ label: "Clients", sec: "Clients" as Sec, icon: CLIENTS_ICON }, ...NAV] : NAV).map((item) =>
             item.children ? (
               <div key={item.label}>
                 <button type="button" className="dm-nav" aria-expanded={!!open[item.label]} data-on={item.children.includes(sec) || undefined}
@@ -246,14 +248,14 @@ export default function Demo({ industry, market }: { industry: string; market: s
           <div className="dm-crumb"><span aria-hidden="true">⌂</span> / {sec}</div>
           <div className="dm-top-r">
             <span>Balance: <strong style={{ color: "#0B7A3B" }}>{balance}</strong></span>
-            <span>UTC-07:00</span><span>EN</span><span>Demo User</span>
-            <Link className="dm-btn dm-btn-blue" href="/open-account">Open your account</Link>
+            <span>UTC-07:00</span><span>EN</span><span>{agency ? "Demo Agency" : "Demo User"}</span>
+            <Link className="dm-btn dm-btn-blue" href={agency ? "/agencies" : "/open-account"}>{agency ? "Ask about an agreement" : "Open your account"}</Link>
           </div>
         </header>
-        <div className="dm-note">Demo account with sample data for a {industry.toLowerCase()} business in {market}. Not real results.</div>
+        <div className="dm-note">{agency ? "Demo agency account with sample clients and sample data. Not real results." : `Demo account with sample data for a ${industry.toLowerCase()} business in ${market}. Not real results.`}</div>
 
         <div className="dm-body">
-          {tour !== null && sec !== "Create new campaign" && (
+          {tour !== null && !agency && sec !== "Create new campaign" && (
             <div className="dm-tour" role="region" aria-label="Guided tour">
               {tour === -1 ? (
                 <>
@@ -276,6 +278,25 @@ export default function Demo({ industry, market }: { industry: string; market: s
           {sec === "Create new campaign" && <Builder industry={industry} market={market} onCancel={() => go("Campaigns")} />}
 
           {toast && <div className="dm-toast" role="status">This is a demo, so nothing is saved. <Link href="/open-account">Open your account</Link> to do this for real.</div>}
+
+          {sec === "Clients" && (() => {
+            const rows: [string, string, number][] = [[`${industry} client · ${market}`, industry, tot.spend], ["Auto dealer client", "Automotive", 12640], ["Dental practice client", "Healthcare", 8930.4], ["Home repair client", "Home Services", 6105.3], ["Real estate client", "Real Estate", 2210.75]];
+            const total = rows.reduce((a, r) => a + r[2], 0);
+            return (
+              <>
+                <Head title="Clients" action={<Act>⊕ Add client</Act>} />
+                <div className="dm-kpis">
+                  {[["Clients", String(rows.length)], ["Managed spend, last 14 days", usd(total)], [`Your ${SHARE_PCT}% revenue share`, usd((total * SHARE_PCT) / 100)]].map(([k, v]) => (
+                    <div className="dm-card" key={k}><div className="dm-k">{k}</div><div className="dm-v">{v}</div></div>
+                  ))}
+                </div>
+                <p>Every client has their own login and sees only their own campaigns. You see all of them here.</p>
+                <Table head={["Client", "Industry", "Own login", "Status", "Spend, last 14 days", `Your ${SHARE_PCT}% share`]}
+                  rows={rows.map(([name, ind, spend]) => [name, ind, "Yes", "Active", usd(spend), usd((spend * SHARE_PCT) / 100)])} />
+                <div><button type="button" className="dm-btn dm-btn-line" onClick={() => go("Dashboard")}>Open the first client&apos;s account</button></div>
+              </>
+            );
+          })()}
 
           {sec === "Explore" && (
             <>
