@@ -1,7 +1,7 @@
 "use client";
 import { createClient, type Session } from "@supabase/supabase-js";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { SETUP_DAYS } from "@/lib/site";
+import { INDUSTRIES, SETUP_DAYS } from "@/lib/site";
 
 type Lead = {
   id: string; created_at: string; kind: string; email: string; name: string | null; business: string | null; phone: string | null;
@@ -84,14 +84,13 @@ export default function Admin() {
     if (error) { setMsg("Could not save: " + error.message); load(); }
   }
 
-  async function decide(id: string, status: "approved" | "declined") {
-    setMsg("");
-    setPartners((ps) => ps.map((p) => (p.id === id ? { ...p, status } : p)));
-    const { error } = await supabase!.from("partners").update({ status, decided_at: new Date().toISOString() }).eq("id", id);
-    if (error) { setMsg("Could not save: " + error.message); load(); }
+  async function invite(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault(); setMsg("");
+    const form = e.currentTarget; const d = Object.fromEntries(new FormData(form).entries()) as Record<string, string>;
+    const { error } = await supabase!.from("partners").insert({ name: d.name.trim(), email: d.email.trim().toLowerCase(), vertical: d.vertical, invited_by: session!.user.email });
+    if (error) setMsg(error.code === "23505" ? "That email is already on the partner list." : "Could not save: " + error.message);
+    else { form.reset(); load(); }
   }
-  const applied = partners.filter((p) => p.status === "applied");
-  const decided = partners.filter((p) => p.status !== "applied");
 
   return (
     <main className="wrap stack g32" style={{ padding: "40px 32px 80px" }}>
@@ -153,26 +152,19 @@ export default function Admin() {
       </section>
 
       <section className="stack g16">
-        <h2 className="h3" style={{ fontSize: 18 }}>Managing Partner applications ({applied.length} to review)</h2>
-        {applied.length === 0 && <p className="p">No applications waiting.</p>}
-        {applied.map((p) => (
-          <article key={p.id} className="card stack g12">
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "space-between", alignItems: "baseline" }}>
-              <div><div className="h3">{p.name}</div><div className="small"><a href={`mailto:${p.email}`}>{p.email}</a>{p.phone ? ` · ${p.phone}` : ""} · {[p.vertical, p.location].filter(Boolean).join(" · ")} · applied {day(p.created_at)}</div></div>
-              <div style={{ display: "flex", gap: 8 }}>
-                <button className="btn btn-blue" onClick={() => decide(p.id, "approved")}>Approve</button>
-                <button className="btn btn-line" onClick={() => decide(p.id, "declined")}>Decline</button>
-              </div>
-            </div>
-            {p.experience && <p className="p"><b>Background:</b> {p.experience}</p>}
-            {p.network && <p className="p"><b>Would bring:</b> {p.network}</p>}
-            {p.linkedin && <p className="small">{p.linkedin}</p>}
-          </article>
-        ))}
-        {decided.length > 0 && (
+        <h2 className="h3" style={{ fontSize: 18 }}>Managing Partners ({partners.length})</h2>
+        <p className="small">Invite only. Adding someone here puts them on the partner list. Invitation emails, admission signing and weekly Stripe payouts are the next pieces to be built.</p>
+        <form onSubmit={invite} className="card" style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "flex-end", background: "var(--ground)" }}>
+          <div className="field" style={{ flex: "1 1 180px" }}><label htmlFor="inv-name">Full name</label><input id="inv-name" name="name" className="input" required /></div>
+          <div className="field" style={{ flex: "1 1 220px" }}><label htmlFor="inv-email">Email</label><input id="inv-email" name="email" type="email" className="input" required /></div>
+          <div className="field" style={{ flex: "1 1 180px" }}><label htmlFor="inv-vertical">Industry</label>
+            <select id="inv-vertical" name="vertical" className="input">{INDUSTRIES.map((i) => <option key={i}>{i}</option>)}</select></div>
+          <button className="btn btn-blue">Add to partner list</button>
+        </form>
+        {partners.length > 0 && (
           <div className="tablebox"><table>
-            <thead><tr><th scope="col">Name</th><th scope="col">Email</th><th scope="col">Industry</th><th scope="col">Decision</th></tr></thead>
-            <tbody>{decided.map((p) => <tr key={p.id}><th scope="row">{p.name}</th><td>{p.email}</td><td>{p.vertical}</td><td>{p.status === "approved" ? "Approved" : "Declined"}</td></tr>)}</tbody>
+            <thead><tr><th scope="col">Name</th><th scope="col">Email</th><th scope="col">Industry</th><th scope="col">Status</th><th scope="col">Added</th></tr></thead>
+            <tbody>{partners.map((p) => <tr key={p.id}><th scope="row">{p.name}</th><td><a href={`mailto:${p.email}`}>{p.email}</a></td><td>{p.vertical}</td><td>{p.status[0].toUpperCase() + p.status.slice(1)}</td><td>{day(p.created_at)}</td></tr>)}</tbody>
           </table></div>
         )}
       </section>
