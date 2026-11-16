@@ -153,7 +153,7 @@ export default function Admin() {
 
       <section className="stack g16">
         <h2 className="h3" style={{ fontSize: 18 }}>Managing Partners ({partners.length})</h2>
-        <p className="small">Invite only. Adding someone here puts them on the partner list. Invitation emails, admission signing and weekly Stripe payouts are the next pieces to be built.</p>
+        <p className="small">Invite only. Adding someone here puts them on the partner list. Invitation emails, admission signing and daily Stripe payouts are the next pieces to be built.</p>
         <form onSubmit={invite} className="card" style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "flex-end", background: "var(--ground)" }}>
           <div className="field" style={{ flex: "1 1 180px" }}><label htmlFor="inv-name">Full name</label><input id="inv-name" name="name" className="input" required /></div>
           <div className="field" style={{ flex: "1 1 220px" }}><label htmlFor="inv-email">Email</label><input id="inv-email" name="email" type="email" className="input" required /></div>

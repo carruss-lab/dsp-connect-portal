@@ -14,7 +14,7 @@ const STEPS = [
   ["Admission", "You review and sign your admission documents online."],
   ["Training", "Complete the Managing Partner course: the product, the demo, the sales process and the rules."],
   ["Bring clients", "Register each client. They pay their ad budget online and we set them up."],
-  ["Get paid", `Earn ${SHARE_PCT}% of their qualified ad spend, paid every week.`],
+  ["Get paid", `Earn ${SHARE_PCT}% of their qualified ad spend, paid every day.`],
 ];
 const TOOLS = [
   ["A demo that sells", "Open a sample account set up for your prospect's industry and area, and build a practice campaign with them."],
@@ -37,12 +37,12 @@ export default function Partners() {
             <div className="eyebrow">By invitation only</div>
             <h1 className="h1">Sell DSP Connect in the industry you know. Earn {SHARE_PCT}% of what your clients spend.</h1>
             <p className="lead" style={{ maxWidth: 580 }}>Managing Partners are independent sellers who bring businesses in their industry onto DSP Connect. You bring the relationships. We provide the product, the training, the setup and the support.</p>
-            <div className="ticks"><span>{SHARE_PCT}% of qualified ad spend</span><span>Paid weekly</span><span>Independent, commission-only</span></div>
+            <div className="ticks"><span>{SHARE_PCT}% of qualified ad spend</span><span>Paid daily</span><span>Independent, commission-only</span></div>
           </div>
           <div className="card formcard stack g16" style={{ background: "var(--ground)" }}>
             <div className="h3" style={{ fontSize: 18 }}>How commission works</div>
             <p className="p">You earn <b>{SHARE_PCT}%</b> of the ad spend of clients you bring in, once that spend is <b>qualified</b>: the client is yours, under contract, live, invoiced and paid.</p>
-            <ul className="list"><li>Paid every week, to your bank account through Stripe</li><li>Paid after the client&apos;s funds are received</li><li>Refunds, chargebacks and unpaid invoices do not count</li></ul>
+            <ul className="list"><li>Paid every day, to your bank account through Stripe</li><li>Paid after the client&apos;s funds are received</li><li>Refunds, chargebacks and unpaid invoices do not count</li></ul>
             <p className="small">There is no salary and no guaranteed income. What you earn depends on the clients you bring and what they spend. Full terms are in the admission documents you review before signing.</p>
           </div>
         </div></section>
@@ -65,7 +65,7 @@ export default function Partners() {
 
         <section className="section band"><div className="wrap stack g16" style={{ maxWidth: 760 }}>
           <h2 className="h2">Have an invitation?</h2>
-          <p className="p" style={{ fontSize: 16 }}>Use the link in your invitation email to review your admission documents and set up your weekly payouts. There is no public application. If you were expecting an invitation and have not received it, reply to the person who contacted you.</p>
+          <p className="p" style={{ fontSize: 16 }}>Use the link in your invitation email to review your admission documents and set up your daily payouts. There is no public application. If you were expecting an invitation and have not received it, reply to the person who contacted you.</p>
         </div></section>
       </main>
       <footer className="footer"><div className="wrap"><div>© {new Date().getFullYear()} {LEGAL_ENTITY}. DSP Connect is a service of {LEGAL_ENTITY}.</div><div>Managing Partners are independent contractors, not employees.</div></div></footer>
