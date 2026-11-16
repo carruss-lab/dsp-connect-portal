@@ -18,6 +18,9 @@ export default function LeadForm({ kind, cta }: { kind: Kind; cta: string }) {
     const o: Record<string, string> = {};
     for (const k of ["budget", "formats", "goals", "market", "industry"]) { const v = q.get(k); if (v) o[k] = v.slice(0, 200); }
     if (Object.keys(o).length) setPre(o);
+    // A partner's link (?p=CODE) is remembered for this visit so their client is credited to them.
+    const code = q.get("p");
+    if (code && /^[A-Za-z0-9]{4,20}$/.test(code)) { try { sessionStorage.setItem("partner_code", code.toUpperCase()); } catch {} }
   }, []);
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
@@ -26,11 +29,13 @@ export default function LeadForm({ kind, cta }: { kind: Kind; cta: string }) {
     setState("busy");
     const data = Object.fromEntries(new FormData(e.currentTarget).entries());
     const formats = new FormData(e.currentTarget).getAll("formats").join(", ");
+    let partner_code = "";
+    try { partner_code = sessionStorage.getItem("partner_code") || ""; } catch {}
     try {
       const res = await fetch("/api/lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, formats, terms: data.terms === "on", kind, source: location.pathname }),
+        body: JSON.stringify({ ...data, formats, terms: data.terms === "on", kind, source: location.pathname, partner_code }),
       });
       const out = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(out.error || "Something went wrong. Please try again.");

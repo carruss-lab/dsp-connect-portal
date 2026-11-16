@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { notifyTeam } from "@/lib/email";
+import { syncPerson } from "@/lib/intercom";
 import { stripe } from "@/lib/payments";
 import { LEGAL_ENTITY, MIN_BUDGET } from "@/lib/site";
 
@@ -56,6 +57,7 @@ export async function POST(req: Request) {
     goals: clean(body.goals, 2000),
     monthly_spend: clean(body.monthly_spend, 60),
     source: clean(body.source, 120),
+    partner_code: clean(body.partner_code, 20).toUpperCase() || null,
   };
 
   const url = process.env.SUPABASE_URL;
@@ -80,7 +82,10 @@ export async function POST(req: Request) {
     return fail;
   }
 
-  await notifyTeam(kind, { ...row, id: undefined });
+  await Promise.all([
+    notifyTeam(kind, { ...row, id: undefined }),
+    syncPerson({ email, name: row.name, role: kind === "agency" ? "agency" : "prospect", status: "lead", industry: row.industry, market: row.market }),
+  ]);
 
   // Account sign-ups go on to pay their ad budget. If Stripe is not connected yet,
   // the form falls back to its thank-you message.

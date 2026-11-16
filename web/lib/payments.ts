@@ -1,5 +1,6 @@
 import Stripe from "stripe";
 import { confirmPayment, notifyTeam } from "./email";
+import { syncPerson } from "./intercom";
 
 export function stripe(): Stripe | null {
   const key = process.env.STRIPE_SECRET_KEY;
@@ -31,6 +32,7 @@ export async function markPaid(session: Stripe.Checkout.Session): Promise<"paid"
       await Promise.all([
         email ? confirmPayment(email, amount) : Promise.resolve(),
         notifyTeam("paid", { email, amount, sign_up: lead }),
+        email ? syncPerson({ email, role: "client", status: "paid_in_setup", setupDue: new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10) }) : Promise.resolve(),
       ]);
     }
     return "paid";
