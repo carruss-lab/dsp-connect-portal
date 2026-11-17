@@ -69,6 +69,15 @@ export async function POST(req: Request) {
   const html = m.html || `<div style="white-space:pre-wrap">${esc(text)}</div>`;
   const thread: Record<string, string> = {};
   for (const h of ["in-reply-to", "references"]) { const v = header(m.headers, h); if (v) thread[h === "references" ? "References" : "In-Reply-To"] = v; }
+  // Carry the sender's own custom headers across. Intercom marks its forwarding check with one, and
+  // some mail systems use them for threading. Headers added in transit by mail servers are left out.
+  const all: [string, string][] = !m.headers ? [] : Array.isArray(m.headers) ? m.headers.map((x) => [x.name, x.value] as [string, string]) : Object.entries(m.headers);
+  for (const [name, value] of all) {
+    const n = (name || "").toLowerCase();
+    if (!n.startsWith("x-") || /^x-(ses|amz|resend|spam|google|gm|received|forwarded|original|ms-|microsoft|mailgun|sg-|pm-)/.test(n) || typeof value !== "string" || value.length > 900) continue;
+    thread[name] = value;
+  }
+  if (/intercom/.test(sender)) console.log("inbound: Intercom headers", all.map(([n]) => n).join(", "));
 
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
