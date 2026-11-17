@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import Legal, { type Part } from "@/components/Legal";
 import { LEGAL_ENTITY, MIN_BUDGET, SETUP_DAYS } from "@/lib/site";
 
-export const metadata: Metadata = { title: "Client terms", description: "The terms that apply when you open a DSP Connect account.", alternates: { canonical: "/terms" } };
+export const metadata: Metadata = pageMeta({ title: "Client terms", description: "The terms that apply when you open a DSP Connect account.", path: "/terms" });
 
 const PARTS: Part[] = [
   ["Who these terms are between", [
@@ -43,5 +44,5 @@ const PARTS: Part[] = [
 ];
 
 export default function Terms() {
-  return <Legal title="Client terms" intro="Plain terms for opening and using a DSP Connect account. Please read them before you pay." parts={PARTS} />;
+  return <Legal path="/terms" title="Client terms" intro="Plain terms for opening and using a DSP Connect account. Please read them before you pay." parts={PARTS} />;
 }

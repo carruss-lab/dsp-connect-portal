@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import Legal, { type Part } from "@/components/Legal";
 import { LEGAL_ENTITY } from "@/lib/site";
 
-export const metadata: Metadata = { title: "Privacy policy", description: "What information DSP Connect collects, why, and your choices.", alternates: { canonical: "/privacy" } };
+export const metadata: Metadata = pageMeta({ title: "Privacy policy", description: "What information DSP Connect collects, why, and your choices.", path: "/privacy" });
 
 const PARTS: Part[] = [
   ["Who we are", [`DSP Connect is a service of ${LEGAL_ENTITY}. This policy covers this website and the DSP Connect service.`]],
@@ -38,5 +39,5 @@ const PARTS: Part[] = [
 ];
 
 export default function Privacy() {
-  return <Legal title="Privacy policy" intro="What we collect, why we collect it, who sees it, and what you can ask us to do." parts={PARTS} />;
+  return <Legal path="/privacy" title="Privacy policy" intro="What we collect, why we collect it, who sees it, and what you can ask us to do." parts={PARTS} />;
 }

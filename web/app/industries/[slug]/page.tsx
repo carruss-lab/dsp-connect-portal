@@ -4,7 +4,7 @@ import { IndustryNote } from "@/components/Personal";
 import { notFound } from "next/navigation";
 import { Footer, Header, TalkBand } from "@/components/Chrome";
 import { INDUSTRY_PAGES, industryBySlug } from "@/lib/industries";
-import { JsonLd, ORG, SITE_URL, crumbs, faqGraph } from "@/lib/seo";
+import { ID, JsonLd, SITE_URL, pageGraph, pageMeta } from "@/lib/seo";
 import { MIN_BUDGET, SETUP_DAYS } from "@/lib/site";
 
 export const dynamicParams = false;
@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: PageProps<"/industries/[slug]
   const i = industryBySlug((await params).slug);
   if (!i) return {};
   const title = `Programmatic advertising for ${i.name.toLowerCase()}`;
-  return { title, description: i.intro, alternates: { canonical: `/industries/${i.slug}` }, openGraph: { title: `${title} | DSP Connect`, description: i.intro, url: `/industries/${i.slug}` } };
+  return pageMeta({ title, description: i.intro, path: `/industries/${i.slug}` });
 }
 
 export default async function IndustryPage({ params }: PageProps<"/industries/[slug]">) {
@@ -25,12 +25,16 @@ export default async function IndustryPage({ params }: PageProps<"/industries/[s
   const demo = `/?industry=${encodeURIComponent(i.name)}#market`;
   return (
     <>
-      <JsonLd data={crumbs([["Home", "/"], ["Industries", "/industries"], [i.name, `/industries/${i.slug}`]])} />
-      <JsonLd data={faqGraph(i.faq)} />
-      <JsonLd data={{
-        "@context": "https://schema.org", "@type": "Service", name: `Programmatic advertising for ${i.name.toLowerCase()}`, serviceType: "Programmatic advertising",
-        description: i.intro, url: `${SITE_URL}/industries/${i.slug}`, provider: ORG, areaServed: "US", audience: { "@type": "BusinessAudience", name: i.name },
-      }} />
+      <JsonLd data={pageGraph({
+        path: `/industries/${i.slug}`, name: `Programmatic advertising for ${i.name.toLowerCase()}`, description: i.intro,
+        trail: [["Home", "/"], ["Industries", "/industries"], [i.name, `/industries/${i.slug}`]], faq: i.faq,
+        main: {
+          "@type": "Service", "@id": `${SITE_URL}/industries/${i.slug}#service`, name: `Programmatic advertising for ${i.name.toLowerCase()}`,
+          serviceType: "Programmatic advertising", category: i.name, description: i.intro, url: `${SITE_URL}/industries/${i.slug}`,
+          provider: { "@id": ID.org }, isRelatedTo: { "@id": ID.ads }, areaServed: { "@type": "Country", name: "United States" },
+          audience: { "@type": "BusinessAudience", name: `${i.name} businesses` },
+        },
+      })} />
       <Header />
       <main>
         <section className="wrap narrow stack g24" style={{ padding: "64px 32px 56px" }}>

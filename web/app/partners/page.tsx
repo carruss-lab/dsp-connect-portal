@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import { Footer, Header } from "@/components/Chrome";
 import ApplyForm from "@/components/partner/ApplyForm";
+import { JsonLd, PARTNER_PROGRAM, SITE_URL, pageGraph, pageMeta } from "@/lib/seo";
 import { INDUSTRIES, LEGAL_ENTITY, MIN_BUDGET, SETUP_DAYS, SHARE_PCT } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "Become an Authorized Sales Partner",
-  description: `Sell DSP Connect to the local businesses you already call on. Earn ${SHARE_PCT}% of your clients' ad spend, paid daily, with residuals for as long as they spend. For ISOs, merchant-services agents and independent sales pros.`,
-  alternates: { canonical: "/partners" },
-};
+const DESCRIPTION = `Sell DSP Connect to the local businesses you already call on. Earn ${SHARE_PCT}% of your clients' ad spend, paid daily, with residuals for as long as they spend. For ISOs, merchant-services agents and independent sales pros.`;
+export const metadata: Metadata = pageMeta({
+  title: "Become an Authorized Sales Partner", description: DESCRIPTION, path: "/partners", image: `${SITE_URL}/partners/opengraph-image`,
+  ogTitle: `Authorized Sales Partner program: earn ${SHARE_PCT}% of client ad spend, for life | DSP Connect`,
+});
 
 const STEPS = [
   ["Apply", "Tell us who you sell to today. It takes three minutes."],
@@ -34,6 +35,15 @@ const FAQ = [
 export default function Partners() {
   return (
     <>
+      <JsonLd data={pageGraph({
+        path: "/partners", name: "Become an Authorized Sales Partner", description: DESCRIPTION,
+        trail: [["Home", "/"], ["Sales Partners", "/partners"]], main: PARTNER_PROGRAM, faq: FAQ,
+        image: `${SITE_URL}/partners/opengraph-image`,
+        nodes: [{
+          "@type": "HowTo", "@id": `${SITE_URL}/partners#how`, name: "How to become a DSP Connect Authorized Sales Partner",
+          step: STEPS.map(([name, text], i) => ({ "@type": "HowToStep", position: i + 1, name, text, url: `${SITE_URL}/partners#apply` })),
+        }],
+      })} />
       <Header />
       <main>
         <section className="hero"><div className="wrap" style={{ alignItems: "flex-start" }}>

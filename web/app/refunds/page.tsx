@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import Legal, { type Part } from "@/components/Legal";
 import { SETUP_DAYS } from "@/lib/site";
 
-export const metadata: Metadata = { title: "Refund policy", description: "What happens to your ad budget if you cancel your DSP Connect account.", alternates: { canonical: "/refunds" } };
+export const metadata: Metadata = pageMeta({ title: "Refund policy", description: "What happens to your ad budget if you cancel your DSP Connect account.", path: "/refunds" });
 
 const PARTS: Part[] = [
   ["The short version", [
@@ -24,5 +25,5 @@ const PARTS: Part[] = [
 ];
 
 export default function Refunds() {
-  return <Legal title="Refund policy" intro="What happens to your money if you change your mind." parts={PARTS} />;
+  return <Legal path="/refunds" title="Refund policy" intro="What happens to your money if you change your mind." parts={PARTS} />;
 }

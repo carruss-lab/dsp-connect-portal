@@ -1,12 +1,14 @@
 import { Footer, Header } from "@/components/Chrome";
+import { ID, JsonLd, pageGraph } from "@/lib/seo";
 import { LEGAL_ENTITY, LEGAL_UPDATED, SUPPORT_EMAIL } from "@/lib/site";
 
 export type Part = [heading: string, paragraphs: string[]];
 
 /** One layout for the terms, privacy and refund pages, so they read the same way. */
-export default function Legal({ title, intro, parts }: { title: string; intro: string; parts: Part[] }) {
+export default function Legal({ title, intro, parts, path }: { title: string; intro: string; parts: Part[]; path: string }) {
   return (
     <>
+      <JsonLd data={pageGraph({ path, name: title, description: intro, trail: [["Home", "/"], [title, path]], about: [ID.org], modified: new Date(LEGAL_UPDATED) })} />
       <Header />
       <main className="wrap stack g32" style={{ maxWidth: 800, padding: "64px 32px 80px" }}>
         <div className="stack g12">

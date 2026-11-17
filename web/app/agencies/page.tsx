@@ -3,13 +3,10 @@ import Link from "next/link";
 import { Footer, Header, TalkBand } from "@/components/Chrome";
 import LeadForm from "@/components/LeadForm";
 import { SETUP_DAYS, SHARE_PCT } from "@/lib/site";
-import { JsonLd, crumbs } from "@/lib/seo";
+import { AGENCY_PROGRAM, JsonLd, SITE_URL, pageGraph, pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  alternates: { canonical: "/agencies" },
-  title: "For agencies",
-  description: `Run client campaigns on DSP Connect and earn ${SHARE_PCT}% of the ad spend you manage.`,
-};
+const DESCRIPTION = `Run client campaigns on DSP Connect and earn ${SHARE_PCT}% of the ad spend you manage.`;
+export const metadata: Metadata = pageMeta({ title: "For agencies", description: DESCRIPTION, path: "/agencies", image: `${SITE_URL}/agencies/opengraph-image`, ogTitle: `For agencies: keep your clients, earn ${SHARE_PCT}% of what they spend | DSP Connect` });
 
 const POINTS = [
   ["Your clients stay yours", "We never contact, bill or sell to your clients. You own the relationship."],
@@ -22,7 +19,7 @@ const money = (s: number) => `$${((s * SHARE_PCT) / 100).toLocaleString("en-US")
 export default function Agencies() {
   return (
     <>
-      <JsonLd data={crumbs([["Home", "/"], ["For agencies", "/agencies"]])} />
+      <JsonLd data={pageGraph({ path: "/agencies", name: "For agencies", description: DESCRIPTION, trail: [["Home", "/"], ["For agencies", "/agencies"]], main: AGENCY_PROGRAM, image: `${SITE_URL}/agencies/opengraph-image` })} />
       <Header />
       <main>
         <section className="hero">

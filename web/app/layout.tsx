@@ -16,8 +16,8 @@ export const metadata: Metadata = {
     "Advertising on apps and websites for business owners and agencies. Done-for-you setup, live within 14 days, from $750.",
   metadataBase: new URL(SITE_URL),
   alternates: { canonical: "./" },
-  openGraph: { type: "website", siteName: "DSP Connect", locale: "en_US", url: "./" },
-  twitter: { card: "summary_large_image" },
+  openGraph: { type: "website", siteName: "DSP Connect", locale: "en_US", url: "./", images: [{ url: "/og", width: 1200, height: 630, alt: "DSP Connect. Done-for-you setup." }] },
+  twitter: { card: "summary_large_image", images: ["/og"] },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -3,18 +3,15 @@ import { Footer, Header, TalkBand } from "@/components/Chrome";
 import LeadForm from "@/components/LeadForm";
 import { Hello } from "@/components/Personal";
 import { MIN_BUDGET, SETUP_DAYS } from "@/lib/site";
-import { JsonLd, crumbs } from "@/lib/seo";
+import { ADS_SERVICE, JsonLd, pageGraph, pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  alternates: { canonical: "/open-account" },
-  title: "Open your account",
-  description: `Fill in your details, pay your ad budget online, and be live within ${SETUP_DAYS} days.`,
-};
+const DESCRIPTION = `Fill in your details, pay your ad budget online, and be live within ${SETUP_DAYS} days.`;
+export const metadata: Metadata = pageMeta({ title: "Open your account", description: DESCRIPTION, path: "/open-account" });
 
 export default function OpenAccount() {
   return (
     <>
-      <JsonLd data={crumbs([["Home", "/"], ["Open your account", "/open-account"]])} />
+      <JsonLd data={pageGraph({ path: "/open-account", name: "Open your account", description: DESCRIPTION, trail: [["Home", "/"], ["Open your account", "/open-account"]], main: ADS_SERVICE })} />
       <Header />
       <main className="wrap" style={{ padding: "64px 32px 80px", display: "flex", flexWrap: "wrap", gap: 56, alignItems: "flex-start" }}>
         <div className="stack g24" style={{ flex: "1 1 380px", minWidth: 0 }}>

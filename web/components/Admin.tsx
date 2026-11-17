@@ -368,6 +368,7 @@ export default function Admin() {
           <button className="btn btn-blue">Save spend</button>
         </form>
         {note && <p className="note note-ok" role="status">{note}</p>}
+        <p className="small">Automatic payouts: every morning at 8:00, commission that has passed its 7-day hold is approved and paid through Stripe, as long as the partner is not paused, the client has paid, the partner has been paid before, and the partner&apos;s total is $1,000 or less that day. A partner&apos;s first payout and anything over the limit wait here for you to approve; the daily email lists them. To stop a payment, Reverse the line before its release date.</p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center", justifyContent: "space-between" }}>
           <div className="small">Awaiting approval: <b>{usd(sum(open.filter((l) => l.status === "pending")))}</b> · Approved and due today: <b>{usd(sum(dueApproved))}</b></div>
           <button className="btn btn-ink" disabled={busy || dueApproved.length === 0} onClick={runPayout}>{busy ? "Paying…" : `Pay ${usd(sum(dueApproved))} now`}</button>

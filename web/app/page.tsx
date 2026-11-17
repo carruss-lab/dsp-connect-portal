@@ -4,7 +4,7 @@ import { Footer, Header } from "@/components/Chrome";
 import LeadForm from "@/components/LeadForm";
 import { COMPARISONS } from "@/lib/compare";
 import { EXCHANGES, MIN_BUDGET, SETUP_DAYS, SHARE_PCT } from "@/lib/site";
-import { JsonLd, faqGraph, siteGraph } from "@/lib/seo";
+import { ADS_SERVICE, JsonLd, pageGraph } from "@/lib/seo";
 import { INDUSTRY_PAGES } from "@/lib/industries";
 import { MEETING_URL } from "@/lib/site";
 
@@ -38,8 +38,7 @@ const FAQ = [
 export default function Home() {
   return (
     <>
-      <JsonLd data={siteGraph} />
-      <JsonLd data={faqGraph(FAQ as unknown as [string, string][])} />
+      <JsonLd data={pageGraph({ path: "/", name: "DSP Connect | See what you get before you spend", description: `Advertising on apps and websites for business owners and agencies. Done-for-you setup, live within ${SETUP_DAYS} days, from $${MIN_BUDGET}.`, main: ADS_SERVICE, faq: FAQ })} />
       <Header />
       <main>
         <section className="hero">

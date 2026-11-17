@@ -168,7 +168,7 @@ async function weekly(r: Report, l: FeedLead, today: string) {
     `<p>Questions? Reply to this email or use the chat on our website.</p>`);
 }
 
-async function teamDigest(r: Report, f: Feed) {
+async function teamDigest(r: Report, f: Feed, extra: string[] = []) {
   const to = process.env.NOTIFY_EMAIL;
   if (!to) return;
   const lines: string[] = [];
@@ -185,8 +185,8 @@ async function teamDigest(r: Report, f: Feed) {
       if (daysSince(l.live_at, f.today) >= 2 && daysSince(l.last_spend_day ? l.last_spend_day + "T00:00:00Z" : null, f.today) > 3) lines.push(`<b>No spend entered:</b> ${name} has no ad spend on record for the last 3 days.`);
     }
   }
-  if (Number(f.pending_commission) > 0) lines.push(`<b>Commission to approve:</b> ${usd(f.pending_commission)} is waiting for approval.`);
-  if (Number(f.due_commission) > 0) lines.push(`<b>Commission to pay:</b> ${usd(f.due_commission)} is approved and due today.`);
+  lines.push(...extra);
+  if (Number(f.due_commission) > 0) lines.push(`<b>Approved commission not paid:</b> ${usd(f.due_commission)} is approved and due but was not sent. See the reasons above, or press Pay now in the back office.`);
   if ((f.applications_waiting || []).length) lines.push(`<b>Sales Partner applications to review:</b> ${(f.applications_waiting || []).map(esc).join(", ")}. Approve or decline them in the back office.`);
   for (const n of f.partners_not_ready || []) lines.push(`<b>Payout account missing:</b> ${esc(n)} has commission owed but has not finished Stripe payout setup.`);
   if (!lines.length) return;
@@ -326,7 +326,7 @@ async function sync(l: FeedLead) {
  * Sends whatever is due. With `lead`, only that client (used right after the team changes something).
  * Without it, every client plus the team list; `weekly` adds the weekly summaries.
  */
-export async function runNotices(opts: { lead?: string; weekly?: boolean } = {}): Promise<Report> {
+export async function runNotices(opts: { lead?: string; weekly?: boolean; extra?: string[] } = {}): Promise<Report> {
   const r: Report = { sent: [], failed: [], emailOn: emailOn() };
   const f = await secretRpc<Feed>("ops_feed", { p_lead: opts.lead || null });
   if (!opts.lead) await ensureAttributes();
@@ -345,7 +345,7 @@ export async function runNotices(opts: { lead?: string; weekly?: boolean } = {})
   if (!opts.lead) for (const a of f.agency || []) await agencyFollowUps(r, a).catch((err) => console.error("agency follow-up failed", a.id, err));
   if (!opts.lead) for (const p of f.partner_onboarding || []) await partnerOnboarding(r, p).catch((err) => console.error("partner onboarding failed", p.id, err));
   if (!opts.lead && opts.weekly) await partnerBriefs(r, f);
-  if (!opts.lead) await teamDigest(r, f);
+  if (!opts.lead) await teamDigest(r, f, opts.extra);
   return r;
 }
 

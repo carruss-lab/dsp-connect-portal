@@ -2,18 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Footer, Header, TalkBand } from "@/components/Chrome";
 import { INDUSTRY_PAGES } from "@/lib/industries";
-import { JsonLd, crumbs } from "@/lib/seo";
+import { JsonLd, pageGraph, pageMeta } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Industries",
-  description: "How DSP Connect sets up advertising for healthcare, legal, financial services, automotive, real estate, home services, franchise, hospitality and political advertisers.",
-  alternates: { canonical: "/industries" },
-};
+const DESCRIPTION = "How DSP Connect sets up advertising for healthcare, legal, financial services, automotive, real estate, home services, franchise, hospitality and political advertisers.";
+export const metadata: Metadata = pageMeta({ title: "Industries", description: DESCRIPTION, path: "/industries" });
 
 export default function Industries() {
   return (
     <>
-      <JsonLd data={crumbs([["Home", "/"], ["Industries", "/industries"]])} />
+      <JsonLd data={pageGraph({ path: "/industries", type: "CollectionPage", name: "Industries", description: DESCRIPTION, trail: [["Home", "/"], ["Industries", "/industries"]], items: INDUSTRY_PAGES.map((i) => ({ name: `Programmatic advertising for ${i.name.toLowerCase()}`, path: `/industries/${i.slug}` })) })} />
       <Header />
       <main>
         <section className="wrap narrow stack g32" style={{ padding: "64px 32px 80px" }}>
