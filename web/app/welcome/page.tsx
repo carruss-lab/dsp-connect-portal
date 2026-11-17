@@ -52,7 +52,7 @@ export default async function Welcome({ searchParams }: PageProps<"/welcome">) {
           </p>
         </div>
 
-        <ol className="grid cols-4" style={{ listStyle: "none", padding: 0, margin: 0 }}>
+        <ol className="grid" style={{ listStyle: "none", padding: 0, margin: 0, gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))" }}>
           {STEPS.map(([k, t, d], i) => (
             <li className="step stack g8" key={k} style={{ borderTopColor: s![k] ? "var(--blue)" : "var(--line)" }}>
               <div className="num">{String(i + 1).padStart(2, "0")} · {s![k] ? `Done ${day(s![k] as string)}` : "In progress"}</div>

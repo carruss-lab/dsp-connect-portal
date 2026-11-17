@@ -2,6 +2,8 @@ import { HELP_URL, LEGAL_ENTITY, SETUP_DAYS, siteOrigin } from "./site";
 
 // Sends through Resend. Does nothing until RESEND_API_KEY is set, so forms keep working without it.
 const FROM = process.env.EMAIL_FROM || "DSP Connect <dspsupport@getdspconnect.com>";
+// The sending address cannot receive mail, so replies go to a real inbox: REPLY_TO if set, otherwise the first team address.
+const REPLY_TO = process.env.REPLY_TO || (process.env.NOTIFY_EMAIL || "").split(",")[0].trim();
 export const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
 // The newer key name wins, so replacing a key never needs the old one deleted first.
@@ -16,7 +18,7 @@ export async function send(to: string, subject: string, html: string, replyTo?: 
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: FROM, to: to.split(",").map((t) => t.trim()).filter(Boolean), subject, html, ...(replyTo ? { reply_to: replyTo } : {}) }),
+      body: JSON.stringify({ from: FROM, to: to.split(",").map((t) => t.trim()).filter(Boolean), subject, html, ...(replyTo || REPLY_TO ? { reply_to: replyTo || REPLY_TO } : {}) }),
     });
     if (res.ok) { console.log("email accepted", subject, (await res.json().catch(() => ({}))).id); return { ok: true }; }
     const error = `${res.status} ${await res.text()}`;
