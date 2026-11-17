@@ -4,7 +4,7 @@ export const LEGAL_ENTITY = "Influence Crafters LLC";
 export const MIN_BUDGET = 750;
 export const SETUP_DAYS = 14;
 export const SHARE_PCT = 10;
-// Confirm with the platform provider before launch.
+// Number of ad exchanges reached (owner confirmed 50+, 2026-11-17).
 export const EXCHANGES = "50+";
 export const INDUSTRIES = [
   "Healthcare", "Legal", "Financial Services", "Automotive", "Real Estate",
