@@ -10,6 +10,7 @@ type Person = {
 export async function syncPerson(p: Person) {
   const token = process.env.INTERCOM_ACCESS_TOKEN;
   if (!token || !p.email) return;
+  await ensureAttributes();
   const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json", Accept: "application/json", "Intercom-Version": "2.11" };
   const custom_attributes: Record<string, string | number> = { customer_role: p.role };
   if (p.status) custom_attributes.account_status = p.status;
@@ -36,10 +37,13 @@ export async function syncPerson(p: Person) {
 /** The facts we keep on each person for Fin. Creates any that Intercom does not have yet. */
 const ATTRIBUTES: [string, "string" | "float" | "date"][] = [
   ["setup_progress", "string"], ["budget_remaining", "float"], ["spend_last_7_days", "float"], ["budget_days_left", "float"], ["went_live", "date"], ["setup_details_received", "string"], ["primary_goal", "string"], ["campaign_types", "string"],
+  // What Sales needs to see about a lead. Fin fills the same fields when it qualifies someone in chat.
+  ["business_name", "string"], ["business_website", "string"], ["monthly_ad_budget", "float"], ["lead_goal", "string"], ["lead_stage", "string"], ["sales_qualified", "string"], ["agency_client_count", "float"], ["agency_managed_spend", "string"],
 ];
+let ensured = false;
 export async function ensureAttributes() {
   const token = process.env.INTERCOM_ACCESS_TOKEN;
-  if (!token) return;
+  if (!token || ensured) return;
   const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json", Accept: "application/json", "Intercom-Version": "2.11" };
   try {
     const have = await fetch("https://api.intercom.io/data_attributes?model=contact", { headers });
@@ -49,6 +53,7 @@ export async function ensureAttributes() {
       const res = await fetch("https://api.intercom.io/data_attributes", { method: "POST", headers, body: JSON.stringify({ name, model: "contact", data_type }) });
       if (!res.ok) console.error("intercom attribute failed", name, res.status, await res.text());
     }
+    ensured = have.ok;
   } catch (err) {
     console.error("intercom attributes failed", err);
   }

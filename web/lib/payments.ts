@@ -33,7 +33,7 @@ export async function markPaid(session: Stripe.Checkout.Session): Promise<"paid"
       await Promise.all([
         email ? confirmPayment(email, amount, lead) : Promise.resolve(),
         notifyTeam("paid", { email, amount, sign_up: lead }),
-        email ? syncPerson({ email, role: "client", status: "paid_in_setup", setupDue: new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10) }) : Promise.resolve(),
+        email ? syncPerson({ email, role: "client", status: "paid_in_setup", setupDue: new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10), extra: { lead_stage: "paid" } }) : Promise.resolve(),
       ]);
       await runNotices({ lead }).catch((e) => console.error("notices failed", e));
     }

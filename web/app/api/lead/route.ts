@@ -84,7 +84,17 @@ export async function POST(req: Request) {
 
   await Promise.all([
     notifyTeam(kind, { ...row, id: undefined }),
-    syncPerson({ email, name: row.name, role: kind === "agency" ? "agency" : "prospect", status: "lead", industry: row.industry, market: row.market }),
+    syncPerson({
+      email, name: row.name, role: kind === "agency" ? "agency" : "prospect", status: "lead", industry: row.industry, market: row.market,
+      extra: {
+        lead_stage: kind === "agency" ? "agency_enquiry" : kind === "account" ? "started_signup" : "opened_demo",
+        ...(row.business ? { business_name: row.business } : {}),
+        ...(row.website ? { business_website: row.website } : {}),
+        ...(budget ? { monthly_ad_budget: budget, sales_qualified: "Yes" } : {}),
+        ...(row.goals ? { lead_goal: row.goals.slice(0, 250) } : {}),
+        ...(kind === "agency" && row.monthly_spend ? { agency_managed_spend: row.monthly_spend } : {}),
+      },
+    }),
   ]);
 
   // Account sign-ups go on to pay their ad budget. If Stripe is not connected yet,
