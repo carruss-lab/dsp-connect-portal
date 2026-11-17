@@ -10,7 +10,6 @@ export const metadata: Metadata = {
   title: { default: "DSP Connect | See what you get before you spend", template: "%s | DSP Connect" },
   description:
     "Advertising on apps and websites for business owners and agencies. Done-for-you setup, live within 14 days, from $750.",
-  icons: { icon: "/logo.png" },
   metadataBase: new URL(SITE_URL),
   alternates: { canonical: "./" },
   openGraph: { type: "website", siteName: "DSP Connect", locale: "en_US", url: "./" },
