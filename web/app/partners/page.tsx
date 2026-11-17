@@ -1,74 +1,85 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import { Footer, Header } from "@/components/Chrome";
+import ApplyForm from "@/components/partner/ApplyForm";
 import { INDUSTRIES, LEGAL_ENTITY, MIN_BUDGET, SETUP_DAYS, SHARE_PCT } from "@/lib/site";
 
-// Private program page: not linked from the public site and hidden from search engines.
 export const metadata: Metadata = {
-  title: "Managing Partner program",
-  description: "The DSP Connect Managing Partner program. By invitation only.",
-  robots: { index: false, follow: false },
+  title: "Become an Authorized Sales Partner",
+  description: `Sell DSP Connect to the local businesses you already call on. Earn ${SHARE_PCT}% of your clients' ad spend, paid daily, with residuals for as long as they spend. For ISOs, merchant-services agents and independent sales pros.`,
+  alternates: { canonical: "/partners" },
 };
 
 const STEPS = [
-  ["Invitation", "Managing Partners join by invitation. Your invitation arrives by email."],
-  ["Admission", "You review and sign your admission documents online."],
-  ["Training", "Complete the Managing Partner course: the product, the demo, the sales process and the rules."],
-  ["Bring clients", "Register each client. They pay their ad budget online and we set them up."],
-  ["Get paid", `Earn ${SHARE_PCT}% of their qualified ad spend, paid every day.`],
+  ["Apply", "Tell us who you sell to today. It takes three minutes."],
+  ["Get approved", "We review every application and reply by email, usually within two business days."],
+  ["Sign and set up", "Sign your Sales Partner Agreement online, as yourself or for your company, and set up daily payouts with Stripe."],
+  ["Train", "A short course on the product, the demo, the conversation and the rules."],
+  ["Sell and earn", `Clients open their account through your link. You earn ${SHARE_PCT}% of what they spend, for as long as they spend.`],
 ];
-const TOOLS = [
-  ["A demo that sells", "Open a sample account set up for your prospect's industry and area, and build a practice campaign with them."],
-  ["Done-for-you setup", `Your clients are live within ${SETUP_DAYS} days of paying. You sell; we build.`],
-  ["A low first step", `Clients can start from $${MIN_BUDGET}, so the first yes is easy.`],
-  ["Training and support", "A full course before you sell, and a support team for you and your clients after."],
+const WHY = [
+  ["Residuals for life", "You keep earning on every client you bring for as long as they keep spending, even if you stop selling. No cap, no end date."],
+  ["Paid daily", "Each day's commission is paid to your bank through Stripe after a 7-day hold. No waiting for month end."],
+  ["Nothing to bill or collect", "Clients pay DSP Connect directly at our published prices. You never handle money, card details or invoices."],
+  ["We do the setup", `Your clients are live within ${SETUP_DAYS} days of paying: account, tracking, ad review and audience, done for them.`],
+];
+const FAQ = [
+  ["Who is this for?", "ISOs and merchant-services agents, POS and telecom sellers, marketing consultants and independent reps who already call on local businesses. You can join as an individual or as a company."],
+  ["Do I need advertising experience?", "No. If you can talk to a business owner about getting more customers, the training and the demo cover the rest."],
+  ["What do my clients pay?", `Accounts start from a $${MIN_BUDGET} ad budget. There is no monthly platform fee: our fee is included in the price of the ads, and there is no long-term contract.`],
+  ["Do I set prices or resell?", "No. You are an independent sales partner, not a reseller. Clients contract and pay DSP Connect directly, so you never carry billing risk."],
+  ["Is there a cost to join?", "No. There is no fee to apply or to join. It is commission only: no salary, no draw and no guaranteed income."],
+  ["Can my team sell under my company?", "Yes. If your company is the Sales Partner, people at your company can sell under its link, and your company makes sure they follow our rules. Outside sub-agents are not part of the program."],
 ];
 
 export default function Partners() {
   return (
     <>
-      <header className="header"><div className="wrap">
-        <span className="brand"><Image src="/logo.png" alt="" width={30} height={30} />DSP Connect</span>
-        <span className="small" style={{ flexGrow: 1 }}>Managing Partner program</span>
-        <span className="small">By invitation only</span>
-      </div></header>
+      <Header />
       <main>
         <section className="hero"><div className="wrap">
           <div className="hero-copy stack g24">
-            <div className="eyebrow">By invitation only</div>
-            <h1 className="h1">Sell DSP Connect in the industry you know. Earn {SHARE_PCT}% of what your clients spend.</h1>
-            <p className="lead" style={{ maxWidth: 580 }}>Managing Partners are independent sellers who bring businesses in their industry onto DSP Connect. You bring the relationships. We provide the product, the training, the setup and the support.</p>
-            <div className="ticks"><span>{SHARE_PCT}% of qualified ad spend</span><span>Paid daily</span><span>Independent, commission-only</span></div>
+            <div className="eyebrow">Authorized Sales Partner program</div>
+            <h1 className="h1">Sell DSP Connect to the businesses you already call on. Earn {SHARE_PCT}% of what they spend, for life.</h1>
+            <p className="lead" style={{ maxWidth: 600 }}>Built for ISOs, merchant-services agents and local sales pros. You bring the relationships. We provide the product, the demo, the setup and the support, and pay you residuals for as long as your clients spend.</p>
+            <div className="ticks"><span>{SHARE_PCT}% of qualified ad spend</span><span>Residuals for life</span><span>Paid daily</span><span>Individual or company</span></div>
           </div>
-          <div className="card formcard stack g16" style={{ background: "var(--ground)" }}>
-            <div className="h3" style={{ fontSize: 18 }}>How commission works</div>
-            <p className="p">You earn <b>{SHARE_PCT}%</b> of the ad spend of clients you bring in, once that spend is <b>qualified</b>: the client is yours, under contract, live, invoiced and paid.</p>
-            <ul className="list"><li>Paid every day, to your bank account through Stripe</li><li>Paid after the client&apos;s funds are received</li><li>Refunds, chargebacks and unpaid invoices do not count</li></ul>
-            <p className="small">There is no salary and no guaranteed income. What you earn depends on the clients you bring and what they spend. Full terms are in the admission documents you review before signing.</p>
+          <div id="apply" className="card formcard stack g16" style={{ background: "var(--ground)", scrollMarginTop: 80 }}>
+            <div className="h3" style={{ fontSize: 18 }}>Apply to become a Sales Partner</div>
+            <ApplyForm />
           </div>
         </div></section>
 
         <section className="section band"><div className="wrap stack g32">
-          <h2 className="h2">From invitation to your first commission.</h2>
+          <h2 className="h2">Why sales partners choose DSP Connect.</h2>
+          <div className="grid cols-4">{WHY.map(([t, d]) => <div className="card stack g8" key={t}><h3 className="h3">{t}</h3><p className="p" style={{ fontSize: 14 }}>{d}</p></div>)}</div>
+        </div></section>
+
+        <section className="section"><div className="wrap stack g32">
+          <h2 className="h2">From application to your first commission.</h2>
           <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))" }}>
             {STEPS.map(([t, d], i) => <div className="step stack g8" key={t}><div className="num">0{i + 1}</div><h3 className="h3">{t}</h3><p className="p" style={{ fontSize: 14 }}>{d}</p></div>)}
           </div>
         </div></section>
 
-        <section className="section"><div className="wrap stack g32">
-          <h2 className="h2">What you sell with.</h2>
-          <div className="grid cols-4">{TOOLS.map(([t, d]) => <div className="card stack g8" key={t}><h3 className="h3">{t}</h3><p className="p" style={{ fontSize: 14 }}>{d}</p></div>)}</div>
+        <section className="section band"><div className="wrap stack g24" style={{ maxWidth: 860 }}>
+          <h2 className="h2">How commission works.</h2>
+          <p className="p" style={{ fontSize: 16 }}>You earn <b>{SHARE_PCT}%</b> of the <b>qualified ad spend</b> of every client credited to you: ad budget the client has paid in full that has actually run as ads. Each day&apos;s commission is held for 7 days, then paid to your bank through Stripe.</p>
+          <ul className="list"><li>Residuals continue for as long as the client keeps spending, including after your partnership ends, unless it is ended for cause.</li><li>Refunds, chargebacks and unpaid amounts are not qualified, and commission on them is reversed.</li><li>There is no salary and no guaranteed income. What you earn depends on the clients you bring and what they spend.</li></ul>
+          <p className="small">Full terms are in the Sales Partner Agreement you review and sign after approval.</p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 32, alignItems: "baseline" }}>
-            <h3 className="h3" style={{ fontSize: 18, flex: "1 1 240px" }}>Industries our partners cover</h3>
+            <h3 className="h3" style={{ fontSize: 18, flex: "1 1 240px" }}>Industries our partners sell into</h3>
             <div className="chips" style={{ flex: "999 1 560px" }}>{INDUSTRIES.filter((i) => i !== "Other").map((i) => <span className="chip" key={i}>{i}</span>)}</div>
           </div>
         </div></section>
 
-        <section className="section band"><div className="wrap stack g16" style={{ maxWidth: 760 }}>
-          <h2 className="h2">Have an invitation?</h2>
-          <p className="p" style={{ fontSize: 16 }}>Use the link in your invitation email to review your admission documents and set up your daily payouts. There is no public application. If you were expecting an invitation and have not received it, reply to the person who contacted you.</p>
+        <section className="section"><div className="wrap stack g24" style={{ maxWidth: 860 }}>
+          <h2 className="h2">Questions.</h2>
+          {FAQ.map(([q, a]) => <details key={q} className="card stack g8"><summary style={{ cursor: "pointer", fontWeight: 600 }}>{q}</summary><p className="p" style={{ marginTop: 8 }}>{a}</p></details>)}
+          <p className="small">Already a Sales Partner? <a href="/partner">Sign in to your portal</a>. Authorized Sales Partners are independent contractors of {LEGAL_ENTITY}, not employees or resellers.</p>
+          <a className="btn btn-blue" href="#apply" style={{ alignSelf: "flex-start" }}>Apply now</a>
         </div></section>
       </main>
-      <footer className="footer"><div className="wrap"><div>© {new Date().getFullYear()} {LEGAL_ENTITY}. DSP Connect is a service of {LEGAL_ENTITY}.</div><div>Managing Partners are independent contractors, not employees.</div></div></footer>
+      <Footer />
     </>
   );
 }

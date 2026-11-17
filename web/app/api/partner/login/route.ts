@@ -3,7 +3,7 @@ import { esc, send, wrap } from "@/lib/email";
 import { secretRpc } from "@/lib/server";
 import { siteOrigin } from "@/lib/site";
 
-// Emails a one-time sign-in link to a Managing Partner. The answer is the same whether or not the
+// Emails a one-time sign-in link to an Authorized Sales Partner. The answer is the same whether or not the
 // email belongs to a partner, so the form cannot be used to find out who is on the program.
 export async function POST(req: Request) {
   const { email } = (await req.json().catch(() => ({}))) as { email?: string };

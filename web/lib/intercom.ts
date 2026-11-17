@@ -1,7 +1,7 @@
 // Keeps Intercom's record of each person in step with ours, so Fin and the team see
 // who they are talking to. Does nothing until INTERCOM_ACCESS_TOKEN is set.
 type Person = {
-  email: string; name?: string | null; role: "prospect" | "client" | "agency" | "managing_partner";
+  email: string; name?: string | null; role: "prospect" | "client" | "agency" | "sales_partner" | "partner_applicant";
   status?: "lead" | "paid_in_setup" | "live" | "paused"; setupDue?: string | null; industry?: string | null; market?: string | null;
   /** Extra facts for Fin, for example setup progress and budget left. */
   extra?: Record<string, string | number>;

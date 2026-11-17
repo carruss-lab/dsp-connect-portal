@@ -20,7 +20,7 @@ function Top({ name }: { name?: string }) {
   return (
     <header className="header"><div className="wrap">
       <span className="brand"><Image src="/logo.png" alt="" width={30} height={30} />DSP Connect</span>
-      <span className="small" style={{ flexGrow: 1 }}>Managing Partner portal</span>
+      <span className="small" style={{ flexGrow: 1 }}>Sales Partner portal</span>
       {name && <form action="/api/partner/logout" method="post"><span className="small" style={{ marginRight: 12 }}>{name}</span><button className="btn btn-line" style={{ minHeight: 34 }}>Sign out</button></form>}
     </div></header>
   );
@@ -41,11 +41,11 @@ export default async function PartnerPortal({ searchParams }: { searchParams: Pr
       <>
         <Top />
         <main className="wrap stack g24" style={{ padding: "72px 32px 96px", maxWidth: 520 }}>
-          <div className="eyebrow">Managing Partners</div>
+          <div className="eyebrow">Authorized Sales Partners</div>
           <h1 className="h1" style={{ fontSize: 36 }}>Sign in to your partner portal.</h1>
-          <p className="lead">Enter the email address your invitation was sent to. We will email you a link to sign in; no password needed.</p>
+          <p className="lead">Enter the email address you applied with. We will email you a link to sign in; no password needed.</p>
           <LoginForm expired={sp.link === "expired"} />
-          <p className="small">Not a Managing Partner? The program is by invitation only. Business owners can <a href="/open-account">open an account here</a>.</p>
+          <p className="small">Not a Sales Partner yet? <a href="/partners">Apply to become an Authorized Sales Partner</a>. Business owners can <a href="/open-account">open an account here</a>.</p>
         </main>
       </>
     );
@@ -63,7 +63,7 @@ function Dashboard({ portal }: { portal: Portal }) {
   const origin = siteOrigin();
   const first = p.name.split(" ")[0];
   const steps = [
-    { t: "Sign your admission documents", done: signed },
+    { t: "Sign your Sales Partner Agreement", done: signed },
     { t: "Set up payouts with Stripe", done: p.payouts_ready },
     { t: "Complete the training", done: trained },
     { t: "Bring your first client", done: clients.some((c) => c.paid_at) },
@@ -78,7 +78,7 @@ function Dashboard({ portal }: { portal: Portal }) {
       <IdentifyClient email={p.email} name={p.name} jwt={messengerJwt(p.email, p.name)} />
       <main className="wrap stack g32" style={{ padding: "48px 32px 96px", maxWidth: 1040 }}>
         <div className="stack g8">
-          <div className="eyebrow">Managing Partner{p.vertical ? ` · ${p.vertical}` : ""}</div>
+          <div className="eyebrow">Authorized Sales Partner{p.vertical ? ` · ${p.vertical}` : ""}</div>
           <h1 className="h1" style={{ fontSize: "clamp(30px,4vw,42px)" }}>Welcome, {first}.</h1>
           {ended && <p className="note note-err">Your partner link is paused. New clients are not being credited to you. Contact DSP Connect for details.</p>}
         </div>
@@ -97,11 +97,11 @@ function Dashboard({ portal }: { portal: Portal }) {
         {!signed ? (
           <section className="stack g24" aria-labelledby="docs">
             <div className="stack g8">
-              <h2 id="docs" className="h2">Step 1: your admission documents</h2>
-              <p className="lead">Read each document, accept it, and sign with your full legal name. You will get a signed copy by email.</p>
+              <h2 id="docs" className="h2">Step 1: your Sales Partner Agreement</h2>
+              <p className="lead">Read each document, accept it, and sign, as yourself or for your company. You will get a signed copy by email.</p>
             </div>
             {DOCS.map((d) => (
-              <details key={d.id} className="card stack g12" open={d.id === "notice"}>
+              <details key={d.id} className="card stack g12" open={d.id === "agreement"}>
                 <summary style={{ cursor: "pointer", fontWeight: 600, fontSize: 18 }}>{d.tag}: {d.title}</summary>
                 <div className="stack g12" style={{ marginTop: 12, maxHeight: 520, overflowY: "auto", paddingRight: 8 }}>
                   {d.sections.map((s, i) => (
@@ -114,7 +114,7 @@ function Dashboard({ portal }: { portal: Portal }) {
               </details>
             ))}
             <div className="card stack g16">
-              <SignDocs docs={DOCS.map((d) => ({ id: d.id, label: `${d.tag} (${d.title})` }))} defaultName={p.name} />
+              <SignDocs docs={DOCS.map((d) => ({ id: d.id, label: `${d.tag} (${d.title})` }))} defaultName={p.name} entity={p.entity_type || "individual"} company={p.company_name || ""} />
               <p className="small">Document version {VERSION}. {LEGAL_ENTITY}.</p>
             </div>
           </section>
@@ -200,8 +200,8 @@ function Dashboard({ portal }: { portal: Portal }) {
 
             <section className="card stack g8">
               <h2 className="h3">Help</h2>
-              <p className="p">Use the chat button at the bottom of this page. Fin can help you prepare advice for a client, and anything about payouts, commission or your clients goes to our Managing Partner Support team.</p>
-              <p className="small">You signed your admission documents on {day(p.signed_at)} as {p.legal_name}. You earn {SHARE_PCT}% of qualified ad spend. Need another copy? Ask in the chat.</p>
+              <p className="p">Use the chat button at the bottom of this page. Fin can help you prepare advice for a client, and anything about payouts, commission or your clients goes to our Sales Partner Support team.</p>
+              <p className="small">You signed your Sales Partner Agreement on {day(p.signed_at)} as {p.legal_name}{p.entity_type === "company" && p.company_name ? `, ${p.signer_title || "authorized signer"} of ${p.company_name}` : ""}. You earn {SHARE_PCT}% of qualified ad spend, with residuals for as long as your clients spend. Need another copy? Ask in the chat.</p>
             </section>
           </>
         )}

@@ -108,7 +108,7 @@ function clientTips(l: FeedLead, today: string): string[] {
   return tips;
 }
 
-/** What a Managing Partner should raise with one of their clients, as a consultant would. Never about adding money. */
+/** What a Sales Partner should raise with one of their clients, as a consultant would. Never about adding money. */
 function partnerAdvice(l: FeedLead, today: string): string[] {
   const out: string[] = [];
   const who = esc(l.business || "the client");
@@ -131,7 +131,7 @@ function partnerAdvice(l: FeedLead, today: string): string[] {
   return out;
 }
 
-/** Monday brief for each Managing Partner: every client credited to them, with what to raise. */
+/** Monday brief for each Sales Partner: every client credited to them, with what to raise. */
 async function partnerBriefs(r: Report, f: Feed) {
   const mine = new Map<string, FeedLead[]>();
   for (const l of f.leads) if (l.partner_id && l.partner_email) mine.set(l.partner_id, [...(mine.get(l.partner_id) || []), l]);
@@ -145,7 +145,7 @@ async function partnerBriefs(r: Report, f: Feed) {
     await deliver(r, pid, "partner", `brief_${f.today}`, first.partner_email!, `Your client brief: ${leads.length} account${leads.length === 1 ? "" : "s"}`,
       `<p>Hello${first.partner_name ? " " + esc(first.partner_name.split(" ")[0]) : ""},</p><p>Here is what to raise with each of your clients this week.</p>${blocks}` +
       `<p>Want help preparing for a client conversation? Use the chat on our website.</p>`);
-    await syncPerson({ email: first.partner_email!, name: first.partner_name, role: "managing_partner" });
+    await syncPerson({ email: first.partner_email!, name: first.partner_name, role: "sales_partner" });
   }
 }
 

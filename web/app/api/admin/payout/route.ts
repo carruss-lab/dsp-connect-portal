@@ -43,7 +43,7 @@ export async function POST(req: Request) {
       const key = "payout_" + createHash("sha256").update(ids.join(",") + "|" + owed).digest("hex").slice(0, 40);
       try {
         const t = await client.transfers.create(
-          { amount: cents, currency: "usd", destination: p.stripe_account_id, description: "DSP Connect Managing Partner commission", metadata: { partner_id: pid, lines: String(ids.length), deducted_cents: String(owed) } },
+          { amount: cents, currency: "usd", destination: p.stripe_account_id, description: "DSP Connect Authorized Sales Partner commission", metadata: { partner_id: pid, lines: String(ids.length), deducted_cents: String(owed) } },
           { idempotencyKey: key },
         );
         await secretRpc("payout_record", { p_partner: pid, p_amount: cents / 100, p_transfer: t.id, p_ids: ids, p_by: by });

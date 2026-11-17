@@ -2,10 +2,10 @@ import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { DOCS, VERSION } from "./partnerDocs";
 import { LEGAL_ENTITY } from "./site";
 
-// A signed copy of the admission documents, as a PDF the partner keeps.
-export async function signedPdf(s: { legalName: string; email: string; signedAt: string; ip: string; hash: string }): Promise<string> {
+// A signed copy of the Authorized Sales Partner documents, as a PDF the partner keeps.
+export async function signedPdf(s: { legalName: string; email: string; signedAt: string; ip: string; hash: string; company?: string; title?: string }): Promise<string> {
   const pdf = await PDFDocument.create();
-  pdf.setTitle("DSP Connect Managing Partner admission documents");
+  pdf.setTitle("DSP Connect Authorized Sales Partner Agreement");
   pdf.setAuthor(LEGAL_ENTITY);
   const font = await pdf.embedFont(StandardFonts.Helvetica);
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
@@ -32,7 +32,7 @@ export async function signedPdf(s: { legalName: string; email: string; signedAt:
   };
   const space = (n: number) => { y -= n; };
 
-  line("DSP Connect - Managing Partner admission documents", bold, 15, 6);
+  line("DSP Connect - Authorized Sales Partner Agreement", bold, 15, 6);
   line(`Version ${VERSION}. A service of ${LEGAL_ENTITY}.`, font, 9, 14, rgb(0.36, 0.4, 0.47));
   for (const d of DOCS) {
     space(8);
@@ -44,11 +44,12 @@ export async function signedPdf(s: { legalName: string; email: string; signedAt:
   }
   space(16);
   line("Signature", bold, 12, 8);
-  line(`Signed electronically by: ${s.legalName}`);
+  if (s.company) line(`Sales Partner: ${s.company} (a company)`, bold);
+  line(`Signed electronically by: ${s.legalName}${s.company ? `, ${s.title || "authorized signer"}, for and on behalf of ${s.company}` : ""}`);
   line(`Email: ${s.email}`);
   line(`Signed at: ${s.signedAt} (UTC)`);
   line(`IP address: ${s.ip || "not recorded"}`);
   line(`Document fingerprint (SHA-256): ${s.hash}`, font, 8);
-  line("The signer read each document above, ticked to accept each one, and typed their full legal name to sign.", font, 9, 4, rgb(0.36, 0.4, 0.47));
+  line("The signer read each document above, ticked to accept each one, and typed their full legal name to sign. Where a company is named, the signer confirmed they are authorized to bind it.", font, 9, 4, rgb(0.36, 0.4, 0.47));
   return Buffer.from(await pdf.save()).toString("base64");
 }

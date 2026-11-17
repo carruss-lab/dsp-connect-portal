@@ -1,6 +1,6 @@
 import { MIN_BUDGET, SETUP_DAYS, SHARE_PCT } from "./site";
 
-// The Managing Partner course. Short, practical lessons; a partner marks each one done.
+// The Authorized Sales Partner course. Short, practical lessons; a partner marks each one done.
 // Adding a module here adds it to every partner's checklist.
 export type Lesson = { id: string; title: string; minutes: number; points: string[]; check: string };
 
@@ -49,7 +49,7 @@ export const LESSONS: Lesson[] = [
       "Never promise or estimate results, leads, sales or return on ad spend.",
       "Never name our technology providers, and never discuss our costs, mark-ups or how our fee works. The fee line is: \"No monthly platform fee. Our fee is included in the price of your ads.\"",
       "Never offer to manage a client's campaigns, and never advise a client to add money or spend more.",
-      "Never discuss the Managing Partner program with anyone DSP Connect has not invited. Clients pay DSP Connect directly; never take a client's money, card details or passwords.",
+      "Describe yourself as an independent Authorized Sales Partner of DSP Connect: not staff, and not a reseller who sets prices or bills clients. Clients pay DSP Connect directly; never take a client's money, card details or passwords.",
     ],
     check: "I have read the Operating Rules and will follow them.",
   },
@@ -73,9 +73,10 @@ export const LESSONS: Lesson[] = [
       `You earn ${SHARE_PCT}% of each credited client's qualified ad spend: budget the client has paid that has actually run as ads.`,
       "Each day's commission is held for 7 days, then paid daily to your bank through Stripe. Set up your Stripe payout account in this portal.",
       "Refunds, chargebacks and unpaid amounts are not qualified; commission on them is reversed.",
+      "Residuals for life: you keep earning on every client credited to you for as long as they spend, even after your partnership ends, unless it is ended for cause.",
       "There is no salary and no guaranteed income. What you earn depends on the clients you bring and what they spend.",
     ],
-    check: "I understand how and when I am paid, and that refunds reverse commission.",
+    check: "I understand how and when I am paid, that residuals continue, and that refunds reverse commission.",
   },
 ];
 

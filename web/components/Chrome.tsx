@@ -41,6 +41,7 @@ export function Footer() {
           {LOGIN_URL && <a href={LOGIN_URL}>Client log in</a>}
           <Link href="/industries">Industries</Link>
           <Link href="/agencies">Agencies</Link>
+          <Link href="/partners">Sales Partners</Link>
           <Link href="/compare">Comparisons</Link>
           <a href={MEETING_URL} target="_blank" rel="noopener">Book a call</a>
           <a href={HELP_URL}>Help center</a>

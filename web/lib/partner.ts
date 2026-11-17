@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { secretRpc } from "./server";
 
-// Managing Partner sign-in. A partner asks for a link by email; the link opens a 30-day session held
+// Authorized Sales Partner sign-in. A partner asks for a link by email; the link opens a 30-day session held
 // in an httpOnly cookie. Only hashes of the link and the session are stored in the database.
 export const COOKIE = "dsp_partner";
 export const SESSION_DAYS = 30;
@@ -16,6 +16,7 @@ export type Portal = {
   partner: {
     id: string; name: string; email: string; code: string; status: string; payouts_ready: boolean; stripe_started: boolean; stripe_account_id: string | null;
     invite_token: string; legal_name: string | null; signed_at: string | null; training_done_at: string | null; vertical: string | null;
+    entity_type: "individual" | "company"; company_name: string | null; signer_title: string | null;
   };
   training: string[];
   clients: Client[];

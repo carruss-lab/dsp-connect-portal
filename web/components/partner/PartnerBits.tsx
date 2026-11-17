@@ -13,7 +13,7 @@ export function LoginForm({ expired }: { expired?: boolean }) {
   const [email, setEmail] = useState("");
   const [state, setState] = useState<"idle" | "busy" | "sent">("idle");
   const [error, setError] = useState(expired ? "That sign-in link has expired or was already used. Ask for a new one below." : "");
-  if (state === "sent") return <p className="note note-ok" role="status">Check your inbox. If {email} is on the Managing Partner list, a sign-in link is on its way. It works once, for 30 minutes.</p>;
+  if (state === "sent") return <p className="note note-ok" role="status">Check your inbox. If {email} is on the Sales Partner list, a sign-in link is on its way. It works once, for 30 minutes.</p>;
   return (
     <form className="stack g16" onSubmit={async (e) => {
       e.preventDefault(); setError(""); setState("busy");
@@ -27,30 +27,46 @@ export function LoginForm({ expired }: { expired?: boolean }) {
   );
 }
 
-/** Accept each admission document, type the full legal name, sign. */
-export function SignDocs({ docs, defaultName }: { docs: { id: string; label: string }[]; defaultName: string }) {
+/** Choose person or company, accept each document, type the full legal name, sign. */
+export function SignDocs({ docs, defaultName, entity: e0 = "individual", company: c0 = "" }: { docs: { id: string; label: string }[]; defaultName: string; entity?: "individual" | "company"; company?: string }) {
   const [accepted, setAccepted] = useState<string[]>([]);
+  const [entity, setEntity] = useState<"individual" | "company">(e0);
+  const [company, setCompany] = useState(c0);
+  const [title, setTitle] = useState("");
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const all = docs.every((d) => accepted.includes(d.id));
-  const ready = all && name.trim().split(/\s+/).length >= 2;
+  const ready = all && name.trim().split(/\s+/).length >= 2 && (entity === "individual" || (company.trim().length >= 2 && title.trim().length >= 2));
   return (
     <form className="stack g16" onSubmit={async (e) => {
       e.preventDefault(); if (!ready) return; setBusy(true); setError("");
-      try { await post("/api/partner/sign", { legal_name: name, accepted }); location.reload(); } catch (err) { setError(err instanceof Error ? err.message : String(err)); setBusy(false); }
+      try { await post("/api/partner/sign", { legal_name: name, accepted, entity, company, title }); location.reload(); } catch (err) { setError(err instanceof Error ? err.message : String(err)); setBusy(false); }
     }}>
+      <fieldset className="stack g8" style={{ border: 0, padding: 0, margin: 0 }}>
+        <legend className="small" style={{ fontWeight: 600, marginBottom: 6 }}>Who is the Sales Partner?</legend>
+        <label style={{ display: "flex", gap: 10, alignItems: "center", fontSize: 15 }}><input type="radio" name="entity" checked={entity === "individual"} onChange={() => setEntity("individual")} /> Me, as an individual</label>
+        <label style={{ display: "flex", gap: 10, alignItems: "center", fontSize: 15 }}><input type="radio" name="entity" checked={entity === "company"} onChange={() => setEntity("company")} /> My company (I am authorized to sign for it)</label>
+      </fieldset>
+      {entity === "company" && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+          <div className="field" style={{ flex: "2 1 260px" }}><label htmlFor="co">Company&apos;s full legal name</label>
+            <input id="co" className="input" value={company} onChange={(e) => setCompany(e.target.value)} placeholder="e.g. Desert Sales Group LLC" autoComplete="organization" /></div>
+          <div className="field" style={{ flex: "1 1 180px" }}><label htmlFor="ti">Your title</label>
+            <input id="ti" className="input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Owner, President" autoComplete="organization-title" /></div>
+        </div>
+      )}
       <div className="stack g8">{docs.map((d) => (
         <label key={d.id} style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 15 }}>
           <input type="checkbox" style={{ marginTop: 4 }} checked={accepted.includes(d.id)} onChange={(e) => setAccepted((a) => e.target.checked ? [...a, d.id] : a.filter((x) => x !== d.id))} />
-          <span>I have read and accept the {d.label}.</span>
+          <span>I have read and accept the {d.label}{entity === "company" ? " on behalf of my company" : ""}.</span>
         </label>
       ))}</div>
       <div className="field"><label htmlFor="ln">Type your full legal name to sign</label>
         <input id="ln" className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder={defaultName} autoComplete="name" style={{ fontSize: 18 }} /></div>
-      <p className="small">Typing your name and pressing Sign is your electronic signature. We record the time, your IP address and the version of the documents, and email you a signed copy.</p>
+      <p className="small">Typing your name and pressing Sign is your electronic signature{entity === "company" ? ", given for your company" : ""}. We record the time, your IP address and the version of the documents, and email you a signed copy.</p>
       {error && <p className="note note-err" role="alert">{error}</p>}
-      <button className="btn btn-blue" disabled={!ready || busy} style={{ alignSelf: "flex-start" }}>{busy ? "Signing…" : "Sign admission documents"}</button>
+      <button className="btn btn-blue" disabled={!ready || busy} style={{ alignSelf: "flex-start" }}>{busy ? "Signing…" : "Sign the agreement"}</button>
     </form>
   );
 }

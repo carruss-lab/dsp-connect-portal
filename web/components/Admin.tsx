@@ -10,7 +10,7 @@ type Lead = {
   status: string; partner_id: string | null; paid_at: string | null; amount_paid: number | null; setup_due: string | null;
   step_account_at: string | null; step_tracking_at: string | null; step_ads_at: string | null; step_audience_at: string | null; live_at: string | null;
 };
-type Partner = { id: string; created_at: string; status: string; name: string; email: string; phone: string | null; location: string | null; vertical: string | null; linkedin: string | null; experience: string | null; network: string | null; code: string; invite_token: string; stripe_account_id: string | null; payouts_ready: boolean; signed_at: string | null; legal_name: string | null; training_done_at: string | null };
+type Partner = { id: string; created_at: string; status: string; name: string; email: string; phone: string | null; location: string | null; vertical: string | null; linkedin: string | null; experience: string | null; network: string | null; code: string; invite_token: string; stripe_account_id: string | null; payouts_ready: boolean; signed_at: string | null; legal_name: string | null; training_done_at: string | null; entity_type: string; company_name: string | null; signer_title: string | null; website: string | null; residuals: boolean };
 type Notice = { id: string; kind: string; to_email: string; title: string | null; created_at: string; sent_at: string | null; error: string | null };
 type Line = { id: string; partner_id: string; lead_id: string; day: string; spend: number; amount: number; release_on: string; status: string };
 const STEPS: [keyof Lead, string][] = [
@@ -145,9 +145,20 @@ export default function Admin() {
       const res = await fetch("/api/admin/partner-invite", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${session!.access_token}` }, body: JSON.stringify({ id: p.id }) });
       const out = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(out.error || "Could not send the invitation.");
-      setNote(`Invitation emailed to ${p.name}.`);
-    } catch (err) { setMsg(err instanceof Error ? err.message : "Could not send the invitation."); }
-    setBusy(false);
+      setNote(p.status === "applied" ? `${p.name} approved and emailed their welcome link.` : `Welcome link emailed to ${p.name}.`);
+    } catch (err) { setMsg(err instanceof Error ? err.message : "Could not send the email."); }
+    setBusy(false); load();
+  }
+  async function decline(p: Partner) {
+    if (!window.confirm(`Decline ${p.company_name || p.name}'s application? They are not emailed; reply to them yourself if you want to.`)) return;
+    await setPartnerStatus(p.id, "declined");
+  }
+  async function setResiduals(p: Partner, on: boolean) {
+    if (!on && !window.confirm(`Stop residuals for ${p.company_name || p.name}? Only do this if the partnership was ended for cause. No new commission will be created on their clients' spend.`)) return;
+    setMsg("");
+    const { error } = await supabase!.from("partners").update({ residuals: on }).eq("id", p.id);
+    if (error) setMsg("Could not save: " + error.message); else setNote(on ? "Residuals restored." : "Residuals stopped.");
+    load();
   }
   async function reverse(l: Line) {
     const paidAlready = l.status === "paid";
@@ -289,36 +300,63 @@ export default function Admin() {
       </section>
 
       <section className="stack g16">
-        <h2 className="h3" style={{ fontSize: 18 }}>Managing Partners ({partners.length})</h2>
-        <p className="small">Invite only. Add someone here, then press Email invitation. They sign their admission documents in their partner portal (getdspconnect.com/partner), which admits them and starts crediting their client link. Finishing the training makes them Active. Pause or End stops new clients being credited to them.</p>
+        <h2 className="h3" style={{ fontSize: 18 }}>Authorized Sales Partners ({partners.filter((p) => !["applied", "declined"].includes(p.status)).length})</h2>
+        <p className="small">People and companies apply at getdspconnect.com/partners. Press Approve to accept an application: it emails them a welcome link. They sign their Sales Partner Agreement (as themselves or for their company) in their portal at getdspconnect.com/partner, which starts crediting their client link; finishing the training makes them Active. Pause or End stops new clients being credited to them. Residuals keep paying on existing clients after a partnership ends; stop them only if you ended it for cause.</p>
+        {partners.some((p) => p.status === "applied") && (
+          <div className="stack g12">
+            <h3 className="h3" style={{ fontSize: 16 }}>Applications waiting ({partners.filter((p) => p.status === "applied").length})</h3>
+            {partners.filter((p) => p.status === "applied").map((p) => (
+              <div key={p.id} className="card stack g8" style={{ background: "var(--ground)" }}>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "baseline", justifyContent: "space-between" }}>
+                  <b>{p.company_name ? `${p.company_name} (${p.name})` : p.name}</b>
+                  <span className="small">Applied {day(p.created_at)} · {p.entity_type === "company" ? "Company" : "Individual"}</span>
+                </div>
+                <div className="small"><a href={`mailto:${p.email}`}>{p.email}</a>{p.phone ? ` · ${p.phone}` : ""}{p.location ? ` · ${p.location}` : ""}{p.vertical ? ` · ${p.vertical}` : ""}</div>
+                {p.experience && <p className="p" style={{ fontSize: 14 }}><b>Sells today:</b> {p.experience}</p>}
+                {p.network && <p className="p" style={{ fontSize: 14 }}><b>Businesses per month:</b> {p.network}</p>}
+                {(p.website || p.linkedin) && <div className="small">{p.website && <a href={/^https?:/.test(p.website) ? p.website : `https://${p.website}`} target="_blank" rel="noopener noreferrer">{p.website}</a>}{p.website && p.linkedin ? " · " : ""}{p.linkedin && <a href={/^https?:/.test(p.linkedin) ? p.linkedin : `https://${p.linkedin}`} target="_blank" rel="noopener noreferrer">LinkedIn</a>}</div>}
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button className="btn btn-blue" style={{ minHeight: 36 }} disabled={busy} onClick={() => emailInvite(p)}>Approve and email welcome link</button>
+                  <button className="btn btn-line" style={{ minHeight: 36 }} disabled={busy} onClick={() => decline(p)}>Decline</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         <form onSubmit={invite} className="card" style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "flex-end", background: "var(--ground)" }}>
           <div className="field" style={{ flex: "1 1 180px" }}><label htmlFor="inv-name">Full name</label><input id="inv-name" name="name" className="input" required /></div>
           <div className="field" style={{ flex: "1 1 220px" }}><label htmlFor="inv-email">Email</label><input id="inv-email" name="email" type="email" className="input" required /></div>
           <div className="field" style={{ flex: "1 1 180px" }}><label htmlFor="inv-vertical">Industry</label>
             <select id="inv-vertical" name="vertical" className="input">{INDUSTRIES.map((i) => <option key={i}>{i}</option>)}</select></div>
-          <button className="btn btn-blue">Add to partner list</button>
+          <button className="btn btn-blue">Add a partner directly</button>
         </form>
-        {partners.length > 0 && (
+        {partners.some((p) => !["applied", "declined"].includes(p.status)) && (
           <div className="tablebox"><table>
-            <thead><tr><th scope="col">Name</th><th scope="col">Email</th><th scope="col">Industry</th><th scope="col">Status</th><th scope="col">Admission</th><th scope="col">Training</th><th scope="col">Payout account</th><th scope="col">Client code</th><th scope="col">Invitation</th></tr></thead>
-            <tbody>{partners.map((p) => (
-              <tr key={p.id}><th scope="row">{p.name}</th><td><a href={`mailto:${p.email}`}>{p.email}</a></td><td>{p.vertical}</td>
+            <thead><tr><th scope="col">Name</th><th scope="col">Email</th><th scope="col">Industry</th><th scope="col">Status</th><th scope="col">Agreement</th><th scope="col">Training</th><th scope="col">Payout account</th><th scope="col">Residuals</th><th scope="col">Client code</th><th scope="col">Welcome link</th></tr></thead>
+            <tbody>{partners.filter((p) => !["applied", "declined"].includes(p.status)).map((p) => (
+              <tr key={p.id}><th scope="row">{p.company_name ? <>{p.company_name}<div className="small">{p.name}</div></> : p.name}</th><td><a href={`mailto:${p.email}`}>{p.email}</a></td><td>{p.vertical}</td>
                 <td><select className="input" aria-label={`Status for ${p.name}`} value={p.status} onChange={(e) => setPartnerStatus(p.id, e.target.value)} style={{ height: 36, minWidth: 110 }}>
-                  {["invited", "admitted", "active", "paused", "ended"].map((st) => <option key={st} value={st}>{st[0].toUpperCase() + st.slice(1)}</option>)}</select></td>
-                <td>{p.signed_at ? <span title={`Signed as ${p.legal_name}`}>Signed {day(p.signed_at)}</span> : "Not signed"}</td>
+                  {["invited", "admitted", "active", "paused", "ended"].map((st) => <option key={st} value={st}>{st === "invited" ? "Approved" : st[0].toUpperCase() + st.slice(1)}</option>)}</select></td>
+                <td>{p.signed_at ? <span title={`Signed by ${p.legal_name}${p.company_name ? `, ${p.signer_title}, for ${p.company_name}` : ""}`}>Signed {day(p.signed_at)}</span> : "Not signed"}</td>
                 <td>{p.training_done_at ? "Done" : "Not done"}</td>
                 <td>{p.payouts_ready ? "Ready" : p.stripe_account_id ? "Started" : "Not started"}</td>
+                <td>{p.residuals ? (p.status === "ended" ? <button className="btn btn-line" style={{ minHeight: 32 }} onClick={() => setResiduals(p, false)}>Stop (for cause)</button> : "On") : <button className="btn btn-line" style={{ minHeight: 32 }} onClick={() => setResiduals(p, true)}>Stopped: restore</button>}</td>
                 <td className="mono">{p.code}</td>
-                <td style={{ whiteSpace: "nowrap" }}><button className="btn btn-line" style={{ minHeight: 36 }} disabled={busy} onClick={() => emailInvite(p)}>Email invitation</button>{" "}
-                  <button className="btn btn-line" style={{ minHeight: 36 }} onClick={() => { navigator.clipboard?.writeText(`${location.origin}/partners/join/${p.invite_token}`); setNote(`Invitation link for ${p.name} copied.`); }}>Copy link</button></td></tr>
+                <td style={{ whiteSpace: "nowrap" }}><button className="btn btn-line" style={{ minHeight: 36 }} disabled={busy} onClick={() => emailInvite(p)}>Email it</button>{" "}
+                  <button className="btn btn-line" style={{ minHeight: 36 }} onClick={() => { navigator.clipboard?.writeText(`${location.origin}/partners/join/${p.invite_token}`); setNote(`Welcome link for ${p.name} copied.`); }}>Copy</button></td></tr>
             ))}</tbody>
           </table></div>
+        )}
+        {partners.some((p) => p.status === "declined") && (
+          <details className="small"><summary>Declined applications ({partners.filter((p) => p.status === "declined").length})</summary>
+            <ul>{partners.filter((p) => p.status === "declined").map((p) => <li key={p.id}>{p.company_name || p.name} · {p.email} · applied {day(p.created_at)} <button className="btn btn-line" style={{ minHeight: 28 }} onClick={() => setPartnerStatus(p.id, "applied")}>Reopen</button></li>)}</ul>
+          </details>
         )}
       </section>
 
       <section className="stack g16">
         <h2 className="h3" style={{ fontSize: 18 }}>Ad spend and partner commission</h2>
-        <p className="small">Enter each client&apos;s ad spend for a day. If a Managing Partner brought that client, 10% is added to their commission and becomes payable 7 days after the spend date. Saving the same client and date again replaces the amount.</p>
+        <p className="small">Enter each client&apos;s ad spend for a day. If a Sales Partner brought that client, 10% is added to their commission and becomes payable 7 days after the spend date. Saving the same client and date again replaces the amount.</p>
         <form onSubmit={addSpend} className="card" style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "flex-end", background: "var(--ground)" }}>
           <div className="field" style={{ flex: "2 1 240px" }}><label htmlFor="sp-lead">Client</label>
             <select id="sp-lead" name="lead_id" className="input" required defaultValue="">
@@ -368,7 +406,7 @@ export default function Admin() {
             <button className="btn btn-line" disabled={busy} onClick={() => tell({ weekly: true })}>Send weekly summaries now</button>
           </div>
         </div>
-        <p className="small">Clients are emailed when a setup step is ticked, when they go live, when their budget runs low, and every Monday with a summary. Someone who starts opening an account and does not pay gets one reminder the next day. Managing Partners get a Monday brief on each of their clients. The team gets one list each morning. These run by themselves; the buttons are for running them early. Nothing is ever sent twice.</p>
+        <p className="small">Clients are emailed when a setup step is ticked, when they go live, when their budget runs low, and every Monday with a summary. Someone who starts opening an account and does not pay gets one reminder the next day. Sales Partners get a Monday brief on each of their clients. The team gets one list each morning. These run by themselves; the buttons are for running them early. Nothing is ever sent twice.</p>
         {notices.length === 0 ? <p className="p">No messages yet.</p> : (
           <div className="tablebox"><table>
             <thead><tr><th scope="col">When</th><th scope="col">To</th><th scope="col">Message</th><th scope="col">Result</th></tr></thead>
