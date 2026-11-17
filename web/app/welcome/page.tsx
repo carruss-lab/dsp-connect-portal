@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Footer, Header } from "@/components/Chrome";
+import IdentifyClient from "@/components/IdentifyClient";
 import IntakeForm from "@/components/IntakeForm";
 import { isUuid, secretRpc } from "@/lib/server";
 import { HELP_URL, MEETING_URL, SETUP_DAYS, SUPPORT_EMAIL } from "@/lib/site";
@@ -7,7 +8,7 @@ import { HELP_URL, MEETING_URL, SETUP_DAYS, SUPPORT_EMAIL } from "@/lib/site";
 export const metadata: Metadata = { title: "Your setup", robots: { index: false, follow: false } };
 
 type Status = {
-  business: string | null; name: string | null; paid_at: string; amount_paid: number | null; setup_due: string | null; website: string | null;
+  email: string; business: string | null; name: string | null; paid_at: string; amount_paid: number | null; setup_due: string | null; website: string | null;
   step_account_at: string | null; step_tracking_at: string | null; step_ads_at: string | null; step_audience_at: string | null; live_at: string | null; intake_at: string | null;
 };
 const STEPS: [keyof Status, string, string][] = [
@@ -40,6 +41,7 @@ export default async function Welcome({ searchParams }: PageProps<"/welcome">) {
   return (
     <>
       <Header />
+      <IdentifyClient email={s.email} name={s.name} />
       <main className="wrap narrow stack g32" style={{ padding: "64px 32px 80px" }}>
         <div className="stack g12">
           <div className="eyebrow">Your setup{s.business ? ` · ${s.business}` : ""}</div>
