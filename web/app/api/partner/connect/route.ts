@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { stripe } from "@/lib/payments";
 import { isUuid, secretRpc } from "@/lib/server";
-import { LEGAL_ENTITY } from "@/lib/site";
+import { LEGAL_ENTITY, siteOrigin } from "@/lib/site";
 
 type Partner = { id: string; name: string; email: string; status: string; code: string; stripe_account_id: string | null; payouts_ready: boolean };
 
@@ -27,10 +27,11 @@ export async function POST(req: Request) {
       account = created.id;
       await secretRpc("partner_set_payouts", { p_token: token, p_account: account, p_ready: false });
     }
-    const origin = new URL(req.url).origin;
+    // Stripe sends the partner back to their portal, which re-checks their payout status on load.
+    const portal = `${siteOrigin()}/partner`;
     const link = await client.v2.core.accountLinks.create({
       account,
-      use_case: { type: "account_onboarding", account_onboarding: { refresh_url: `${origin}/partners/join/${token}`, return_url: `${origin}/partners/join/${token}?back=1` } },
+      use_case: { type: "account_onboarding", account_onboarding: { refresh_url: `${portal}?payouts=retry#pay`, return_url: `${portal}?payouts=back#pay` } },
     });
     return NextResponse.json({ url: link.url });
   } catch (err) {

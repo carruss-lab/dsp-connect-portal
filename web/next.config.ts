@@ -11,6 +11,8 @@ const nextConfig: NextConfig = {
       { source: "/:path*", has: [{ type: "host", value: "helpdesk.getdspconnect.com" }], destination: "https://help.getdspconnect.com", permanent: false },
       { source: "/:path*", has: [{ type: "host", value: "academy.getdspconnect.com" }], destination: "https://getdspconnect.com", permanent: false },
       { source: "/:path*", has: [{ type: "host", value: "join.getdspconnect.com" }], destination: "https://getdspconnect.com", permanent: false },
+      // Vercel's own address for the live site: one address, so saved details and chat sign-in stay together.
+      { source: "/:path*", has: [{ type: "host", value: "dsp-connect-site.vercel.app" }], destination: "https://getdspconnect.com/:path*", permanent: true },
       { source: "/launch-client.html", destination: "/open-account", permanent: true },
       { source: "/platform-comparisons-dsp-connect", destination: "/compare", permanent: true },
       { source: "/sitemap", destination: "/sitemap.xml", permanent: true },

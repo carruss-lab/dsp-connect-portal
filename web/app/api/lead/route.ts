@@ -3,7 +3,7 @@ import { notifyTeam } from "@/lib/email";
 import { syncPerson } from "@/lib/intercom";
 import { chatCookie } from "@/lib/chatId";
 import { stripe } from "@/lib/payments";
-import { LEGAL_ENTITY, MIN_BUDGET } from "@/lib/site";
+import { LEGAL_ENTITY, MIN_BUDGET, siteOrigin } from "@/lib/site";
 
 const KINDS = ["market_check", "account", "agency"] as const;
 const clean = (v: unknown, max = 500) => (typeof v === "string" ? v.trim().slice(0, max) : "");
@@ -103,7 +103,8 @@ export async function POST(req: Request) {
   const client = kind === "account" && budget ? stripe() : null;
   if (client) {
     try {
-      const origin = new URL(req.url).origin;
+      // Always send buyers back to our own address (getdspconnect.com live, the preview while testing).
+      const origin = siteOrigin();
       // An ad budget is a prepayment, not a product Stripe sells on our behalf,
       // so Stripe's Managed Payments is switched off for this payment.
       const params = {
