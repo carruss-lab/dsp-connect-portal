@@ -8,7 +8,7 @@ export default function SetupRedirect() {
   const [missing, setMissing] = useState(false);
   useEffect(() => {
     const id = readProfile().setup;
-    if (id && ID.test(id)) window.location.replace(`/welcome?id=${id}`);
+    if (id && ID.test(id)) window.location.replace(`/welcome?id=${id}${window.location.hash}`);
     else setMissing(true);
   }, []);
   if (!missing) return <p>Opening your setup page…</p>;
