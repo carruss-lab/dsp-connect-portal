@@ -1,7 +1,7 @@
 import { emailOn, esc, send, wrap } from "./email";
 import { ensureAttributes, syncPerson } from "./intercom";
 import { secretRpc } from "./server";
-import { BUSINESS_ADDRESS, LEGAL_ENTITY, LOGIN_URL, MEETING_URL, SETUP_DAYS, siteOrigin } from "./site";
+import { BUSINESS_ADDRESS, LEGAL_ENTITY, LOGIN_URL, MEETING_URL, MIN_BUDGET, SETUP_DAYS, siteOrigin } from "./site";
 
 // The proactive side: emails to clients at each setup step, a weekly account summary,
 // low-budget warnings, and a daily list for the team. Every message is recorded in the
@@ -16,7 +16,8 @@ type FeedLead = {
   spent_total: number; spent_7d: number; last_spend_day: string | null;
 };
 type Unpaid = { id: string; email: string; name: string | null; business: string | null; budget: number | null };
-type Feed = { today: string; leads: FeedLead[]; unpaid?: Unpaid[]; pending_commission: number; due_commission: number; partners_not_ready: string[] };
+type Demo = { id: string; email: string; name: string | null; business: string | null; industry: string | null; market: string | null; days: number };
+type Feed = { today: string; leads: FeedLead[]; unpaid?: Unpaid[]; demo?: Demo[]; pending_commission: number; due_commission: number; partners_not_ready: string[] };
 export type Report = { sent: string[]; failed: string[]; emailOn: boolean };
 
 const TEAM = "00000000-0000-0000-0000-000000000000";
@@ -199,6 +200,39 @@ async function finishSignup(r: Report, u: Unpaid) {
     `<p style="color:#5B6577;font-size:12px;margin-top:28px">This is the only reminder we will send. ${esc(LEGAL_ENTITY)}, ${esc(BUSINESS_ADDRESS)}. <a href="${origin()}/unsubscribe?id=${u.id}">Unsubscribe</a>.</p>`);
 }
 
+/**
+ * Three short emails to someone who opened the demo and has not started an account: the day after,
+ * day 4 and day 10. They stop the moment the person starts an account, enquires as an agency, pays or
+ * unsubscribes, and nobody gets more than these three. Needs our mailing address, by law.
+ */
+async function demoFollowUps(r: Report, d: Demo) {
+  if (!BUSINESS_ADDRESS) return;
+  const step = d.days >= 10 && d.days <= 15 ? 3 : d.days >= 4 && d.days <= 9 ? 2 : d.days >= 1 && d.days <= 3 ? 1 : 0;
+  if (!step) return;
+  const hello = `<p>Hello${d.name ? " " + esc(d.name.split(" ")[0]) : ""},</p>`;
+  const foot = (last: boolean) => `<p style="color:#5B6577;font-size:12px;margin-top:28px">${last ? "This is the last email we will send about your demo. " : ""}${esc(LEGAL_ENTITY)}, ${esc(BUSINESS_ADDRESS)}. <a href="${origin()}/unsubscribe?id=${d.id}">Unsubscribe</a>.</p>`;
+  const where = d.market ? ` in ${esc(d.market)}` : " in your own area";
+  if (step === 1) {
+    await deliver(r, d.id, "lead", "demo_1", d.email, "Your DSP Connect demo is saved",
+      hello + `<p>Thanks for opening the DSP Connect demo. It shows what your ads could look like on streaming TV, websites and apps${where}, before you spend anything.</p>` +
+      `<p>You can go back to it any time: <a href="${origin()}/demo">open the demo</a>.</p>` +
+      `<p>When you are ready, accounts start from a $${MIN_BUDGET} ad budget. We do the setup for you and your ads are live within ${SETUP_DAYS} days. No monthly platform fee, and no long-term contract.</p>` +
+      `<p>Have a question first? Reply to this email.</p>` + foot(false));
+  } else if (step === 2) {
+    await deliver(r, d.id, "lead", "demo_2", d.email, `What happens in the ${SETUP_DAYS} days after you start`,
+      hello + `<p>A few people ask what happens between opening an account and seeing their ads run. Here it is, in order:</p>` +
+      `<ol><li>Your account is created and your ad budget is loaded.</li><li>Tracking is placed on your website, so visits and leads are counted.</li><li>Your ads are checked and approved.</li><li>Your audience is built, so the ads reach the right people${where}.</li></ol>` +
+      `<p>We do all four for you, and you get an email as each one is finished. Your part is one short campaign brief and a 20-minute kickoff call.</p>` +
+      `<p>Before you pay you can read our <a href="${origin()}/terms">terms</a> and <a href="${origin()}/refunds">refund policy</a>. You can cancel at any time.</p>` +
+      `<p><a href="${origin()}/open-account">Open your account</a> when you are ready, or reply with a question.</p>` + foot(false));
+  } else {
+    await deliver(r, d.id, "lead", "demo_3", d.email, "Would a 20-minute call help?",
+      hello + `<p>You looked at the DSP Connect demo a little while ago. If it left you with questions about whether this fits your business, the quickest way to answer them is a short call.</p>` +
+      `<p><a href="${MEETING_URL}">Choose a time for a 20-minute call</a>. No preparation needed, and no obligation.</p>` +
+      `<p>If you would rather look again on your own, <a href="${origin()}/demo">the demo is here</a>${d.industry ? ` and there are examples for your industry <a href="${origin()}/industries">here</a>` : ""}.</p>` + foot(true));
+  }
+}
+
 /** Keeps Intercom's record of a client current, so Fin answers from the same facts the emails use. */
 async function sync(l: FeedLead) {
   const b = budget(l);
@@ -231,6 +265,7 @@ export async function runNotices(opts: { lead?: string; weekly?: boolean } = {})
     }
   }
   if (!opts.lead) for (const u of f.unpaid || []) await finishSignup(r, u).catch((err) => console.error("reminder failed", u.id, err));
+  if (!opts.lead) for (const d of f.demo || []) await demoFollowUps(r, d).catch((err) => console.error("demo follow-up failed", d.id, err));
   if (!opts.lead && opts.weekly) await partnerBriefs(r, f);
   if (!opts.lead) await teamDigest(r, f);
   return r;
