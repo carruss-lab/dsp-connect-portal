@@ -49,7 +49,7 @@ export default function IntakeForm({ lead, saved, defaults }: { lead: string; sa
       {BRIEF.map((s, i) => (
         <fieldset key={s.id} className="stack g16" style={{ border: 0, padding: 0, margin: 0, borderTop: i ? "1px solid var(--line)" : 0, paddingTop: i ? 28 : 0 }}>
           <legend className="h3" style={{ fontSize: 18, padding: 0, marginBottom: 6 }}><span className="num" style={{ marginRight: 10 }}>{String(i + 1).padStart(2, "0")}</span>{s.title}</legend>
-          <p className="small" style={{ marginTop: -8 }}>{s.why}</p>
+          <p className="small">{s.why}</p>
           {s.fields.map((f) => (
             <div className="field" key={f.key}>
               {f.type === "checks" ? <span className="label" id={`b-${f.key}-l`}>{f.label}</span> : <label htmlFor={`b-${f.key}`}>{f.label}{"required" in f && f.required ? "" : <span className="small"> (optional)</span>}</label>}
