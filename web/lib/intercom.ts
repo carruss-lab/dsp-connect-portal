@@ -27,6 +27,7 @@ export async function syncPerson(p: Person) {
       ? await fetch(`https://api.intercom.io/contacts/${id}`, { method: "PUT", headers, body: JSON.stringify(body) })
       : await fetch("https://api.intercom.io/contacts", { method: "POST", headers, body: JSON.stringify({ role: p.role === "prospect" ? "lead" : "user", ...body }) });
     if (!res.ok) console.error("intercom sync failed", res.status, await res.text());
+    else console.log("intercom synced", p.role, id ? "updated" : "created");
   } catch (err) {
     console.error("intercom sync failed", err);
   }
