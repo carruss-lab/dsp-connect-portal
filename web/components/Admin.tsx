@@ -2,7 +2,7 @@
 import { createClient, type Session } from "@supabase/supabase-js";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { fieldLabel } from "@/lib/brief";
-import { INDUSTRIES, SETUP_DAYS } from "@/lib/site";
+import { INDUSTRIES, SETUP_DAYS, businessToday } from "@/lib/site";
 
 type Lead = {
   id: string; created_at: string; kind: string; email: string; name: string | null; business: string | null; phone: string | null;
@@ -81,8 +81,7 @@ export default function Admin() {
     );
   }
 
-  const today = new Date(); today.setHours(0, 0, 0, 0);
-  const left = (l: Lead) => (l.setup_due ? Math.round((new Date(l.setup_due + "T00:00:00").getTime() - today.getTime()) / 86400000) : null);
+  const left = (l: Lead) => (l.setup_due ? Math.round((Date.parse(l.setup_due + "T00:00:00Z") - Date.parse(businessToday() + "T00:00:00Z")) / 86400000) : null);
   const paid = (leads || []).filter((l) => l.paid_at);
   const setup = paid.filter((l) => !l.live_at).sort((a, b) => (left(a) ?? 99) - (left(b) ?? 99));
   const live = paid.filter((l) => l.live_at);
@@ -173,7 +172,7 @@ export default function Admin() {
     } catch (err) { setMsg(err instanceof Error ? err.message : "The payout run failed."); }
     setBusy(false); load();
   }
-  const isoToday = new Date().toISOString().slice(0, 10);
+  const isoToday = businessToday();
   const pname = (id: string) => partners.find((p) => p.id === id)?.name || "Unknown partner";
   const lname = (id: string) => (leads || []).find((l) => l.id === id)?.business || "Client";
   const open = lines.filter((l) => l.status === "pending" || l.status === "approved");

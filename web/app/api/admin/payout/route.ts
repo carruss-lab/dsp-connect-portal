@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { stripe } from "@/lib/payments";
 import { notifyPayout } from "@/lib/notices";
 import { authEmail, rest, secretRpc } from "@/lib/server";
+import { businessToday } from "@/lib/site";
 
 type Line = { id: string; partner_id: string; amount: number; release_on: string };
 type Partner = { id: string; name: string; email: string; stripe_account_id: string | null; payouts_ready: boolean };
@@ -18,7 +19,7 @@ export async function POST(req: Request) {
     if (!staff.ok || (await staff.json()) !== true) return NextResponse.json({ error: "Staff only." }, { status: 403 });
     const by = (await authEmail(jwt)) || "staff";
 
-    const today = new Date().toISOString().slice(0, 10);
+    const today = businessToday();
     const lines = (await (await rest(`commissions?select=id,partner_id,amount,release_on&status=eq.approved&release_on=lte.${today}`, { jwt })).json()) as Line[];
     if (!Array.isArray(lines) || lines.length === 0) return NextResponse.json({ paid: [], skipped: [], message: "Nothing is approved and due for payment." });
     const partners = (await (await rest("partners?select=id,name,email,stripe_account_id,payouts_ready", { jwt })).json()) as Partner[];

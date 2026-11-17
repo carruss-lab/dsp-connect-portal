@@ -25,3 +25,5 @@ export const HELP_URL = process.env.NEXT_PUBLIC_HELP_URL || "https://help.getdsp
 // The address links in emails and pages point to: the real site once live, the preview until then.
 export const siteOrigin = () =>
   process.env.VERCEL_ENV === "production" || !process.env.VERCEL_BRANCH_URL ? "https://getdspconnect.com" : `https://${process.env.VERCEL_BRANCH_URL}`;
+// Today's date where the business is (Arizona), as YYYY-MM-DD. Due dates and daily checks use this, not the server's UTC day.
+export const businessToday = () => new Date().toLocaleDateString("en-CA", { timeZone: "America/Phoenix" });
