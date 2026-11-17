@@ -36,7 +36,7 @@ export default function Partners() {
     <>
       <Header />
       <main>
-        <section className="hero"><div className="wrap">
+        <section className="hero"><div className="wrap" style={{ alignItems: "flex-start" }}>
           <div className="hero-copy stack g24">
             <div className="eyebrow">Authorized Sales Partner program</div>
             <h1 className="h1">Sell DSP Connect to the businesses you already call on. Earn {SHARE_PCT}% of what they spend, for life.</h1>
