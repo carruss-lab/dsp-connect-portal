@@ -1,9 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
+import { WelcomeBar } from "./Personal";
 import { HELP_URL, LEGAL_ENTITY, LOGIN_URL, MEETING_URL, SUPPORT_EMAIL } from "@/lib/site";
 
 export function Header() {
   return (
+    <>
     <header className="header">
       <div className="wrap">
         <Link href="/" className="brand">
@@ -22,6 +24,8 @@ export function Header() {
         <Link className="btn btn-blue" href="/#market">See the demo</Link>
       </div>
     </header>
+    <WelcomeBar />
+    </>
   );
 }
 

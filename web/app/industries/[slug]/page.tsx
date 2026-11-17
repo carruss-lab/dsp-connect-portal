@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { IndustryNote } from "@/components/Personal";
 import { notFound } from "next/navigation";
 import { Footer, Header, TalkBand } from "@/components/Chrome";
 import { INDUSTRY_PAGES, industryBySlug } from "@/lib/industries";
@@ -36,6 +37,7 @@ export default async function IndustryPage({ params }: PageProps<"/industries/[s
           <div className="eyebrow">{i.name}</div>
           <h1 className="h1" style={{ fontSize: "clamp(32px,4.4vw,46px)", maxWidth: 860 }}>{i.headline}</h1>
           <p className="lead" style={{ maxWidth: 720 }}>{i.intro}</p>
+          <IndustryNote industry={i.name} />
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             <Link className="btn btn-blue" href={demo}>See the demo for {i.name.toLowerCase()}</Link>
             <Link className="btn btn-line" href={`/open-account?industry=${encodeURIComponent(i.name)}`}>Open your account</Link>

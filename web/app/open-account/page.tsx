@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Footer, Header, TalkBand } from "@/components/Chrome";
 import LeadForm from "@/components/LeadForm";
+import { Hello } from "@/components/Personal";
 import { MIN_BUDGET, SETUP_DAYS } from "@/lib/site";
 import { JsonLd, crumbs } from "@/lib/seo";
 
@@ -18,7 +19,7 @@ export default function OpenAccount() {
       <main className="wrap" style={{ padding: "64px 32px 80px", display: "flex", flexWrap: "wrap", gap: 56, alignItems: "flex-start" }}>
         <div className="stack g24" style={{ flex: "1 1 380px", minWidth: 0 }}>
           <div className="eyebrow">Open your account</div>
-          <h1 className="h1" style={{ fontSize: "clamp(32px,4.4vw,46px)" }}>Tell us about your business. We set up the rest.</h1>
+          <h1 className="h1" style={{ fontSize: "clamp(32px,4.4vw,46px)" }}><Hello withName="{name}, tell us about {business}. We set up the rest." fallback="Tell us about your business. We set up the rest." /></h1>
           <p className="lead">One form, one payment, and your ads are live within {SETUP_DAYS} days.</p>
           <ol className="list" style={{ fontSize: 15 }}>
             <li>Fill in this form.</li>

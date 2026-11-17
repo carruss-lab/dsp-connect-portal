@@ -32,8 +32,12 @@ export function saveProfile(p: Profile) {
 /** Forgets everything about this visitor in this browser, including who the chat thinks they are. */
 export function forgetProfile() {
   try { localStorage.removeItem(KEY); localStorage.removeItem("dsp_who"); window.dispatchEvent(new Event(EVENT)); } catch {}
-  const w = window as Window & { Intercom?: (cmd: string) => void };
-  try { w.Intercom?.("shutdown"); w.Intercom?.("boot" as never); } catch {}
+  const w = window as Window & { Intercom?: (cmd: string, data?: Record<string, unknown>) => void; intercomSettings?: Record<string, unknown> };
+  try {
+    const { api_base, app_id } = w.intercomSettings || {};
+    w.intercomSettings = { api_base, app_id };
+    w.Intercom?.("shutdown"); w.Intercom?.("boot", { api_base, app_id });
+  } catch {}
 }
 
 export const onProfile = (fn: () => void) => { window.addEventListener(EVENT, fn); window.addEventListener("storage", fn); return () => { window.removeEventListener(EVENT, fn); window.removeEventListener("storage", fn); }; };

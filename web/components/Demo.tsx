@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import LeadForm from "./LeadForm";
+import { useProfile } from "./Personal";
 import { MIN_BUDGET, SHARE_PCT } from "@/lib/site";
 
 /* The demo follows the layout of the client platform screen for screen.
@@ -170,6 +171,7 @@ function Builder({ industry, market, onCancel }: { industry: string; market: str
 const CLIENTS_ICON = "M4 20V8l8-4 8 4v12zM9 20v-6h6v6";
 
 export default function Demo({ industry, market, agency = false }: { industry: string; market: string; agency?: boolean }) {
+  const who = useProfile();
   const [sec, setSec] = useState<Sec>(agency ? "Clients" : "Explore");
   const [open, setOpen] = useState<Record<string, boolean>>({ Analytics: false, Planning: false });
   const [toast, setToast] = useState(false);
@@ -248,11 +250,11 @@ export default function Demo({ industry, market, agency = false }: { industry: s
           <div className="dm-crumb"><span aria-hidden="true">⌂</span> / {sec}</div>
           <div className="dm-top-r">
             <span>Balance: <strong style={{ color: "#0B7A3B" }}>{balance}</strong></span>
-            <span>UTC-07:00</span><span>EN</span><span>{agency ? "Demo Agency" : "Demo User"}</span>
+            <span>UTC-07:00</span><span>EN</span><span>{agency ? "Demo Agency" : who?.name ? who.name.split(" ")[0] : "Demo User"}</span>
             <Link className="dm-btn dm-btn-blue" href={agency ? "/agencies" : "/open-account"}>{agency ? "Ask about an agreement" : "Open your account"}</Link>
           </div>
         </header>
-        <div className="dm-note">{agency ? "Demo agency account with sample clients and sample data. Not real results." : `Demo account with sample data for a ${industry.toLowerCase()} business in ${market}. Not real results.`}</div>
+        <div className="dm-note">{agency ? "Demo agency account with sample clients and sample data. Not real results." : `Demo account with sample data for ${who?.business ? who.business : `a ${industry.toLowerCase()} business`} in ${market}. Not real results.`}</div>
 
         <div className="dm-body">
           {tour !== null && !agency && sec !== "Create new campaign" && (

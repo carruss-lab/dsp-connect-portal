@@ -10,6 +10,7 @@ const PARTS: Part[] = [
     "What you give us: your name, business name, email, phone, website, industry, area, budget and goals, when you open the demo, open an account, ask about an agency agreement, book a call or write to us.",
     "Payment details: your payment is taken by Stripe. We receive confirmation and the amount. We never see or store your full card or bank details.",
     "How the site is used: pages visited, the page or campaign that brought you here, and general device and browser information. We use this in combined form to see which pages are useful. We do not use advertising cookies on this website.",
+    "Details you type into our forms (such as your name, business, industry and area) are also remembered in your own browser, so the site can greet you, fill in forms for you and take you back to your demo or setup page. They stay on your device; use \"Not you?\" at the top of any page to clear them.",
     "Messages: what you send us by chat or email, so we can answer and keep a record.",
   ]],
   ["Why we use it", [

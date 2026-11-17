@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Remember } from "@/components/Personal";
 import { Footer, Header } from "@/components/Chrome";
 import { markPaid, stripe } from "@/lib/payments";
 import { SETUP_DAYS } from "@/lib/site";
@@ -32,6 +33,7 @@ export default async function Thanks({ searchParams }: PageProps<"/open-account/
       <main className="wrap stack g24" style={{ padding: "96px 32px", maxWidth: 720 }}>
         <h1 className="h1" style={{ fontSize: "clamp(30px,4vw,42px)" }}>{copy[0]}</h1>
         <p className="lead">{copy[1]}</p>
+        {state === "paid" && lead && <Remember stage="paid" setup={lead} />}
         {state === "paid" && lead && (
           <div className="card stack g12" style={{ background: "var(--ground)" }}>
             <h2 className="h3" style={{ fontSize: 18 }}>One thing we need from you</h2>
