@@ -4,6 +4,7 @@ import { identify } from "@/lib/identify";
 import { readProfile, saveProfile } from "@/lib/profile";
 import { useEffect, useState } from "react";
 import { INDUSTRIES, MIN_BUDGET, SETUP_DAYS } from "@/lib/site";
+import { trackLead } from "@/lib/analytics";
 
 type Kind = "market_check" | "account" | "agency";
 const DONE: Record<Kind, string> = {
@@ -65,7 +66,7 @@ export default function LeadForm({ kind, cta }: { kind: Kind; cta: string }) {
       });
       const event = kind === "market_check" ? "demo_opened" : kind === "account" ? "signup_started" : "agency_enquiry";
       track(event);
-      (window as unknown as { gtag?: (...a: unknown[]) => void }).gtag?.("event", event);
+      trackLead(kind === "market_check" ? "demo" : kind === "account" ? "account" : "agency");
       if (out.pay) { location.assign(out.pay); return; }
       if (kind === "market_check") {
         try { sessionStorage.setItem("demo_ok", "1"); } catch {}

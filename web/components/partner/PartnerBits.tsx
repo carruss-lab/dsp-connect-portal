@@ -104,3 +104,22 @@ export function CopyLink({ label, url }: { label: string; url: string }) {
     </div>
   );
 }
+
+/** An email template with its subject and body, ready to copy. */
+export function CopyTemplate({ title, when, subject, body }: { title: string; when: string; subject: string; body: string }) {
+  const [copied, setCopied] = useState("");
+  const copy = (what: string, text: string) => { navigator.clipboard?.writeText(text); setCopied(what); setTimeout(() => setCopied(""), 1800); };
+  return (
+    <details className="card stack g8">
+      <summary style={{ cursor: "pointer", fontWeight: 600 }}>{title} <span className="small" style={{ fontWeight: 400 }}>· {when}</span></summary>
+      <div className="stack g8" style={{ marginTop: 8 }}>
+        <div className="small"><b>Subject:</b> {subject}</div>
+        <pre style={{ whiteSpace: "pre-wrap", fontFamily: "inherit", fontSize: 14, background: "var(--ground)", padding: 12, borderRadius: 8, margin: 0 }}>{body}</pre>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <button className="btn btn-line" style={{ minHeight: 36 }} onClick={() => copy("subject", subject)}>{copied === "subject" ? "Copied" : "Copy subject"}</button>
+          <button className="btn btn-line" style={{ minHeight: 36 }} onClick={() => copy("body", body)}>{copied === "body" ? "Copied" : "Copy email"}</button>
+        </div>
+      </div>
+    </details>
+  );
+}

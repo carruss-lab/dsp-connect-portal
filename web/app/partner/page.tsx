@@ -3,12 +3,13 @@ import Image from "next/image";
 import ConnectButton from "@/components/ConnectButton";
 import IdentifyClient from "@/components/IdentifyClient";
 import { messengerJwt } from "@/lib/chatId";
-import { CopyLink, LessonDone, LoginForm, SignDocs } from "@/components/partner/PartnerBits";
+import { CopyLink, CopyTemplate, LessonDone, LoginForm, SignDocs } from "@/components/partner/PartnerBits";
 import { loadPortal, type Client, type Portal } from "@/lib/partner";
 import { refreshPayouts } from "@/lib/partnerStripe";
 import { DOCS, VERSION } from "@/lib/partnerDocs";
 import { LEGAL_ENTITY, SETUP_DAYS, SHARE_PCT, SUPPORT_EMAIL, siteOrigin } from "@/lib/site";
 import { LESSONS } from "@/lib/training";
+import { CALL_SCRIPT, EMAILS, OBJECTIONS, fill } from "@/lib/salesKit";
 
 export const metadata: Metadata = { title: "Partner portal", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -143,6 +144,35 @@ function Dashboard({ portal }: { portal: Portal }) {
               <CopyLink label="Show the demo" url={`${origin}/demo?p=${p.code}`} />
               <CopyLink label="Home page" url={`${origin}/?p=${p.code}`} />
               {!trained && <p className="note" style={{ background: "#FFF6E5", color: "#7A4B00" }}>Please finish the training below before you introduce clients.</p>}
+            </section>
+
+            <section className="stack g16" aria-labelledby="kit">
+              <div className="stack g8">
+                <h2 id="kit" className="h3">Your sales kit</h2>
+                <p className="p">Everything here already has your links in it. Replace the words in [brackets] before you send.</p>
+              </div>
+              <div className="card stack g12" style={{ background: "var(--ground)" }}>
+                <h3 className="h3" style={{ fontSize: 16 }}>Leave-behind</h3>
+                <p className="p" style={{ fontSize: 15 }}>A one-page sheet for business owners with your name, your demo link and a QR code. Print it or save it as a PDF to attach to emails.</p>
+                <a className="btn btn-blue" href="/partner/leave-behind" target="_blank" rel="noopener" style={{ alignSelf: "flex-start" }}>Open your leave-behind</a>
+              </div>
+              <h3 className="h3" style={{ fontSize: 16 }}>Emails to prospects</h3>
+              {EMAILS.map((t) => {
+                const v = { first: "[first name]", business: "[business name]", me: p.name, company: p.company_name || "Authorized Sales Partner, DSP Connect", demo: `${origin}/demo?p=${p.code}`, open: `${origin}/open-account?p=${p.code}` };
+                return <CopyTemplate key={t.id} title={t.title} when={t.when} subject={fill(t.subject, v)} body={fill(t.body, v)} />;
+              })}
+              <details className="card stack g8">
+                <summary style={{ cursor: "pointer", fontWeight: 600 }}>First-call script <span className="small" style={{ fontWeight: 400 }}>· about 20 minutes</span></summary>
+                <ol className="stack g12" style={{ marginTop: 8 }}>{CALL_SCRIPT.map((c) => (
+                  <li key={c.step} className="stack g4"><b>{c.step}</b><ul className="list">{c.say.map((x) => <li key={x}>{x}</li>)}</ul></li>
+                ))}</ol>
+              </details>
+              <details className="card stack g8">
+                <summary style={{ cursor: "pointer", fontWeight: 600 }}>Answers to common questions</summary>
+                <div className="stack g12" style={{ marginTop: 8 }}>{OBJECTIONS.map((o) => (
+                  <div key={o.q} className="stack g4"><b>&ldquo;{o.q}&rdquo;</b><p className="p" style={{ fontSize: 15 }}>{o.a}</p></div>
+                ))}</div>
+              </details>
             </section>
 
             <section className="stack g16" aria-labelledby="cl">

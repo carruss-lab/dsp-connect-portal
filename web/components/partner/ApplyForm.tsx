@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { trackLead } from "@/lib/analytics";
 import { INDUSTRIES } from "@/lib/site";
 
 /** Public application to become an Authorized Sales Partner. */
@@ -23,6 +24,7 @@ export default function ApplyForm() {
         const r = await fetch("/api/partner/apply", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...data, entity, agree: !!data.agree }) });
         const j = await r.json().catch(() => ({}));
         if (!r.ok) throw new Error(j.error || "Something went wrong. Please try again.");
+        if (!j.existing) trackLead("sales_partner");
         setState(j.existing ? "existing" : "done");
       } catch (err) { setError(err instanceof Error ? err.message : String(err)); setState("idle"); }
     }}>

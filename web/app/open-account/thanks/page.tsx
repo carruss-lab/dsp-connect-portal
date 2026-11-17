@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Remember } from "@/components/Personal";
+import TrackPurchase from "@/components/TrackPurchase";
 import { Footer, Header } from "@/components/Chrome";
 import { markPaid, stripe } from "@/lib/payments";
 import { SETUP_DAYS } from "@/lib/site";
@@ -12,12 +13,14 @@ export default async function Thanks({ searchParams }: PageProps<"/open-account/
   const id = Array.isArray(q.session_id) ? q.session_id[0] : q.session_id;
   let state: "paid" | "pending" | "error" = "error";
   let lead = "";
+  let amount = 0;
   const client = stripe();
   if (client && id && /^cs_[A-Za-z0-9_]+$/.test(id)) {
     try {
       const session = await client.checkout.sessions.retrieve(id);
       state = await markPaid(session);
       lead = session.client_reference_id || "";
+      amount = (session.amount_total || 0) / 100;
     } catch (err) {
       console.error("thanks lookup failed", err);
     }
@@ -34,6 +37,7 @@ export default async function Thanks({ searchParams }: PageProps<"/open-account/
         <h1 className="h1" style={{ fontSize: "clamp(30px,4vw,42px)" }}>{copy[0]}</h1>
         <p className="lead">{copy[1]}</p>
         {state === "paid" && lead && <Remember stage="paid" setup={lead} />}
+        {state === "paid" && id && amount > 0 && <TrackPurchase id={id} value={amount} />}
         {state === "paid" && lead && (
           <div className="card stack g12" style={{ background: "var(--ground)" }}>
             <h2 className="h3" style={{ fontSize: 18 }}>One thing we need from you</h2>
