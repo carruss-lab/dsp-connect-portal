@@ -10,8 +10,8 @@ export function GET() {
       <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", background: "#0B1220", color: "#fff", padding: 72 }}>
         <div style={{ display: "flex", fontSize: 34, fontWeight: 700, letterSpacing: -0.5 }}>DSP Connect</div>
         <div style={{ display: "flex", flexDirection: "column" }}>
-          <div style={{ display: "flex", fontSize: 76, fontWeight: 700, lineHeight: 1.05, letterSpacing: -2, maxWidth: 980 }}>See exactly what you get before you spend a dollar.</div>
-          <div style={{ display: "flex", fontSize: 32, color: "#9DB4E8", marginTop: 28 }}>Done-for-you setup. Live in 14 days. From $750.</div>
+          <div style={{ display: "flex", fontSize: 76, fontWeight: 700, lineHeight: 1.05, letterSpacing: -2, maxWidth: 980 }}>Enterprise programmatic advertising. Without the enterprise contract.</div>
+          <div style={{ display: "flex", fontSize: 32, color: "#9DB4E8", marginTop: 28 }}>Streaming TV, apps and websites. From $750. Live in 14 days.</div>
         </div>
         <div style={{ display: "flex", height: 10, width: 220, background: "#0A4FD6" }} />
       </div>

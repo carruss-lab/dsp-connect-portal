@@ -29,7 +29,7 @@ const TRUST: [string, string, string, string][] = [
 const FAQ = [
   ["What is the smallest budget I can start with?", `$${MIN_BUDGET}.`],
   ["How long until my ads are running?", `Within ${SETUP_DAYS} days of paying. We use that time to set up your account, tracking, ads and audience for you.`],
-  ["Where do my ads appear?", `On apps and websites reached through ${EXCHANGES} ad exchanges. You can approve or block specific apps and sites.`],
+  ["Where do my ads appear?", `On streaming TV, apps and websites reached through ${EXCHANGES} ad exchanges. You can approve or block specific apps and sites.`],
   ["How do I know it is working?", "You get your own login showing views, clicks and spend, plus tracking on your website that counts leads and sales."],
   ["How does the campaign improve over time?", "Automatic rules drop the apps and sites that are not performing and move your budget to the ones that are."],
   ["What does it cost?", "There is no monthly platform fee. Our fee is included in the price of your ads."],
@@ -38,29 +38,30 @@ const FAQ = [
 export default function Home() {
   return (
     <>
-      <JsonLd data={pageGraph({ path: "/", name: "DSP Connect | See what you get before you spend", description: `Advertising on apps and websites for business owners and agencies. Done-for-you setup, live within ${SETUP_DAYS} days, from $${MIN_BUDGET}.`, main: ADS_SERVICE, faq: FAQ })} />
+      <JsonLd data={pageGraph({ path: "/", name: "DSP Connect | Enterprise programmatic advertising, without the enterprise contract", description: `Streaming TV, apps and websites across ${EXCHANGES} ad exchanges, open to any business from a $${MIN_BUDGET} ad budget. Set up for you, live within ${SETUP_DAYS} days. No contract.`, main: ADS_SERVICE, faq: FAQ })} />
       <Header />
       <main>
         <section className="hero">
           <div className="wrap">
             <div className="hero-copy stack g24">
-              <div className="eyebrow">Advertising on apps and websites</div>
-              <h1 className="h1">See exactly what you get before you spend a dollar.</h1>
-              <p className="lead" style={{ maxWidth: 560 }}>
-                DSP Connect puts your business in front of local customers on the apps and sites they already use.
-                Look inside a sample account first, then start from ${MIN_BUDGET}.
+              <div className="eyebrow">Programmatic advertising for every business</div>
+              <h1 className="h1">Enterprise programmatic advertising. Without the enterprise contract.</h1>
+              <p className="lead" style={{ maxWidth: 600 }}>
+                The same kind of buying big brands do through The Trade Desk and Amazon DSP: streaming TV, apps and websites
+                across {EXCHANGES} ad exchanges. Open to any business from a ${MIN_BUDGET} ad budget, set up for you and live within {SETUP_DAYS} days.
               </p>
               <div className="ticks">
-                <span>Start from ${MIN_BUDGET}</span>
+                <span>From ${MIN_BUDGET}</span>
                 <span>Live within {SETUP_DAYS} days</span>
-                <span>Done-for-you setup</span>
-                <span>Your own reporting login</span>
+                <span>No contract</span>
+                <span>No monthly platform fee</span>
               </div>
+              <Link className="btn btn-blue" href="/open-account" style={{ alignSelf: "flex-start" }}>Open your account</Link>
             </div>
             <div id="market" className="card formcard stack g16" style={{ scrollMarginTop: 90 }}>
               <div className="stack g8">
-                <h2 className="h3" style={{ fontSize: 18 }}>See the demo</h2>
-                <p className="small">Tell us your industry and area and we open a sample account for a business like yours. No card needed.</p>
+                <h2 className="h3" style={{ fontSize: 18 }}>See your sample account</h2>
+                <p className="small">Tell us your industry and area and we open a sample account set up for a business like yours. See exactly what you get before you spend a dollar. No card needed.</p>
               </div>
               <LeadForm kind="market_check" cta="Open the demo" />
             </div>

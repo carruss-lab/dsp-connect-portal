@@ -30,7 +30,7 @@ export const ORG: Node = {
   "@type": "Organization", "@id": ID.org, name: "DSP Connect", legalName: LEGAL_ENTITY, url: SITE_URL,
   logo: { "@type": "ImageObject", "@id": ID.logo, url: `${SITE_URL}/logo.png`, contentUrl: `${SITE_URL}/logo.png`, caption: "DSP Connect" },
   image: ref(ID.logo),
-  description: `Advertising on apps and websites for business owners and agencies, with done-for-you setup. Live within ${SETUP_DAYS} days.`,
+  description: `Enterprise programmatic advertising without the enterprise contract: streaming TV, apps and websites for business owners and agencies, with done-for-you setup. Live within ${SETUP_DAYS} days.`,
   email: SUPPORT_EMAIL,
   areaServed: { "@type": "Country", name: "United States" },
   knowsAbout: ["Programmatic advertising", "Local business advertising", "Advertising on apps and websites", "Conversion tracking"],
@@ -48,7 +48,7 @@ export const ADS_SERVICE: Node = {
   "@type": "Service", "@id": ID.ads, name: "Programmatic advertising with done-for-you setup", serviceType: "Programmatic advertising",
   provider: ref(ID.org), brand: ref(ID.org), areaServed: { "@type": "Country", name: "United States" }, url: `${SITE_URL}/`,
   audience: [{ "@type": "BusinessAudience", name: "Business owners" }, { "@type": "BusinessAudience", name: "Advertising agencies" }],
-  description: `Banner, video and native ads on apps and websites. We set up the account, tracking, ads and audience, and ads are live within ${SETUP_DAYS} days of payment.`,
+  description: `Programmatic advertising on streaming TV, apps and websites, open to any business without an enterprise contract. We set up the account, tracking, ads and audience, and ads are live within ${SETUP_DAYS} days of payment.`,
   offers: {
     "@type": "Offer", url: `${SITE_URL}/open-account`, priceCurrency: "USD", availability: "https://schema.org/InStock", seller: ref(ID.org),
     priceSpecification: { "@type": "PriceSpecification", minPrice: MIN_BUDGET, priceCurrency: "USD", description: `Minimum starting ad budget of $${MIN_BUDGET}. No monthly platform fee.` },
