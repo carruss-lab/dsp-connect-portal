@@ -1,7 +1,7 @@
 import { emailOn, esc, send, wrap } from "./email";
 import { ensureAttributes, syncPerson } from "./intercom";
 import { secretRpc } from "./server";
-import { BUSINESS_ADDRESS, LEGAL_ENTITY, LOGIN_URL, MEETING_URL, MIN_BUDGET, SETUP_DAYS, siteOrigin } from "./site";
+import { BUSINESS_ADDRESS, LEGAL_ENTITY, LOGIN_URL, MEETING_URL, MIN_BUDGET, SETUP_DAYS, SHARE_PCT, siteOrigin } from "./site";
 
 // The proactive side: emails to clients at each setup step, a weekly account summary,
 // low-budget warnings, and a daily list for the team. Every message is recorded in the
@@ -17,7 +17,12 @@ type FeedLead = {
 };
 type Unpaid = { id: string; email: string; name: string | null; business: string | null; budget: number | null };
 type Demo = { id: string; email: string; name: string | null; business: string | null; industry: string | null; market: string | null; days: number };
-type Feed = { today: string; leads: FeedLead[]; unpaid?: Unpaid[]; demo?: Demo[]; pending_commission: number; due_commission: number; partners_not_ready: string[] };
+type Agency = { id: string; email: string; name: string | null; business: string | null; days: number };
+type Onboarding = {
+  id: string; name: string; email: string; status: string; invite_token: string; payouts_ready: boolean; company_name: string | null;
+  days_approved: number; days_signed: number | null; days_trained: number | null; trained: boolean; clients: number;
+};
+type Feed = { today: string; leads: FeedLead[]; unpaid?: Unpaid[]; demo?: Demo[]; agency?: Agency[]; partner_onboarding?: Onboarding[]; applications_waiting?: string[]; pending_commission: number; due_commission: number; partners_not_ready: string[] };
 export type Report = { sent: string[]; failed: string[]; emailOn: boolean };
 
 const TEAM = "00000000-0000-0000-0000-000000000000";
@@ -182,6 +187,7 @@ async function teamDigest(r: Report, f: Feed) {
   }
   if (Number(f.pending_commission) > 0) lines.push(`<b>Commission to approve:</b> ${usd(f.pending_commission)} is waiting for approval.`);
   if (Number(f.due_commission) > 0) lines.push(`<b>Commission to pay:</b> ${usd(f.due_commission)} is approved and due today.`);
+  if ((f.applications_waiting || []).length) lines.push(`<b>Sales Partner applications to review:</b> ${(f.applications_waiting || []).map(esc).join(", ")}. Approve or decline them in the back office.`);
   for (const n of f.partners_not_ready || []) lines.push(`<b>Payout account missing:</b> ${esc(n)} has commission owed but has not finished Stripe payout setup.`);
   if (!lines.length) return;
   await deliver(r, TEAM, "team", `team_${f.today}`, to, `DSP Connect: ${lines.length} thing${lines.length === 1 ? "" : "s"} need attention today`,
@@ -233,6 +239,76 @@ async function demoFollowUps(r: Report, d: Demo) {
   }
 }
 
+/**
+ * Three emails to someone who asked about an agency agreement and has not opened an account: day 2
+ * (the team replies personally on day 1), day 6 and day 13. They stop when the person opens an account,
+ * pays or unsubscribes. Needs our mailing address, by law.
+ */
+async function agencyFollowUps(r: Report, a: Agency) {
+  if (!BUSINESS_ADDRESS) return;
+  const step = a.days >= 13 && a.days <= 16 ? 3 : a.days >= 6 && a.days <= 9 ? 2 : a.days >= 2 && a.days <= 4 ? 1 : 0;
+  if (!step) return;
+  const hello = `<p>Hello${a.name ? " " + esc(a.name.split(" ")[0]) : ""},</p>`;
+  const foot = (last: boolean) => `<p style="color:#5B6577;font-size:12px;margin-top:28px">${last ? "This is the last email we will send about your enquiry. " : ""}${esc(LEGAL_ENTITY)}, ${esc(BUSINESS_ADDRESS)}. <a href="${origin()}/unsubscribe?id=${a.id}">Unsubscribe</a>.</p>`;
+  if (step === 1) {
+    await deliver(r, a.id, "lead", "agency_1", a.email, "Your DSP Connect agency enquiry",
+      hello + `<p>Thanks for asking about an agency agreement${a.business ? ` for ${esc(a.business)}` : ""}. In short: you run your clients' advertising on streaming TV, websites and apps on DSP Connect, your clients stay yours, and you earn ${SHARE_PCT}% of the ad spend you manage.</p>` +
+      `<p>The quickest way to see if it fits is a 20-minute call: <a href="${MEETING_URL}">choose a time</a>. Or look around first in the <a href="${origin()}/demo?view=agency">agency demo</a>.</p>` +
+      `<p>Questions? Just reply to this email.</p>` + foot(false));
+  } else if (step === 2) {
+    await deliver(r, a.id, "lead", "agency_2", a.email, "How agencies run clients on DSP Connect",
+      hello + `<p>Here is how it works day to day:</p>` +
+      `<ol><li><b>Your clients stay yours.</b> We never contact, bill or sell to them.</li><li><b>One account for all of them.</b> Each client gets their own login, with the access you choose.</li><li><b>We set each client up.</b> Account, tracking, ad review and audience, live within ${SETUP_DAYS} days.</li><li><b>You earn ${SHARE_PCT}% of the ad spend you manage,</b> on top of the fees you already charge.</li></ol>` +
+      `<p><a href="${MEETING_URL}">Book a 20-minute call</a> to go through the agreement, or reply with your questions.</p>` + foot(false));
+  } else {
+    await deliver(r, a.id, "lead", "agency_3", a.email, "Still interested in an agency agreement?",
+      hello + `<p>A last note on your agency enquiry. If the timing is not right, no problem: <a href="${origin()}/agencies">the details stay here</a> for when it is.</p>` +
+      `<p>If you would like to talk it through, <a href="${MEETING_URL}">choose a time for a call</a>.</p>` + foot(true));
+  }
+}
+
+/**
+ * Helps approved Sales Partners get from approval to their first client, pointing them to the tools for
+ * each step: the agreement, payouts, training, then their sales kit, leave-behind and links. A few
+ * emails at most, each only while that step is still open. They stop if the partner unsubscribes.
+ */
+async function partnerOnboarding(r: Report, p: Onboarding) {
+  if (!BUSINESS_ADDRESS) return;
+  const portal = `${origin()}/partner`;
+  const hello = `<p>Hello ${esc(p.name.split(" ")[0])},</p>`;
+  const foot = `<p style="color:#5B6577;font-size:12px;margin-top:28px">You are getting this because you were approved as a DSP Connect Authorized Sales Partner. ${esc(LEGAL_ENTITY)}, ${esc(BUSINESS_ADDRESS)}. <a href="${origin()}/unsubscribe?partner=${p.id}">Unsubscribe from these reminders</a>.</p>`;
+  const help = `<p>Questions? Use the chat in your portal or reply to this email.</p>`;
+  const btn = (href: string, label: string) => `<p><a href="${href}" style="display:inline-block;background:#1A14D4;color:#fff;padding:12px 18px;border-radius:6px;text-decoration:none;font-weight:600">${label}</a></p>`;
+  const tools = `<ul><li><b>Your sales kit:</b> emails to prospects with your links already in them, a first-call script and answers to common questions.</li><li><b>Your leave-behind:</b> a one-page sheet with your own QR code, to print or attach as a PDF.</li><li><b>Your links:</b> the demo and account links that credit clients to you.</li><li><b>Help:</b> the chat in your portal, where Fin can help you prepare for a client conversation.</li></ul>`;
+
+  if (p.status === "invited") {
+    const k = p.days_approved >= 6 && p.days_approved <= 8 ? "partner_sign_2" : p.days_approved >= 2 && p.days_approved <= 4 ? "partner_sign_1" : "";
+    if (!k) return;
+    await deliver(r, p.id, "partner", k, p.email, "Your Sales Partner Agreement is ready to sign",
+      hello + `<p>You are approved as a DSP Connect Authorized Sales Partner${p.company_name ? ` for ${esc(p.company_name)}` : ""}. The next step is to read and sign your agreement online. It takes about ten minutes, and you can sign as yourself or for your company.</p>` +
+      btn(`${origin()}/partners/join/${p.invite_token}`, "Sign your agreement") +
+      `<p>Once it is signed you get your sales kit, your leave-behind and your own client links straight away.</p>` + help + foot);
+    return;
+  }
+  const open: string[] = [];
+  if (!p.payouts_ready) open.push(`<li><b>Set up your payouts</b> with Stripe, so commission can reach your bank. <a href="${portal}#pay">Set up payouts</a></li>`);
+  if (!p.trained) open.push(`<li><b>Finish the training:</b> six short lessons on the product, the demo, the conversation and the rules. <a href="${portal}#tr">Go to the training</a></li>`);
+  if (open.length && p.days_signed !== null) {
+    const k = p.days_signed >= 8 && p.days_signed <= 10 ? "partner_setup_2" : p.days_signed >= 3 && p.days_signed <= 5 ? "partner_setup_1" : "";
+    if (!k) return;
+    await deliver(r, p.id, "partner", k, p.email, open.length > 1 ? "Two steps left before your first client" : "One step left before your first client",
+      hello + `<p>Your agreement is signed. Here is what is left:</p><ul>${open.join("")}</ul>` +
+      `<p>Your tools are ready in your portal now:</p>` + tools + btn(portal, "Open your portal") + help + foot);
+    return;
+  }
+  if (!open.length && p.clients === 0 && p.days_trained !== null && p.days_trained >= 14 && p.days_trained <= 20) {
+    await deliver(r, p.id, "partner", "partner_first_client", p.email, "Ready for your first client?",
+      hello + `<p>You are fully set up, and everything you need to bring in your first client is in your portal:</p>` + tools +
+      `<p>A simple way to start: pick three business owners you already know, send them the first email from your kit, and walk the first one who replies through the demo.</p>` +
+      btn(portal, "Open your sales kit") + help + foot);
+  }
+}
+
 /** Keeps Intercom's record of a client current, so Fin answers from the same facts the emails use. */
 async function sync(l: FeedLead) {
   const b = budget(l);
@@ -266,6 +342,8 @@ export async function runNotices(opts: { lead?: string; weekly?: boolean } = {})
   }
   if (!opts.lead) for (const u of f.unpaid || []) await finishSignup(r, u).catch((err) => console.error("reminder failed", u.id, err));
   if (!opts.lead) for (const d of f.demo || []) await demoFollowUps(r, d).catch((err) => console.error("demo follow-up failed", d.id, err));
+  if (!opts.lead) for (const a of f.agency || []) await agencyFollowUps(r, a).catch((err) => console.error("agency follow-up failed", a.id, err));
+  if (!opts.lead) for (const p of f.partner_onboarding || []) await partnerOnboarding(r, p).catch((err) => console.error("partner onboarding failed", p.id, err));
   if (!opts.lead && opts.weekly) await partnerBriefs(r, f);
   if (!opts.lead) await teamDigest(r, f);
   return r;
