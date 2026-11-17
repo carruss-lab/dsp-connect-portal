@@ -7,7 +7,7 @@ const REPLY_TO = process.env.REPLY_TO || SUPPORT_EMAIL;
 export const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
 // The newer key name wins, so replacing a key never needs the old one deleted first.
-const apiKey = () => process.env.RESEND_API_KEY_1 || process.env.RESEND_API_KEY;
+const apiKey = () => process.env.RESEND_API_KEY_2 || process.env.RESEND_API_KEY_1 || process.env.RESEND_API_KEY;
 export const emailOn = () => !!apiKey();
 
 /** Sends one email. Answers whether the mail service accepted it. */

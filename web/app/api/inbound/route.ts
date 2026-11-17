@@ -13,7 +13,7 @@ const DOMAIN = "mail.getdspconnect.com";
 const FROM = `DSP Connect <hello@${DOMAIN}>`;
 const INTERCOM = process.env.INTERCOM_INBOUND_EMAIL || "ruipmz2j@dsp-connect-8d1b02b4a13d.intercom-mail.com";
 const TEAM = "00000000-0000-0000-0000-000000000000";
-const key = () => process.env.RESEND_API_KEY_1 || process.env.RESEND_API_KEY;
+const key = () => process.env.RESEND_API_KEY_2 || process.env.RESEND_API_KEY_1 || process.env.RESEND_API_KEY;
 
 type Received = {
   from?: string; to?: string[]; received_for?: string[]; reply_to?: string[] | string | null; subject?: string;
