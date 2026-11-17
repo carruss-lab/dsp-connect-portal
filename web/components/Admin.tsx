@@ -1,6 +1,7 @@
 "use client";
 import { createClient, type Session } from "@supabase/supabase-js";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { fieldLabel } from "@/lib/brief";
 import { INDUSTRIES, SETUP_DAYS } from "@/lib/site";
 
 type Lead = {
@@ -223,13 +224,13 @@ export default function Admin() {
               </div>
               <div className="small" style={{ color: "var(--body)" }}>{[l.industry, l.market, l.formats, l.goals].filter(Boolean).join(" · ")}</div>
               {l.intake ? (
-                <div className="small" style={{ color: "var(--body)", lineHeight: 1.7 }}>
-                  <b>Sent by client {day(l.intake_at!)}:</b> landing page {String(l.intake.landing_page || "")}
-                  {l.intake.ads_link ? <> · <a href={String(l.intake.ads_link)} target="_blank" rel="noopener">ads folder</a></> : ""}{l.intake.need_ads ? " · needs help with ads" : ""}
-                  {" · website contact "}{String(l.intake.web_contact_name || "")} (<a href={`mailto:${l.intake.web_contact_email}`}>{String(l.intake.web_contact_email || "")}</a>)
-                  {l.intake.notes ? <><br />Notes: {String(l.intake.notes)}</> : ""}
-                </div>
-              ) : <div className="small">Client has not sent their ads and website contact yet. <button className="dm-link" onClick={() => { navigator.clipboard?.writeText(`${location.origin}/welcome?id=${l.id}`); setNote(`Setup page link for ${l.business || l.email} copied.`); }}>Copy their setup page link</button></div>}
+                <details className="small" style={{ color: "var(--body)", lineHeight: 1.6 }}>
+                  <summary style={{ cursor: "pointer", minHeight: 32 }}><b>Campaign brief received {day(l.intake_at!)}</b>: {String(l.intake.primary_goal || "")}{l.intake.creative_status ? ` · ads: ${String(l.intake.creative_status)}` : ""}. Open to read it all.</summary>
+                  <div className="tablebox" style={{ marginTop: 8 }}><table><tbody>
+                    {Object.entries(l.intake).map(([k, v]) => <tr key={k}><th scope="row" style={{ width: "34%" }}>{fieldLabel(k)}</th><td>{/^https?:\/\//.test(String(v)) ? <a href={String(v)} target="_blank" rel="noopener">{String(v)}</a> : String(v)}</td></tr>)}
+                  </tbody></table></div>
+                </details>
+              ) : <div className="small">No campaign brief yet. <button className="dm-link" onClick={() => { navigator.clipboard?.writeText(`${location.origin}/welcome?id=${l.id}`); setNote(`Setup page link for ${l.business || l.email} copied.`); }}>Copy their setup page link</button></div>}
               <div className="ticks">
                 {STEPS.map(([k, label]) => (
                   <label key={k} style={{ display: "flex", alignItems: "center", gap: 8, minHeight: 44 }}>

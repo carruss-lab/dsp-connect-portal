@@ -35,8 +35,8 @@ export default async function Thanks({ searchParams }: PageProps<"/open-account/
         {state === "paid" && lead && (
           <div className="card stack g12" style={{ background: "var(--ground)" }}>
             <h2 className="h3" style={{ fontSize: 18 }}>One thing we need from you</h2>
-            <p className="p">Your ads and the person who manages your website, within 5 days. It takes about three minutes, and the same page shows your setup progress.</p>
-            <Link className="btn btn-blue" href={`/welcome?id=${lead}`} style={{ alignSelf: "flex-start" }}>Go to your setup page</Link>
+            <p className="p">Your campaign brief, within 5 days: your goals, your customers, the campaigns you want, your ads and your website. It takes about ten minutes, and the same page shows your setup progress.</p>
+            <Link className="btn btn-blue" href={`/welcome?id=${lead}`} style={{ alignSelf: "flex-start" }}>Fill in your campaign brief</Link>
             <p className="small">We have also emailed you this link. Your login details arrive in separate emails once your account is approved.</p>
           </div>
         )}

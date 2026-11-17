@@ -39,7 +39,7 @@ type Lead = Record<string, string | number | null | undefined>;
 export async function notifyTeam(kind: string, lead: Lead) {
   const to = process.env.NOTIFY_EMAIL;
   if (!to) return;
-  const label = { market_check: "Demo opened", account: "Account sign-up started", agency: "Agency enquiry", paid: "Payment received", intake: "Client sent their setup details" }[kind] || kind;
+  const label = { market_check: "Demo opened", account: "Account sign-up started", agency: "Agency enquiry", paid: "Payment received", intake: "Client sent their campaign brief" }[kind] || kind;
   const rows = Object.entries(lead)
     .filter(([, v]) => v !== null && v !== undefined && v !== "")
     .map(([k, v]) => `<tr><td style="padding:4px 12px 4px 0;color:#5B6577">${esc(k)}</td><td style="padding:4px 0">${esc(String(v))}</td></tr>`)
@@ -58,8 +58,8 @@ export async function confirmPayment(email: string, amount: number, lead?: strin
       `<p>Thank you. We have received your ad budget of <b>${usd}</b>.</p>` +
         `<p>Your ads will be live within ${SETUP_DAYS} days. Here is what we do now:</p>` +
         `<ol><li>Create your account and load your budget.</li><li>Place tracking on your website.</li><li>Review your ads.</li><li>Build your audience.</li></ol>` +
-        `<p><b>One thing we need from you, within 5 days:</b> your ads (images or video, your logo, and the page people should land on) and the person who can add a small piece of tracking code to your website.</p>` +
-        (page ? `<p><a href="${page}" style="display:inline-block;background:#0A4FD6;color:#fff;padding:12px 18px;border-radius:6px;text-decoration:none;font-weight:600">Send your details and track your setup</a></p><p>Keep this link. It is your private setup page.</p>` : `<p>Reply to this email with both.</p>`) +
+        `<p><b>One thing we need from you, within 5 days:</b> your campaign brief. It asks about your goals, your customers, the campaigns you want, your ads and your website, so we build the right thing first time. It takes about ten minutes.</p>` +
+        (page ? `<p><a href="${page}" style="display:inline-block;background:#0A4FD6;color:#fff;padding:12px 18px;border-radius:6px;text-decoration:none;font-weight:600">Fill in your campaign brief</a></p><p>Keep this link. It is your private setup page, and it shows your progress.</p>` : `<p>Reply to this email with both.</p>`) +
         `<p><b>What you will hear from us:</b> an email each time a setup step is finished, and one when your ads go live. Your login details arrive in separate emails once your account is approved.</p>` +
         `<p>Questions? Reply to this email, or see <a href="${HELP_URL}">our help center</a>.</p>`,
     ),

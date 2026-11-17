@@ -10,12 +10,18 @@ export const metadata: Metadata = { title: "Your setup", robots: { index: false,
 type Status = {
   email: string; business: string | null; name: string | null; paid_at: string; amount_paid: number | null; setup_due: string | null; website: string | null;
   step_account_at: string | null; step_tracking_at: string | null; step_ads_at: string | null; step_audience_at: string | null; live_at: string | null; intake_at: string | null;
+  intake: Record<string, string> | null; formats: string | null; market: string | null; goals: string | null;
 };
 const STEPS: [keyof Status, string, string][] = [
   ["step_account_at", "Account created", "Your account exists and your ad budget is loaded."],
   ["step_tracking_at", "Tracking placed", "Your website counts the visits and leads your ads produce."],
   ["step_ads_at", "Ads approved", "Your ads are checked and accepted by the ad exchanges."],
   ["step_audience_at", "Audience built", "Your ads are aimed at the right people in your area."],
+];
+const TODO = (s: Status): [boolean, string, React.ReactNode][] => [
+  [!!s.intake_at, "Fill in your campaign brief", <>Your goals, customers, campaigns, ads and website. <a href="#brief">Go to the brief</a>. Please send it within 5 days of paying.</>],
+  [false, "Book your kickoff call", <>Twenty minutes to walk through your brief and agree the plan. <a href={MEETING_URL} target="_blank" rel="noopener">Choose a time</a>.</>],
+  [false, "Watch for your login emails", "Once your account is approved, your login details arrive in separate emails. Keep them safe."],
 ];
 const day = (iso: string) => new Date(iso.slice(0, 10) + "T12:00:00Z").toLocaleDateString("en-US", { month: "long", day: "numeric", timeZone: "UTC" });
 
@@ -64,16 +70,28 @@ export default async function Welcome({ searchParams }: PageProps<"/welcome">) {
           ))}
         </ol>
 
+        <section className="stack g16">
+          <h2 className="h3" style={{ fontSize: 19 }}>Your part: three things</h2>
+          <ol className="stack g12" style={{ listStyle: "none", padding: 0, margin: 0 }}>
+            {TODO(s).map(([done, t, d]) => (
+              <li key={t} className="card" style={{ display: "flex", gap: 14, alignItems: "flex-start", padding: 16 }}>
+                <span aria-hidden="true" style={{ flex: "0 0 24px", height: 24, borderRadius: 12, border: "2px solid", borderColor: done ? "var(--blue)" : "var(--line)", background: done ? "var(--blue)" : "transparent", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>{done ? "✓" : ""}</span>
+                <div className="stack g8"><h3 className="h3" style={{ fontSize: 16 }}>{t}{done ? <span className="small"> · done</span> : ""}</h3><p className="p" style={{ fontSize: 14 }}>{d}</p></div>
+              </li>
+            ))}
+          </ol>
+        </section>
+
         {!s.live_at && (
-          <section className="card stack g16" style={{ background: "var(--ground)", maxWidth: 720 }}>
+          <section id="brief" className="card stack g24" style={{ background: "var(--ground)", maxWidth: 820, scrollMarginTop: 80 }}>
             <div className="stack g8">
-              <h2 className="h3" style={{ fontSize: 19 }}>{s.intake_at ? "We have your details" : "What we need from you"}</h2>
+              <h2 className="h2" style={{ fontSize: 24 }}>{s.intake_at ? "Your campaign brief" : "Your campaign brief: tell us what you want to achieve"}</h2>
               <p className="p">
-                {s.intake_at ? `You sent these on ${day(s.intake_at)}. Send the form again if anything has changed.`
-                  : "To keep your launch on time, send these within 5 days of paying. It takes about three minutes."}
+                {s.intake_at ? `You sent this on ${day(s.intake_at)}. Change anything below and send it again.`
+                  : "These are the questions an advertising consultant asks before building a first campaign. Your answers decide what we build, who we aim it at and what we count as a result. It takes about ten minutes, and only a few answers are required. The rest help us do a better job."}
               </p>
             </div>
-            <IntakeForm lead={id} website={s.website} />
+            <IntakeForm lead={id} saved={s.intake} defaults={{ landing_page: s.website || "", areas: s.market || "", formats: s.formats || "", other_goals: s.goals || "" }} />
           </section>
         )}
 

@@ -77,11 +77,10 @@ async function clientNotices(r: Report, l: FeedLead, today: string) {
   // A single reminder if we are still waiting on ads three days after payment.
   const paidDays = daysSince(l.paid_at, today);
   if (!l.live_at && !l.step_ads_at && !l.intake_at && paidDays >= 3 && paidDays <= 10) {
-    await deliver(r, l.id, "lead", "need_ads", l.email, "We need your ads to keep your setup on time",
-      hi(l) + `<p>To keep your launch on time, we need two things from you:</p>` +
-      `<ol><li><b>Your ads.</b> Images or video, plus your logo and the web page people should land on.</li>` +
-      `<li><b>Website access.</b> The name and email of the person who can add a small piece of tracking code to your website.</li></ol>` +
-      `<p><a href="${origin()}/welcome?id=${l.id}">Send them on your setup page</a>, or reply to this email with both. If you have already sent them, you can ignore this message. ${due}</p>`);
+    await deliver(r, l.id, "lead", "need_ads", l.email, "Your campaign brief is the next step",
+      hi(l) + `<p>To keep your launch on time, we need your campaign brief. It covers your goals, your customers, the campaigns you want, your ads and your website, so we build the right thing first time.</p>` +
+      `<p><a href="${origin()}/welcome?id=${l.id}#brief">Fill in your campaign brief</a>. It takes about ten minutes.</p>` +
+      `<p>Prefer to talk it through? <a href="${MEETING_URL}">Book a 20-minute call</a> and we will fill it in together. ${due}</p>`);
   }
   const b = budget(l);
   if (l.live_at && b.low) {

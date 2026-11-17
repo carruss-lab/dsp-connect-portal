@@ -35,7 +35,7 @@ export async function syncPerson(p: Person) {
 
 /** The facts we keep on each person for Fin. Creates any that Intercom does not have yet. */
 const ATTRIBUTES: [string, "string" | "float" | "date"][] = [
-  ["setup_progress", "string"], ["budget_remaining", "float"], ["spend_last_7_days", "float"], ["budget_days_left", "float"], ["went_live", "date"], ["setup_details_received", "string"],
+  ["setup_progress", "string"], ["budget_remaining", "float"], ["spend_last_7_days", "float"], ["budget_days_left", "float"], ["went_live", "date"], ["setup_details_received", "string"], ["primary_goal", "string"], ["campaign_types", "string"],
 ];
 export async function ensureAttributes() {
   const token = process.env.INTERCOM_ACCESS_TOKEN;
