@@ -48,7 +48,9 @@ export default function LeadForm({ kind, cta }: { kind: Kind; cta: string }) {
       });
       const out = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(out.error || "Something went wrong. Please try again.");
-      track(kind === "market_check" ? "demo_opened" : kind === "account" ? "signup_started" : "agency_enquiry");
+      const event = kind === "market_check" ? "demo_opened" : kind === "account" ? "signup_started" : "agency_enquiry";
+      track(event);
+      (window as unknown as { gtag?: (...a: unknown[]) => void }).gtag?.("event", event);
       if (out.pay) { location.assign(out.pay); return; }
       if (kind === "market_check") {
         try { sessionStorage.setItem("demo_ok", "1"); } catch {}
