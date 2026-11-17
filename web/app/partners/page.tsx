@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Footer, Header } from "@/components/Chrome";
 import ApplyForm from "@/components/partner/ApplyForm";
+import VideoEmbed from "@/components/VideoEmbed";
+import { VIDEOS, videoNode } from "@/lib/videos";
 import { JsonLd, PARTNER_PROGRAM, SITE_URL, pageGraph, pageMeta } from "@/lib/seo";
 import { INDUSTRIES, LEGAL_ENTITY, MIN_BUDGET, SETUP_DAYS, SHARE_PCT } from "@/lib/site";
 
@@ -39,7 +41,7 @@ export default function Partners() {
         path: "/partners", name: "Become an Authorized Sales Partner", description: DESCRIPTION,
         trail: [["Home", "/"], ["Sales Partners", "/partners"]], main: PARTNER_PROGRAM, faq: FAQ,
         image: `${SITE_URL}/partners/opengraph-image`,
-        nodes: [{
+        nodes: [videoNode(VIDEOS.partners, "/partners"), {
           "@type": "HowTo", "@id": `${SITE_URL}/partners#how`, name: "How to become a DSP Connect Authorized Sales Partner",
           step: STEPS.map(([name, text], i) => ({ "@type": "HowToStep", position: i + 1, name, text, url: `${SITE_URL}/partners#apply` })),
         }],
@@ -58,6 +60,13 @@ export default function Partners() {
             <ApplyForm />
           </div>
         </div></section>
+        <section className="wrap" style={{ padding: "8px 32px 56px" }} aria-labelledby="video-h">
+          <div className="stack g16" style={{ maxWidth: 960, margin: "0 auto" }}>
+            <h2 id="video-h" className="h2" style={{ textAlign: "center" }}>See how the program works</h2>
+            <p className="p" style={{ textAlign: "center" }}>Sell to the businesses you already call on. Earn 10% of what they spend, for life.</p>
+            <VideoEmbed id={VIDEOS.partners.id} title={VIDEOS.partners.title} poster={VIDEOS.partners.poster} />
+          </div>
+        </section>
 
         <section className="section band"><div className="wrap stack g32">
           <h2 className="h2">Why sales partners choose DSP Connect.</h2>

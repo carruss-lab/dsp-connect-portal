@@ -9,6 +9,7 @@ import { refreshPayouts } from "@/lib/partnerStripe";
 import { DOCS, VERSION } from "@/lib/partnerDocs";
 import { LEGAL_ENTITY, SETUP_DAYS, SHARE_PCT, SUPPORT_EMAIL, siteOrigin } from "@/lib/site";
 import { LESSONS } from "@/lib/training";
+import VideoEmbed from "@/components/VideoEmbed";
 import { CALL_SCRIPT, EMAILS, OBJECTIONS, fill } from "@/lib/salesKit";
 
 export const metadata: Metadata = { title: "Partner portal", robots: { index: false, follow: false } };
@@ -202,14 +203,15 @@ function Dashboard({ portal }: { portal: Portal }) {
 
             <section className="stack g16" aria-labelledby="tr">
               <div className="stack g8">
-                <h2 id="tr" className="h3">Training {trained ? "(complete)" : `(${training.length} of ${LESSONS.length} done)`}</h2>
-                <p className="p">Six short lessons on the product, the demo, the sales conversation, the rules and how you are paid.</p>
+                <h2 id="tr" className="h3">Training {trained ? "(complete)" : `(${LESSONS.filter((l) => training.includes(l.id)).length} of ${LESSONS.length} done)`}</h2>
+                <p className="p">Fourteen short video lessons, about 25 minutes in all: the program, the product, selling, after the sale and the rules. Watch them in order and tick each checklist only when it is true.</p>
               </div>
               {LESSONS.map((l, i) => {
                 const done = training.includes(l.id);
                 return (
                   <details key={l.id} className="card stack g12" open={!trained && !done && LESSONS.slice(0, i).every((x) => training.includes(x.id))}>
                     <summary style={{ cursor: "pointer", fontWeight: 600 }}>{done ? "✓ " : `${i + 1}. `}{l.title} <span className="small" style={{ fontWeight: 400 }}>· {l.minutes} min</span></summary>
+                    <VideoEmbed id={l.video} title={`Lesson ${i + 1}: ${l.title}`} />
                     <ul className="list" style={{ marginTop: 12 }}>{l.points.map((t, j) => <li key={j}>{t}</li>)}</ul>
                     <LessonDone id={l.id} check={l.check} done={done} />
                   </details>

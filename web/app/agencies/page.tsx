@@ -3,6 +3,8 @@ import Link from "next/link";
 import { Footer, Header, TalkBand } from "@/components/Chrome";
 import LeadForm from "@/components/LeadForm";
 import { SETUP_DAYS, SHARE_PCT } from "@/lib/site";
+import VideoEmbed from "@/components/VideoEmbed";
+import { VIDEOS, videoNode } from "@/lib/videos";
 import { AGENCY_PROGRAM, JsonLd, SITE_URL, pageGraph, pageMeta } from "@/lib/seo";
 
 const DESCRIPTION = `Run client campaigns on DSP Connect and earn ${SHARE_PCT}% of the ad spend you manage.`;
@@ -19,7 +21,7 @@ const money = (s: number) => `$${((s * SHARE_PCT) / 100).toLocaleString("en-US")
 export default function Agencies() {
   return (
     <>
-      <JsonLd data={pageGraph({ path: "/agencies", name: "For agencies", description: DESCRIPTION, trail: [["Home", "/"], ["For agencies", "/agencies"]], main: AGENCY_PROGRAM, image: `${SITE_URL}/agencies/opengraph-image` })} />
+      <JsonLd data={pageGraph({ path: "/agencies", name: "For agencies", description: DESCRIPTION, trail: [["Home", "/"], ["For agencies", "/agencies"]], main: AGENCY_PROGRAM, nodes: [videoNode(VIDEOS.agencies, "/agencies")], image: `${SITE_URL}/agencies/opengraph-image` })} />
       <Header />
       <main>
         <section className="hero">
@@ -44,6 +46,13 @@ export default function Agencies() {
               </div>
               <LeadForm kind="agency" cta="Request agreement details" />
             </div>
+          </div>
+        </section>
+        <section className="wrap" style={{ padding: "8px 32px 56px" }} aria-labelledby="video-h">
+          <div className="stack g16" style={{ maxWidth: 960, margin: "0 auto" }}>
+            <h2 id="video-h" className="h2" style={{ textAlign: "center" }}>See the agency program in 90 seconds</h2>
+            <p className="p" style={{ textAlign: "center" }}>Your clients stay yours. You earn 10% of the ad spend you manage.</p>
+            <VideoEmbed id={VIDEOS.agencies.id} title={VIDEOS.agencies.title} poster={VIDEOS.agencies.poster} />
           </div>
         </section>
         <section className="section band">

@@ -4,7 +4,9 @@ import { Footer, Header } from "@/components/Chrome";
 import LeadForm from "@/components/LeadForm";
 import { COMPARISONS } from "@/lib/compare";
 import { EXCHANGES, MIN_BUDGET, SETUP_DAYS, SHARE_PCT } from "@/lib/site";
+import VideoEmbed from "@/components/VideoEmbed";
 import { ADS_SERVICE, JsonLd, pageGraph } from "@/lib/seo";
+import { VIDEOS, videoNode } from "@/lib/videos";
 import { INDUSTRY_PAGES } from "@/lib/industries";
 import { MEETING_URL } from "@/lib/site";
 
@@ -38,7 +40,7 @@ const FAQ = [
 export default function Home() {
   return (
     <>
-      <JsonLd data={pageGraph({ path: "/", name: "DSP Connect | Enterprise programmatic advertising, without the enterprise contract", description: `Streaming TV, apps and websites across ${EXCHANGES} ad exchanges, open to any business from a $${MIN_BUDGET} ad budget. Set up for you, live within ${SETUP_DAYS} days. No contract.`, main: ADS_SERVICE, faq: FAQ })} />
+      <JsonLd data={pageGraph({ path: "/", name: "DSP Connect | Enterprise programmatic advertising, without the enterprise contract", description: `Streaming TV, apps and websites across ${EXCHANGES} ad exchanges, open to any business from a $${MIN_BUDGET} ad budget. Set up for you, live within ${SETUP_DAYS} days. No contract.`, main: ADS_SERVICE, faq: FAQ, nodes: [videoNode(VIDEOS.owners, "/")] })} />
       <Header />
       <main>
         <section className="hero">
@@ -65,6 +67,13 @@ export default function Home() {
               </div>
               <LeadForm kind="market_check" cta="Open the demo" />
             </div>
+          </div>
+        </section>
+        <section className="wrap" style={{ padding: "8px 32px 56px" }} aria-labelledby="video-h">
+          <div className="stack g16" style={{ maxWidth: 960, margin: "0 auto" }}>
+            <h2 id="video-h" className="h2" style={{ textAlign: "center" }}>See how it works in 2 minutes</h2>
+            <p className="p" style={{ textAlign: "center" }}>Enterprise programmatic advertising, without the enterprise contract.</p>
+            <VideoEmbed id={VIDEOS.owners.id} title={VIDEOS.owners.title} poster={VIDEOS.owners.poster} />
           </div>
         </section>
 

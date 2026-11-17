@@ -1,83 +1,53 @@
 import { MIN_BUDGET, SETUP_DAYS, SHARE_PCT } from "./site";
 
-// The Authorized Sales Partner course. Short, practical lessons; a partner marks each one done.
-// Adding a module here adds it to every partner's checklist.
-export type Lesson = { id: string; title: string; minutes: number; points: string[]; check: string };
+// The Authorized Sales Partner course: 14 video lessons (YouTube, unlisted), each with key points and a
+// checklist line the partner ticks. Finishing all 14 marks the partner trained. Scripts and videos are
+// produced from the dsp-videos project; keep the wording here in step with them.
+export type Lesson = { id: string; title: string; minutes: number; video: string; points: string[]; check: string };
 
 export const LESSONS: Lesson[] = [
-  {
-    id: "product",
-    title: "What DSP Connect is",
-    minutes: 5,
-    points: [
-      "DSP Connect puts a business's ads on streaming TV, websites, apps, audio and digital billboards, aimed at people in the area it serves.",
-      "Two kinds of customer: business owners, who open their own account, and agencies, who run their clients on DSP Connect under their own brand for a 10% revenue share.",
-      `We do the setup for the client: account, tracking, ad review and audience. Ads are live within ${SETUP_DAYS} days of payment. After that the client runs the account themselves, with our support.`,
-      `Accounts start from a $${MIN_BUDGET} ad budget. There is no monthly platform fee: our fee is included in the price of the ads. No long-term contract.`,
-    ],
-    check: "I can explain what DSP Connect does and who it is for in two sentences.",
-  },
-  {
-    id: "demo",
-    title: "Running the demo",
-    minutes: 10,
-    points: [
-      "Open getdspconnect.com/demo with the prospect, enter their industry and area, and walk through the sample account together.",
-      "Show three things: where the ads appear, who they reach in the prospect's area, and what the results page will show them.",
-      "Build a practice campaign with them in the demo. People buy what they have already built.",
-      "Add your partner code to any link you send (getdspconnect.com/demo?p=YOURCODE) so the prospect is credited to you if they open an account.",
-    ],
-    check: "I have run the demo end to end for a practice prospect.",
-  },
-  {
-    id: "selling",
-    title: "The consultant conversation",
-    minutes: 10,
-    points: [
-      "Ask before you tell: what does a good customer look like, where do they come from today, what area do you serve, what has worked and what has not?",
-      "Fit the answer to their goal: calls, form leads, store visits, online sales or awareness. If it is not a fit, say so.",
-      `Be clear on the start: a $${MIN_BUDGET} ad budget, done-for-you setup, live in ${SETUP_DAYS} days. Let the prospect choose the budget; never push them higher.`,
-      "End every conversation with one next step: the demo, opening an account, or a call with DSP Connect.",
-    ],
-    check: "I can run a first call that ends with one clear next step.",
-  },
-  {
-    id: "rules",
-    title: "What you can and cannot say",
-    minutes: 5,
-    points: [
-      "Never promise or estimate results, leads, sales or return on ad spend.",
-      "Never name our technology providers, and never discuss our costs, mark-ups or how our fee works. The fee line is: \"No monthly platform fee. Our fee is included in the price of your ads.\"",
-      "Never offer to manage a client's campaigns, and never advise a client to add money or spend more.",
-      "Describe yourself as an independent Authorized Sales Partner of DSP Connect: not staff, and not a reseller who sets prices or bills clients. Clients pay DSP Connect directly; never take a client's money, card details or passwords.",
-    ],
-    check: "I have read the Operating Rules and will follow them.",
-  },
-  {
-    id: "clients",
-    title: "Helping your clients after they start",
-    minutes: 5,
-    points: [
-      "After payment the client gets a setup page with their campaign brief and a kickoff call. Help them finish the brief quickly: it is the biggest cause of delay.",
-      "Your portal shows each client's setup progress, spend and what you have earned on them.",
-      "When a client is live, advise like a consultant: creative, audience, areas, tracking, landing page and pacing. The Fin assistant in your portal can help you prepare.",
-      "Send billing, refund, cancellation and login questions to DSP Connect support; do not answer them yourself.",
-    ],
-    check: "I know what my clients need from me after they pay.",
-  },
-  {
-    id: "pay",
-    title: "How you get paid",
-    minutes: 5,
-    points: [
-      `You earn ${SHARE_PCT}% of each credited client's qualified ad spend: budget the client has paid that has actually run as ads.`,
-      "Each day's commission is held for 7 days, then paid daily to your bank through Stripe. Set up your Stripe payout account in this portal.",
-      "Refunds, chargebacks and unpaid amounts are not qualified; commission on them is reversed.",
-      "Residuals for life: you keep earning on every client credited to you for as long as they spend, even after your partnership ends, unless it is ended for cause.",
-      "There is no salary and no guaranteed income. What you earn depends on the clients you bring and what they spend.",
-    ],
-    check: "I understand how and when I am paid, that residuals continue, and that refunds reverse commission.",
-  },
+  { id: "v1-welcome", title: "Welcome and how this program works", minutes: 2, video: "ORYqDy1ceQQ",
+    points: ["Your role: introduce DSP Connect to owners you know, show the demo, help them open an account through your link.", "You never set prices, take money, run campaigns or promise results.", "Five steps to your first commission: training, payouts, first demo, first account, their ads run."],
+    check: "I know the five steps to my first commission." },
+  { id: "v2-agreement", title: "Your agreement in plain English", minutes: 2, video: "UrA_XwBAmEg",
+    points: ["You are an independent contractor, not staff and not a reseller. Company partners are responsible for their staff.", "No sub-agents. Clients contract with and pay DSP Connect. Confidentiality and 12 months of no soliciting.", "Either side can end it with 30 days' notice; residuals continue unless it ends for cause."],
+    check: "I have read my signed agreement and Exhibits A and B." },
+  { id: "v3-pay", title: "How you get paid", minutes: 2, video: "4-U6b1BdLYg",
+    points: [`${SHARE_PCT}% of qualified ad spend: paid in full by the client and actually spent on their ads.`, "Held 7 days, then paid daily through Stripe. Your first payout is checked by a person.", "Refunds and chargebacks reverse commission. Residuals for life, unless ended for cause. No salary or guarantee."],
+    check: "I can explain when and how I am paid, and what reverses commission." },
+  { id: "v4-product", title: "What DSP Connect is, and who it fits", minutes: 2, video: "zONH6i0bY2c",
+    points: [`From a $${MIN_BUDGET} ad budget. No monthly platform fee. Our fee is included in the price of your ads. Live within ${SETUP_DAYS} days, no long-term contract.`, "We set up account, tracking, ad review and audience; the client runs it with support.", "Poor fits: anyone needing guaranteed results, a tight budget, or someone to run it for them."],
+    check: "I can explain DSP Connect in two sentences and spot a poor fit." },
+  { id: "v5-screens", title: "The account, screen by screen", minutes: 2, video: "HrGc3RRsGNs",
+    points: ["Explore, Dashboard, Campaigns, Audience, Conversion Tracking, Analytics and Traffic Funnel.", "Creative Assets, Allowlist / Blocklist, Retargeting, Custom Locations, Billing, Planning and Autopilot.", "Never suggest a client adds funds."],
+    check: "I can open and explain every screen without notes." },
+  { id: "v6-after-pay", title: "What happens after a client pays", minutes: 2, video: "SGmD8O_Jm8M",
+    points: ["Payment email and setup page; the campaign brief takes about 10 minutes. Help them send it the same day.", `Four setup steps, live within ${SETUP_DAYS} days, then their own login.`, "Billing, refunds, cancellations and logins always go to DSP Connect support."],
+    check: `I can tell a client exactly what happens in their first ${SETUP_DAYS} days.` },
+  { id: "v7-who", title: "Who to talk to", minutes: 1, video: "BWjR7IITvCk",
+    points: ["Start with owners you already know and serve; ask happy clients for warm introductions.", "No cold outreach: no bulk messages to people who didn't agree, no ads, domains or social accounts using our name.", "Write your list of 20 owners you know."],
+    check: "I will only contact people who know me or asked." },
+  { id: "v8-conversation", title: "The first conversation", minutes: 2, video: "PLj1YURBMfA",
+    points: ["Open, ask before you tell, show the demo, explain how it works, agree one next step.", "They choose the budget. Never push higher, never estimate results.", "Practise the whole call out loud; ask Fin to play the owner."],
+    check: "I have practised the full call out loud once." },
+  { id: "v9-demo", title: "Running the demo live", minutes: 1, video: "3_Tw44yj-zc",
+    points: ["Always use your own demo link with your partner code.", "Show where the ads appear, who they reach, and what results they will see. Say the sample data is not real results.", "Let them build a practice campaign; never name the technology or suggest a bigger budget."],
+    check: "I have run the demo end to end for a practice prospect." },
+  { id: "v10-objections", title: "Questions and objections", minutes: 2, video: "ofCS3jpx89I",
+    points: ["Use the approved answers in your sales kit, word for word.", "Never promise results; state the price and fee line exactly.", "Don't know? \"Let me get DSP Connect to answer that properly.\""],
+    check: "I can answer every objection in the kit without promising results." },
+  { id: "v11-kit", title: "Your sales kit", minutes: 1, video: "F6G-N_zvsiM",
+    points: ["Three emails with your links filled in: first email, after the demo, one gentle follow-up.", "Your leave-behind with your QR code: print it or save it as a PDF.", "The first-call script and approved answers."],
+    check: "I have opened my sales kit and printed or saved my leave-behind." },
+  { id: "v12-support", title: "Supporting your clients", minutes: 1, video: "f39urhsx67M",
+    points: ["Help with the brief on day one; watch their progress in your portal.", "Advise on creative, audience, areas, tracking, landing page and pacing.", "Never advise spending more or offer to run their campaigns. Keep their data private."],
+    check: "I know what I handle and what I send to support." },
+  { id: "v13-rules", title: "The rules, with real examples", minutes: 2, video: "0R-cf6Lsbhk",
+    points: ["Never promise results. Prices exactly as published. Never the technology or our costs.", "Never manage campaigns or advise spending more. Describe yourself correctly.", "Never take money, cards or passwords. No bulk messages. Breaking the rules can end residuals."],
+    check: "I have read the Operating Rules and will follow them." },
+  { id: "v14-first-30", title: "Your first 30 days", minutes: 1, video: "EpvZgS2-fhA",
+    points: ["Week 1: payouts, your list of 20, your leave-behind. Week 2: book 5 demos.", "Week 3: same-day follow-up emails, help your first client open and send their brief.", "Week 4: review, prepare with Fin, ask for warm introductions."],
+    check: "I have written my list and booked my first demo." },
 ];
 
 export const LESSON_IDS = LESSONS.map((l) => l.id);
