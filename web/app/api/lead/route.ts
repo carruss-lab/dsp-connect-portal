@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { notifyTeam } from "@/lib/email";
 import { syncPerson } from "@/lib/intercom";
+import { chatCookie } from "@/lib/chatId";
 import { stripe } from "@/lib/payments";
 import { LEGAL_ENTITY, MIN_BUDGET } from "@/lib/site";
 
@@ -123,11 +124,14 @@ export async function POST(req: Request) {
         cancel_url: `${origin}/open-account`,
       } as unknown as Parameters<typeof client.checkout.sessions.create>[0];
       const session = await client.checkout.sessions.create(params);
-      if (session.url) return NextResponse.json({ ok: true, pay: session.url });
+      if (session.url) { const r = NextResponse.json({ ok: true, pay: session.url }); r.cookies.set(chatCookie(email)); return r; }
     } catch (err) {
       console.error("checkout session failed", err);
       return NextResponse.json({ error: "We saved your details but could not open the payment page. Please try again." }, { status: 502 });
     }
   }
-  return NextResponse.json({ ok: true });
+  // This browser has now proved who it is, so the chat can recognise them (see lib/chatId.ts).
+  const ok = NextResponse.json({ ok: true });
+  ok.cookies.set(chatCookie(email));
+  return ok;
 }

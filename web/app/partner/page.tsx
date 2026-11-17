@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import ConnectButton from "@/components/ConnectButton";
 import IdentifyClient from "@/components/IdentifyClient";
+import { messengerJwt } from "@/lib/chatId";
 import { CopyLink, LessonDone, LoginForm, SignDocs } from "@/components/partner/PartnerBits";
 import { loadPortal, type Client, type Portal } from "@/lib/partner";
 import { refreshPayouts } from "@/lib/partnerStripe";
@@ -74,7 +75,7 @@ function Dashboard({ portal }: { portal: Portal }) {
   return (
     <>
       <Top name={p.name} />
-      <IdentifyClient email={p.email} name={p.name} />
+      <IdentifyClient email={p.email} name={p.name} jwt={messengerJwt(p.email, p.name)} />
       <main className="wrap stack g32" style={{ padding: "48px 32px 96px", maxWidth: 1040 }}>
         <div className="stack g8">
           <div className="eyebrow">Managing Partner{p.vertical ? ` · ${p.vertical}` : ""}</div>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Footer, Header } from "@/components/Chrome";
 import IdentifyClient from "@/components/IdentifyClient";
+import { messengerJwt } from "@/lib/chatId";
 import { Remember } from "@/components/Personal";
 import IntakeForm from "@/components/IntakeForm";
 import { isUuid, secretRpc } from "@/lib/server";
@@ -48,7 +49,7 @@ export default async function Welcome({ searchParams }: PageProps<"/welcome">) {
   return (
     <>
       <Header />
-      <IdentifyClient email={s.email} name={s.name} />
+      <IdentifyClient email={s.email} name={s.name} jwt={messengerJwt(s.email, s.name)} />
       <Remember name={s.name || undefined} email={s.email} business={s.business || undefined} website={s.website || undefined} stage="paid" setup={id} />
       <main className="wrap narrow stack g32" style={{ padding: "64px 32px 80px" }}>
         <div className="stack g12">

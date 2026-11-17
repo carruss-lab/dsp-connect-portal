@@ -33,6 +33,7 @@ export function saveProfile(p: Profile) {
 export function forgetProfile() {
   try { localStorage.removeItem(KEY); localStorage.removeItem("dsp_who"); window.dispatchEvent(new Event(EVENT)); } catch {}
   const w = window as Window & { Intercom?: (cmd: string, data?: Record<string, unknown>) => void; intercomSettings?: Record<string, unknown> };
+  fetch("/api/chat/forget", { method: "POST" }).catch(() => {});
   try {
     const { api_base, app_id } = w.intercomSettings || {};
     w.intercomSettings = { api_base, app_id };

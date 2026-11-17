@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { MEETING_URL } from "@/lib/site";
 import { firstName, forgetProfile, onProfile, readProfile, saveProfile, type Profile } from "@/lib/profile";
 
 /** Reads the visitor's remembered details after the page loads, and stays current when they change. */
@@ -17,15 +18,17 @@ export function WelcomeBar() {
   const p = useProfile();
   if (!p) return null;
   const name = firstName(p);
-  if (!name && !p.business) return null;
+  // Show it to anyone who has told us something: most demo visitors give only an email, industry and area.
+  if (!name && !p.business && !p.stage && !p.email) return null;
   let next: [string, string] | null = null;
   if (p.stage === "paid" && p.setup) next = ["Go to your setup page", `/welcome?id=${p.setup}`];
   else if (p.stage === "signup") next = ["Finish opening your account", "/open-account"];
   else if (p.stage === "demo") next = [p.industry && p.market ? `Your ${p.industry.toLowerCase()} demo for ${p.market}` : "Back to your demo", demoLink(p)];
+  else if (p.stage === "agency") next = ["Book a call about the agency program", MEETING_URL];
   return (
     <div style={{ background: "#EEF0FF", borderBottom: "1px solid #DADDF7", fontSize: 14 }}>
       <div className="wrap" style={{ display: "flex", flexWrap: "wrap", gap: "6px 16px", alignItems: "center", padding: "8px 32px" }}>
-        <span>Welcome back{name ? `, ${name}` : ""}.{p.business && p.stage !== "agency" ? ` Ads for ${p.business}${p.market ? ` in ${p.market}` : ""}.` : ""}</span>
+        <span>Welcome back{name ? `, ${name}` : ""}.{p.stage !== "agency" && (p.business || p.industry) ? ` Ads for ${p.business || `your ${p.industry!.toLowerCase()} business`}${p.market ? ` in ${p.market}` : ""}.` : ""}</span>
         {next && <Link href={next[1]} style={{ fontWeight: 600 }}>{next[0]} →</Link>}
         {p.stage === "demo" && <Link href="/open-account" style={{ fontWeight: 600 }}>Open your account →</Link>}
         <button onClick={forgetProfile} style={{ marginLeft: "auto", background: "none", border: 0, color: "#5B6577", cursor: "pointer", fontSize: 13, textDecoration: "underline" }}>Not you?</button>
