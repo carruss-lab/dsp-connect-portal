@@ -10,7 +10,9 @@ const nextConfig: NextConfig = {
       { source: "/:path*", has: [{ type: "host", value: "portal.getdspconnect.com" }], destination: "https://getdspconnect.com/open-account", permanent: false },
       { source: "/:path*", has: [{ type: "host", value: "helpdesk.getdspconnect.com" }], destination: "https://help.getdspconnect.com", permanent: false },
       { source: "/:path*", has: [{ type: "host", value: "academy.getdspconnect.com" }], destination: "https://getdspconnect.com", permanent: false },
-      { source: "/:path*", has: [{ type: "host", value: "join.getdspconnect.com" }], destination: "https://getdspconnect.com", permanent: false },
+      { source: "/:path*", has: [{ type: "host", value: "join.getdspconnect.com" }], destination: "https://getdspconnect.com/partners", permanent: false },
+      // Short address for recruiting: business cards, emails, ads.
+      { source: "/:path*", has: [{ type: "host", value: "partners.getdspconnect.com" }], destination: "https://getdspconnect.com/partners", permanent: false },
       // Vercel's own address for the live site: one address, so saved details and chat sign-in stay together.
       { source: "/:path*", has: [{ type: "host", value: "dsp-connect-site.vercel.app" }], destination: "https://getdspconnect.com/:path*", permanent: true },
       { source: "/launch-client.html", destination: "/open-account", permanent: true },
