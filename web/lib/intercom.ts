@@ -18,15 +18,24 @@ export async function syncPerson(p: Person) {
   if (p.market) custom_attributes.market = p.market;
   if (p.setupDue) custom_attributes.setup_due = Math.floor(new Date(p.setupDue + "T12:00:00Z").getTime() / 1000);
   Object.assign(custom_attributes, p.extra || {});
-  const body = { email: p.email, ...(p.name ? { name: p.name } : {}), custom_attributes };
+  // Everyone is a "user" keyed by their email, so the browser chat (which identifies by the same id) and
+  // the server always land on one contact instead of a lead and a user.
+  const email = p.email.trim().toLowerCase();
+  const body = { role: "user", external_id: email, email, ...(p.name ? { name: p.name } : {}), custom_attributes };
   try {
     const found = await fetch("https://api.intercom.io/contacts/search", {
-      method: "POST", headers, body: JSON.stringify({ query: { field: "email", operator: "=", value: p.email } }),
+      method: "POST", headers, body: JSON.stringify({ query: { field: "email", operator: "=", value: email } }),
     });
-    const id = found.ok ? (await found.json())?.data?.[0]?.id : null;
-    const res = id
+    const list: { id: string; role: string }[] = found.ok ? (await found.json())?.data || [] : [];
+    const id = (list.find((c) => c.role === "user") || list[0])?.id || null;
+    let res = id
       ? await fetch(`https://api.intercom.io/contacts/${id}`, { method: "PUT", headers, body: JSON.stringify(body) })
-      : await fetch("https://api.intercom.io/contacts", { method: "POST", headers, body: JSON.stringify({ role: p.role === "prospect" ? "lead" : "user", ...body }) });
+      : await fetch("https://api.intercom.io/contacts", { method: "POST", headers, body: JSON.stringify(body) });
+    if (!res.ok && id && res.status === 400) {
+      // A contact made earlier without our id: update everything else rather than fail.
+      const { external_id: _x, ...rest } = body; void _x;
+      res = await fetch(`https://api.intercom.io/contacts/${id}`, { method: "PUT", headers, body: JSON.stringify(rest) });
+    }
     if (!res.ok) console.error("intercom sync failed", res.status, await res.text());
     else console.log("intercom synced", p.role, id ? "updated" : "created");
   } catch (err) {

@@ -1,5 +1,6 @@
 "use client";
 import { track } from "@vercel/analytics";
+import { identify } from "@/lib/identify";
 import { useEffect, useState } from "react";
 import { INDUSTRIES, MIN_BUDGET, SETUP_DAYS } from "@/lib/site";
 
@@ -48,6 +49,7 @@ export default function LeadForm({ kind, cta }: { kind: Kind; cta: string }) {
       });
       const out = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(out.error || "Something went wrong. Please try again.");
+      identify(String(data.email || ""), data.name ? String(data.name) : null);
       const event = kind === "market_check" ? "demo_opened" : kind === "account" ? "signup_started" : "agency_enquiry";
       track(event);
       (window as unknown as { gtag?: (...a: unknown[]) => void }).gtag?.("event", event);
