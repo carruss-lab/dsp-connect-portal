@@ -46,12 +46,13 @@ export async function POST(req: Request) {
   const customer = replyTo ? addr(replyTo) : sender;
   const forUs = [...(m.to || []), ...(m.received_for || [])].some((t) => addr(t).endsWith("@" + DOMAIN));
 
-  // Never pass on our own mail, Intercom's mail, bounces or automatic replies: that is how mail loops start.
+  // Never pass on our own mail, bounces or automatic replies: that is how mail loops start.
+  // Intercom's own mail is let through, because Intercom checks forwarding by emailing this address.
   const auto = header(m.headers, "auto-submitted");
   const skip =
     !forUs ? "not addressed to us"
     : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customer) ? "no sender"
-    : /(@|\.)(getdspconnect\.com|intercom-mail\.com|intercom\.io)$/.test(customer) ? "our own or Intercom's mail"
+    : /(@|\.)getdspconnect\.com$/.test(customer) ? "our own mail"
     : /^(mailer-daemon|postmaster|no-?reply|donotreply|bounces?)@/.test(customer) ? "automatic sender"
     : (auto && auto.toLowerCase() !== "no") || /bulk|junk|list/i.test(header(m.headers, "precedence")) ? "automatic reply"
     : "";
