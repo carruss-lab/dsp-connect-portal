@@ -30,8 +30,8 @@ export default function OpenAccount() {
         <div className="card stack g16" style={{ flex: "1 1 420px", maxWidth: 560, minWidth: 0, background: "var(--ground)" }}>
           <LeadForm kind="account" cta="Continue to payment" />
         </div>
-        <TalkBand />
       </main>
+      <TalkBand />
       <Footer />
     </>
   );

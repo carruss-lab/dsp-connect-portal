@@ -31,7 +31,7 @@ export async function markPaid(session: Stripe.Checkout.Session): Promise<"paid"
       const amount = (session.amount_total ?? 0) / 100;
       const email = session.customer_details?.email || session.customer_email || "";
       await Promise.all([
-        email ? confirmPayment(email, amount) : Promise.resolve(),
+        email ? confirmPayment(email, amount, lead) : Promise.resolve(),
         notifyTeam("paid", { email, amount, sign_up: lead }),
         email ? syncPerson({ email, role: "client", status: "paid_in_setup", setupDue: new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10) }) : Promise.resolve(),
       ]);

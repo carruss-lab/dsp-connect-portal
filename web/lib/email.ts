@@ -1,4 +1,4 @@
-import { LEGAL_ENTITY, SETUP_DAYS } from "./site";
+import { HELP_URL, LEGAL_ENTITY, SETUP_DAYS, siteOrigin } from "./site";
 
 // Sends through Resend. Does nothing until RESEND_API_KEY is set, so forms keep working without it.
 const FROM = process.env.EMAIL_FROM || "DSP Connect <dspsupport@getdspconnect.com>";
@@ -37,7 +37,7 @@ type Lead = Record<string, string | number | null | undefined>;
 export async function notifyTeam(kind: string, lead: Lead) {
   const to = process.env.NOTIFY_EMAIL;
   if (!to) return;
-  const label = { market_check: "Demo opened", account: "Account sign-up started", agency: "Agency enquiry", paid: "Payment received" }[kind] || kind;
+  const label = { market_check: "Demo opened", account: "Account sign-up started", agency: "Agency enquiry", paid: "Payment received", intake: "Client sent their setup details" }[kind] || kind;
   const rows = Object.entries(lead)
     .filter(([, v]) => v !== null && v !== undefined && v !== "")
     .map(([k, v]) => `<tr><td style="padding:4px 12px 4px 0;color:#5B6577">${esc(k)}</td><td style="padding:4px 0">${esc(String(v))}</td></tr>`)
@@ -46,8 +46,9 @@ export async function notifyTeam(kind: string, lead: Lead) {
 }
 
 /** Confirms a payment to the client and tells them what happens next. */
-export async function confirmPayment(email: string, amount: number) {
+export async function confirmPayment(email: string, amount: number, lead?: string) {
   const usd = "$" + amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const page = lead ? `${siteOrigin()}/welcome?id=${lead}` : "";
   await send(
     email,
     "Payment received. Your DSP Connect setup has started",
@@ -55,7 +56,10 @@ export async function confirmPayment(email: string, amount: number) {
       `<p>Thank you. We have received your ad budget of <b>${usd}</b>.</p>` +
         `<p>Your ads will be live within ${SETUP_DAYS} days. Here is what we do now:</p>` +
         `<ol><li>Create your account and load your budget.</li><li>Place tracking on your website.</li><li>Review your ads.</li><li>Build your audience.</li></ol>` +
-        `<p>We will email you at each step. To speed things up, reply to this email with your ads (images or video) and who can add a small piece of tracking code to your website.</p>`,
+        `<p><b>One thing we need from you, within 5 days:</b> your ads (images or video, your logo, and the page people should land on) and the person who can add a small piece of tracking code to your website.</p>` +
+        (page ? `<p><a href="${page}" style="display:inline-block;background:#0A4FD6;color:#fff;padding:12px 18px;border-radius:6px;text-decoration:none;font-weight:600">Send your details and track your setup</a></p><p>Keep this link. It is your private setup page.</p>` : `<p>Reply to this email with both.</p>`) +
+        `<p><b>What you will hear from us:</b> an email each time a setup step is finished, and one when your ads go live. Your login details arrive in separate emails once your account is approved.</p>` +
+        `<p>Questions? Reply to this email, or see <a href="${HELP_URL}">our help center</a>.</p>`,
     ),
   );
 }

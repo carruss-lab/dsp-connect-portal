@@ -20,3 +20,8 @@ export const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@m
 export const BUSINESS_ADDRESS = process.env.NEXT_PUBLIC_BUSINESS_ADDRESS || "";
 // The date the legal pages were last changed.
 export const LEGAL_UPDATED = "November 16, 2026";
+// The public help center.
+export const HELP_URL = process.env.NEXT_PUBLIC_HELP_URL || "https://help.getdspconnect.com";
+// The address links in emails and pages point to: the real site once live, the preview until then.
+export const siteOrigin = () =>
+  process.env.VERCEL_ENV === "production" || !process.env.VERCEL_BRANCH_URL ? "https://getdspconnect.com" : `https://${process.env.VERCEL_BRANCH_URL}`;

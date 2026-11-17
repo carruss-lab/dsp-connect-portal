@@ -10,10 +10,13 @@ export default async function Thanks({ searchParams }: PageProps<"/open-account/
   const q = await searchParams;
   const id = Array.isArray(q.session_id) ? q.session_id[0] : q.session_id;
   let state: "paid" | "pending" | "error" = "error";
+  let lead = "";
   const client = stripe();
   if (client && id && /^cs_[A-Za-z0-9_]+$/.test(id)) {
     try {
-      state = await markPaid(await client.checkout.sessions.retrieve(id));
+      const session = await client.checkout.sessions.retrieve(id);
+      state = await markPaid(session);
+      lead = session.client_reference_id || "";
     } catch (err) {
       console.error("thanks lookup failed", err);
     }
@@ -29,6 +32,14 @@ export default async function Thanks({ searchParams }: PageProps<"/open-account/
       <main className="wrap stack g24" style={{ padding: "96px 32px", maxWidth: 720 }}>
         <h1 className="h1" style={{ fontSize: "clamp(30px,4vw,42px)" }}>{copy[0]}</h1>
         <p className="lead">{copy[1]}</p>
+        {state === "paid" && lead && (
+          <div className="card stack g12" style={{ background: "var(--ground)" }}>
+            <h2 className="h3" style={{ fontSize: 18 }}>One thing we need from you</h2>
+            <p className="p">Your ads and the person who manages your website, within 5 days. It takes about three minutes, and the same page shows your setup progress.</p>
+            <Link className="btn btn-blue" href={`/welcome?id=${lead}`} style={{ alignSelf: "flex-start" }}>Go to your setup page</Link>
+            <p className="small">We have also emailed you this link. Your login details arrive in separate emails once your account is approved.</p>
+          </div>
+        )}
         {state === "error" && <Link className="btn btn-line" href="/open-account" style={{ alignSelf: "flex-start" }}>Back to the form</Link>}
       </main>
       <Footer />

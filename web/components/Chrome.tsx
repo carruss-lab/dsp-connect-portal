@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { BUSINESS_ADDRESS, LEGAL_ENTITY, LOGIN_URL, MEETING_URL, SUPPORT_EMAIL } from "@/lib/site";
+import { BUSINESS_ADDRESS, HELP_URL, LEGAL_ENTITY, LOGIN_URL, MEETING_URL, SUPPORT_EMAIL } from "@/lib/site";
 
 export function Header() {
   return (
@@ -39,6 +39,7 @@ export function Footer() {
           <Link href="/agencies">Agencies</Link>
           <Link href="/compare">Comparisons</Link>
           <a href={MEETING_URL} target="_blank" rel="noopener">Book a call</a>
+          <a href={HELP_URL}>Help center</a>
           <Link href="/terms">Terms</Link>
           <Link href="/refunds">Refunds</Link>
           <Link href="/privacy">Privacy</Link>

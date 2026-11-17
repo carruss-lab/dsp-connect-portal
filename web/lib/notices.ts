@@ -1,13 +1,14 @@
 import { emailOn, esc, send, wrap } from "./email";
 import { ensureAttributes, syncPerson } from "./intercom";
 import { secretRpc } from "./server";
-import { BUSINESS_ADDRESS, LEGAL_ENTITY, LOGIN_URL, MEETING_URL, SETUP_DAYS } from "./site";
+import { BUSINESS_ADDRESS, LEGAL_ENTITY, LOGIN_URL, MEETING_URL, SETUP_DAYS, siteOrigin } from "./site";
 
 // The proactive side: emails to clients at each setup step, a weekly account summary,
 // low-budget warnings, and a daily list for the team. Every message is recorded in the
 // database first, so the same message is never sent twice, however often this runs.
 
 type FeedLead = {
+  intake_at?: string | null;
   id: string; email: string; name: string | null; business: string | null; industry: string | null; market: string | null;
   amount_paid: number | null; paid_at: string; setup_due: string | null;
   step_account_at: string | null; step_tracking_at: string | null; step_ads_at: string | null; step_audience_at: string | null; live_at: string | null;
@@ -63,7 +64,7 @@ async function clientNotices(r: Report, l: FeedLead, today: string) {
     if (!l[k] || l.live_at || daysSince(l[k] as string, today) > 3) continue;
     await deliver(r, l.id, "lead", `step_${key}`, l.email, `Setup update: ${label.toLowerCase().replace(/^your /, "your ")}`,
       hi(l) + `<p><b>${esc(label)}.</b> That is step ${done} of ${STEPS.length} done.</p>` + checklist(l) + `<p>${done < STEPS.length ? due : "All four steps are done. We are making final checks before your ads go live."}</p>` +
-      `<p>Questions? Reply to this email or use the chat on our website.</p>`);
+      `<p><a href="${origin()}/welcome?id=${l.id}">See your setup progress</a>. Questions? Reply to this email or use the chat on our website.</p>`);
   }
   if (l.live_at && daysSince(l.live_at, today) <= 3) {
     await deliver(r, l.id, "lead", "live", l.email, "Your ads are live",
@@ -75,12 +76,12 @@ async function clientNotices(r: Report, l: FeedLead, today: string) {
   }
   // A single reminder if we are still waiting on ads three days after payment.
   const paidDays = daysSince(l.paid_at, today);
-  if (!l.live_at && !l.step_ads_at && paidDays >= 3 && paidDays <= 10) {
+  if (!l.live_at && !l.step_ads_at && !l.intake_at && paidDays >= 3 && paidDays <= 10) {
     await deliver(r, l.id, "lead", "need_ads", l.email, "We need your ads to keep your setup on time",
       hi(l) + `<p>To keep your launch on time, we need two things from you:</p>` +
       `<ol><li><b>Your ads.</b> Images or video, plus your logo and the web page people should land on.</li>` +
       `<li><b>Website access.</b> The name and email of the person who can add a small piece of tracking code to your website.</li></ol>` +
-      `<p>Reply to this email with both. If you have already sent them, you can ignore this message. ${due}</p>`);
+      `<p><a href="${origin()}/welcome?id=${l.id}">Send them on your setup page</a>, or reply to this email with both. If you have already sent them, you can ignore this message. ${due}</p>`);
   }
   const b = budget(l);
   if (l.live_at && b.low) {
@@ -187,8 +188,7 @@ async function teamDigest(r: Report, f: Feed) {
     `<p>Today's list from the back office:</p><ul>${lines.map((x) => `<li style="margin:6px 0">${x}</li>`).join("")}</ul>`);
 }
 
-// The address links in emails point to: the real site once live, the preview until then.
-const origin = () => (process.env.VERCEL_ENV === "production" || !process.env.VERCEL_BRANCH_URL ? "https://getdspconnect.com" : `https://${process.env.VERCEL_BRANCH_URL}`);
+const origin = siteOrigin;
 
 /** One reminder to someone who started opening an account and did not pay. Needs our mailing address, by law. */
 async function finishSignup(r: Report, u: Unpaid) {

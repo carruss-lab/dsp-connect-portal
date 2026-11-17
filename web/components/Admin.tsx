@@ -5,7 +5,7 @@ import { INDUSTRIES, SETUP_DAYS } from "@/lib/site";
 
 type Lead = {
   id: string; created_at: string; kind: string; email: string; name: string | null; business: string | null; phone: string | null;
-  industry: string | null; market: string | null; budget: number | null; formats: string | null; goals: string | null; monthly_spend: string | null; source: string | null;
+  industry: string | null; market: string | null; budget: number | null; formats: string | null; goals: string | null; monthly_spend: string | null; source: string | null; intake: Record<string, string | boolean> | null; intake_at: string | null;
   status: string; partner_id: string | null; paid_at: string | null; amount_paid: number | null; setup_due: string | null;
   step_account_at: string | null; step_tracking_at: string | null; step_ads_at: string | null; step_audience_at: string | null; live_at: string | null;
 };
@@ -86,6 +86,25 @@ export default function Admin() {
   const setup = paid.filter((l) => !l.live_at).sort((a, b) => (left(a) ?? 99) - (left(b) ?? 99));
   const live = paid.filter((l) => l.live_at);
   const others = (leads || []).filter((l) => !l.paid_at);
+
+  // Funnel for the last 30 days, counted by person, with where they first arrived from.
+  const since = Date.now() - 30 * 86400000;
+  const recent = (leads || []).filter((l) => new Date(l.created_at).getTime() >= since);
+  const people = (ls: Lead[]) => new Set(ls.map((l) => l.email.toLowerCase())).size;
+  const nDemo = people(recent.filter((l) => l.kind === "market_check")), nSign = people(recent.filter((l) => l.kind === "account"));
+  const nPaid = people(recent.filter((l) => l.paid_at)), nAgency = people(recent.filter((l) => l.kind === "agency"));
+  const pct = (a: number, b: number) => (b ? `${Math.round((a / b) * 100)}% of the step before` : "");
+  const funnel: [string, number, string][] = [
+    ["Opened the demo", nDemo, ""], ["Started sign-up", nSign, pct(nSign, nDemo)], ["Paid", nPaid, pct(nPaid, nSign)], ["Agency enquiries", nAgency, ""],
+  ];
+  const bySource = new Map<string, { demo: number; signup: number; paid: number }>();
+  for (const l of recent) {
+    const src = (l.source || "").split(" | ")[0].split(" > ")[0].trim() || "unknown";
+    const c = bySource.get(src) || { demo: 0, signup: 0, paid: 0 };
+    if (l.kind === "market_check") c.demo++; if (l.kind === "account") c.signup++; if (l.paid_at) c.paid++;
+    bySource.set(src, c);
+  }
+  const sources = [...bySource.entries()].sort((a, b) => b[1].paid - a[1].paid || b[1].signup - a[1].signup || b[1].demo - a[1].demo).slice(0, 8);
 
   async function patch(id: string, change: Partial<Lead>) {
     setMsg("");
@@ -174,6 +193,19 @@ export default function Admin() {
       {leads && leads.length === 0 && <p className="note note-err">Nothing to show. If you expected sign-ups here, your email may not be on the staff list.</p>}
 
       <section className="stack g16">
+        <h2 className="h3" style={{ fontSize: 18 }}>Last 30 days</h2>
+        <div className="grid cols-4" style={{ gap: 12 }}>
+          {funnel.map(([k, v, sub]) => <div className="tile" key={k}><div className="k">{k}</div><div className="v" style={{ fontSize: 22 }}>{v}</div><div className="small">{sub}</div></div>)}
+        </div>
+        {sources.length > 0 && (
+          <div className="tablebox"><table>
+            <thead><tr><th scope="col">Where visitors came from</th><th scope="col">Opened demo</th><th scope="col">Started sign-up</th><th scope="col">Paid</th></tr></thead>
+            <tbody>{sources.map(([src, c]) => <tr key={src}><th scope="row">{src}</th><td>{c.demo}</td><td>{c.signup}</td><td>{c.paid}</td></tr>)}</tbody>
+          </table></div>
+        )}
+      </section>
+
+      <section className="stack g16">
         <h2 className="h3" style={{ fontSize: 18 }}>In setup ({setup.length})</h2>
         <p className="small">Paid clients who are not live yet. Each must be live within {SETUP_DAYS} days of paying. Most urgent first.</p>
         {setup.length === 0 && <p className="p">No clients in setup.</p>}
@@ -190,6 +222,14 @@ export default function Admin() {
                 </div>
               </div>
               <div className="small" style={{ color: "var(--body)" }}>{[l.industry, l.market, l.formats, l.goals].filter(Boolean).join(" · ")}</div>
+              {l.intake ? (
+                <div className="small" style={{ color: "var(--body)", lineHeight: 1.7 }}>
+                  <b>Sent by client {day(l.intake_at!)}:</b> landing page {String(l.intake.landing_page || "")}
+                  {l.intake.ads_link ? <> · <a href={String(l.intake.ads_link)} target="_blank" rel="noopener">ads folder</a></> : ""}{l.intake.need_ads ? " · needs help with ads" : ""}
+                  {" · website contact "}{String(l.intake.web_contact_name || "")} (<a href={`mailto:${l.intake.web_contact_email}`}>{String(l.intake.web_contact_email || "")}</a>)
+                  {l.intake.notes ? <><br />Notes: {String(l.intake.notes)}</> : ""}
+                </div>
+              ) : <div className="small">Client has not sent their ads and website contact yet. <button className="dm-link" onClick={() => { navigator.clipboard?.writeText(`${location.origin}/welcome?id=${l.id}`); setNote(`Setup page link for ${l.business || l.email} copied.`); }}>Copy their setup page link</button></div>}
               <div className="ticks">
                 {STEPS.map(([k, label]) => (
                   <label key={k} style={{ display: "flex", alignItems: "center", gap: 8, minHeight: 44 }}>

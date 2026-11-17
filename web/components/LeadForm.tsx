@@ -6,7 +6,7 @@ import { INDUSTRIES, MIN_BUDGET, SETUP_DAYS } from "@/lib/site";
 type Kind = "market_check" | "account" | "agency";
 const DONE: Record<Kind, string> = {
   market_check: "Thank you. Opening the demo.",
-  account: `Thank you. We have your details. We will email you the payment link, and your ${SETUP_DAYS}-day setup starts when payment is received.`,
+  account: `Thank you. We have your details and will be in touch to take payment. Your ${SETUP_DAYS}-day setup starts when payment is received.`,
   agency: "Thank you. We will be in touch about an agency agreement within one business day.",
 };
 
