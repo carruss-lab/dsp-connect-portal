@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import ConnectButton from "@/components/ConnectButton";
-import { stripe } from "@/lib/payments";
+import { refreshPayouts } from "@/lib/partnerStripe";
 import { isUuid, secretRpc } from "@/lib/server";
 import { LEGAL_ENTITY, SHARE_PCT } from "@/lib/site";
 
@@ -14,17 +14,8 @@ export default async function Join({ params }: PageProps<"/partners/join/[token]
   if (isUuid(token)) {
     try { partner = (await secretRpc<Partner[]>("partner_by_token", { p_token: token }))[0] || null; } catch (err) { console.error("join lookup failed", err); }
   }
-  let ready = partner?.payouts_ready ?? false;
-  let started = !!partner?.stripe_account_id;
-  const client = stripe();
-  if (partner?.stripe_account_id && client && !ready) {
-    try {
-      const acct = await client.v2.core.accounts.retrieve(partner.stripe_account_id, { include: ["configuration.recipient"] });
-      started = true;
-      ready = acct.configuration?.recipient?.capabilities?.stripe_balance?.stripe_transfers?.status === "active";
-      if (ready) await secretRpc("partner_set_payouts", { p_token: token, p_account: null, p_ready: true });
-    } catch (err) { console.error("join stripe check failed", err); }
-  }
+  const started = !!partner?.stripe_account_id;
+  const ready = partner ? await refreshPayouts({ ...partner, invite_token: token }) : false;
 
   return (
     <>
@@ -41,8 +32,9 @@ export default async function Join({ params }: PageProps<"/partners/join/[token]
             </div>
             <ol className="stack g16" style={{ listStyle: "none", padding: 0, margin: 0 }}>
               <li className="card stack g8">
-                <div className="num">01</div><h2 className="h3">Review and sign your admission documents</h2>
-                <p className="p">Your Admission Notice and its exhibits will be sent to you to review and sign. Your DSP Connect contact will be in touch about this step.</p>
+                <div className="num">01</div><h2 className="h3">Open your partner portal</h2>
+                <p className="p">Sign in with {partner.email} to read and sign your admission documents, complete the short training, and see your clients and earnings.</p>
+                <a className="btn btn-blue" style={{ alignSelf: "flex-start" }} href="/partner">{partner.status === "invited" ? "Sign your admission documents" : "Go to your portal"}</a>
               </li>
               <li className="card stack g12" style={ready ? { borderColor: "#14532D" } : undefined}>
                 <div className="num">02</div><h2 className="h3">Set up your payouts</h2>
@@ -60,7 +52,7 @@ export default async function Join({ params }: PageProps<"/partners/join/[token]
                 <div className="num">03</div><h2 className="h3">Your client link</h2>
                 <p className="p">Once you are admitted, clients who open their account through your link are credited to you automatically.</p>
                 <div className="dm-code" style={{ marginTop: 0 }}>getdspconnect.com/?p={partner.code}</div>
-                <p className="small">Your partner code is <b>{partner.code}</b>. The link starts working when your admission is complete.</p>
+                <p className="small">Your partner code is <b>{partner.code}</b>. The link starts crediting you once your admission documents are signed.</p>
               </li>
             </ol>
             <p className="small">Managing Partners are independent contractors of {LEGAL_ENTITY}, not employees. There is no salary and no guaranteed income.</p>

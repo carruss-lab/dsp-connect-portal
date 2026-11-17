@@ -10,7 +10,7 @@ type Lead = {
   status: string; partner_id: string | null; paid_at: string | null; amount_paid: number | null; setup_due: string | null;
   step_account_at: string | null; step_tracking_at: string | null; step_ads_at: string | null; step_audience_at: string | null; live_at: string | null;
 };
-type Partner = { id: string; created_at: string; status: string; name: string; email: string; phone: string | null; location: string | null; vertical: string | null; linkedin: string | null; experience: string | null; network: string | null; code: string; invite_token: string; stripe_account_id: string | null; payouts_ready: boolean };
+type Partner = { id: string; created_at: string; status: string; name: string; email: string; phone: string | null; location: string | null; vertical: string | null; linkedin: string | null; experience: string | null; network: string | null; code: string; invite_token: string; stripe_account_id: string | null; payouts_ready: boolean; signed_at: string | null; legal_name: string | null; training_done_at: string | null };
 type Notice = { id: string; kind: string; to_email: string; title: string | null; created_at: string; sent_at: string | null; error: string | null };
 type Line = { id: string; partner_id: string; lead_id: string; day: string; spend: number; amount: number; release_on: string; status: string };
 const STEPS: [keyof Lead, string][] = [
@@ -139,6 +139,28 @@ export default function Admin() {
     else { form.reset(); load(); }
   }
 
+  async function emailInvite(p: Partner) {
+    setMsg(""); setNote(""); setBusy(true);
+    try {
+      const res = await fetch("/api/admin/partner-invite", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${session!.access_token}` }, body: JSON.stringify({ id: p.id }) });
+      const out = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(out.error || "Could not send the invitation.");
+      setNote(`Invitation emailed to ${p.name}.`);
+    } catch (err) { setMsg(err instanceof Error ? err.message : "Could not send the invitation."); }
+    setBusy(false);
+  }
+  async function reverse(l: Line) {
+    const paidAlready = l.status === "paid";
+    const reason = window.prompt(paidAlready
+      ? `Reverse ${usd(l.amount)} already paid to ${pname(l.partner_id)}? It will be deducted from their next payout. Reason (for example: refund, chargeback):`
+      : `Cancel ${usd(l.amount)} commission for ${pname(l.partner_id)}? Reason (for example: refund, chargeback):`, "Refund");
+    if (reason === null) return;
+    setMsg(""); setNote("");
+    const { data, error } = await supabase!.rpc("commission_reverse", { p_id: l.id, p_reason: reason });
+    if (error) setMsg("Could not reverse: " + error.message);
+    else setNote(data === "deduct" ? "Reversed. It will be deducted from the partner's next payout." : "Commission cancelled.");
+    load();
+  }
   async function setPartnerStatus(id: string, status: string) {
     setMsg("");
     setPartners((ps) => ps.map((p) => (p.id === id ? { ...p, status } : p)));
@@ -268,7 +290,7 @@ export default function Admin() {
 
       <section className="stack g16">
         <h2 className="h3" style={{ fontSize: 18 }}>Managing Partners ({partners.length})</h2>
-        <p className="small">Invite only. Adding someone here puts them on the partner list. Copy their invitation link and send it to them; it lets them set up their Stripe payout account. Set the status to Admitted once their admission is signed, so their client link starts crediting them.</p>
+        <p className="small">Invite only. Add someone here, then press Email invitation. They sign their admission documents in their partner portal (getdspconnect.com/partner), which admits them and starts crediting their client link. Finishing the training makes them Active. Pause or End stops new clients being credited to them.</p>
         <form onSubmit={invite} className="card" style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "flex-end", background: "var(--ground)" }}>
           <div className="field" style={{ flex: "1 1 180px" }}><label htmlFor="inv-name">Full name</label><input id="inv-name" name="name" className="input" required /></div>
           <div className="field" style={{ flex: "1 1 220px" }}><label htmlFor="inv-email">Email</label><input id="inv-email" name="email" type="email" className="input" required /></div>
@@ -278,14 +300,17 @@ export default function Admin() {
         </form>
         {partners.length > 0 && (
           <div className="tablebox"><table>
-            <thead><tr><th scope="col">Name</th><th scope="col">Email</th><th scope="col">Industry</th><th scope="col">Status</th><th scope="col">Payout account</th><th scope="col">Client code</th><th scope="col">Invitation link</th></tr></thead>
+            <thead><tr><th scope="col">Name</th><th scope="col">Email</th><th scope="col">Industry</th><th scope="col">Status</th><th scope="col">Admission</th><th scope="col">Training</th><th scope="col">Payout account</th><th scope="col">Client code</th><th scope="col">Invitation</th></tr></thead>
             <tbody>{partners.map((p) => (
               <tr key={p.id}><th scope="row">{p.name}</th><td><a href={`mailto:${p.email}`}>{p.email}</a></td><td>{p.vertical}</td>
                 <td><select className="input" aria-label={`Status for ${p.name}`} value={p.status} onChange={(e) => setPartnerStatus(p.id, e.target.value)} style={{ height: 36, minWidth: 110 }}>
                   {["invited", "admitted", "active", "paused", "ended"].map((st) => <option key={st} value={st}>{st[0].toUpperCase() + st.slice(1)}</option>)}</select></td>
+                <td>{p.signed_at ? <span title={`Signed as ${p.legal_name}`}>Signed {day(p.signed_at)}</span> : "Not signed"}</td>
+                <td>{p.training_done_at ? "Done" : "Not done"}</td>
                 <td>{p.payouts_ready ? "Ready" : p.stripe_account_id ? "Started" : "Not started"}</td>
                 <td className="mono">{p.code}</td>
-                <td><button className="btn btn-line" style={{ minHeight: 36 }} onClick={() => { navigator.clipboard?.writeText(`${location.origin}/partners/join/${p.invite_token}`); setNote(`Invitation link for ${p.name} copied.`); }}>Copy link</button></td></tr>
+                <td style={{ whiteSpace: "nowrap" }}><button className="btn btn-line" style={{ minHeight: 36 }} disabled={busy} onClick={() => emailInvite(p)}>Email invitation</button>{" "}
+                  <button className="btn btn-line" style={{ minHeight: 36 }} onClick={() => { navigator.clipboard?.writeText(`${location.origin}/partners/join/${p.invite_token}`); setNote(`Invitation link for ${p.name} copied.`); }}>Copy link</button></td></tr>
             ))}</tbody>
           </table></div>
         )}
@@ -317,11 +342,22 @@ export default function Admin() {
                 <td>{day(l.release_on + "T00:00:00")}</td><td>{l.status === "approved" ? "Approved" : "Awaiting approval"}</td>
                 <td style={{ whiteSpace: "nowrap" }}>{l.status === "pending"
                   ? <button className="btn btn-line" style={{ minHeight: 36 }} onClick={() => setLine([l.id], "approved")}>Approve</button>
-                  : <button className="btn btn-line" style={{ minHeight: 36 }} onClick={() => setLine([l.id], "pending")}>Undo</button>}</td></tr>
+                  : <button className="btn btn-line" style={{ minHeight: 36 }} onClick={() => setLine([l.id], "pending")}>Undo</button>}{" "}
+                  <button className="btn btn-line" style={{ minHeight: 36 }} onClick={() => reverse(l)}>Reverse</button></td></tr>
             ))}</tbody>
           </table></div>
         )}
-        {lines.some((l) => l.status === "paid") && <p className="small">Paid to date: <b>{usd(sum(lines.filter((l) => l.status === "paid")))}</b></p>}
+        {lines.some((l) => l.status === "paid") && (
+          <details className="stack g8"><summary className="small" style={{ cursor: "pointer" }}>Paid to date: <b>{usd(sum(lines.filter((l) => l.status === "paid")))}</b>. Show paid lines (to reverse after a refund or chargeback)</summary>
+            <div className="tablebox" style={{ marginTop: 8 }}><table>
+              <thead><tr><th scope="col">Spend date</th><th scope="col">Partner</th><th scope="col">Client</th><th scope="col">Commission</th><th scope="col">Action</th></tr></thead>
+              <tbody>{lines.filter((l) => l.status === "paid").slice(0, 100).map((l) => (
+                <tr key={l.id}><th scope="row">{day(l.day + "T00:00:00")}</th><td>{pname(l.partner_id)}</td><td>{lname(l.lead_id)}</td><td className="mono">{usd(l.amount)}</td>
+                  <td><button className="btn btn-line" style={{ minHeight: 36 }} onClick={() => reverse(l)}>Reverse and deduct</button></td></tr>
+              ))}</tbody>
+            </table></div>
+          </details>
+        )}
       </section>
 
       <section className="stack g16">

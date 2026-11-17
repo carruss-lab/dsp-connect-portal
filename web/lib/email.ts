@@ -11,14 +11,15 @@ const apiKey = () => process.env.RESEND_API_KEY_2 || process.env.RESEND_API_KEY_
 export const emailOn = () => !!apiKey();
 
 /** Sends one email. Answers whether the mail service accepted it. */
-export async function send(to: string, subject: string, html: string, replyTo?: string): Promise<{ ok: boolean; error?: string }> {
+export type Attachment = { filename: string; content: string /* base64 */ };
+export async function send(to: string, subject: string, html: string, replyTo?: string, attachments?: Attachment[], bcc?: string): Promise<{ ok: boolean; error?: string }> {
   const key = apiKey();
   if (!key || !to) return { ok: false, error: "email is not connected" };
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: FROM, to: to.split(",").map((t) => t.trim()).filter(Boolean), subject, html, ...(replyTo || REPLY_TO ? { reply_to: replyTo || REPLY_TO } : {}) }),
+      body: JSON.stringify({ from: FROM, to: to.split(",").map((t) => t.trim()).filter(Boolean), subject, html, ...(replyTo || REPLY_TO ? { reply_to: replyTo || REPLY_TO } : {}), ...(attachments?.length ? { attachments } : {}), ...(bcc ? { bcc: bcc.split(",").map((t) => t.trim()).filter(Boolean) } : {}) }),
     });
     if (res.ok) { console.log("email accepted", subject, (await res.json().catch(() => ({}))).id); return { ok: true }; }
     const error = `${res.status} ${await res.text()}`;
