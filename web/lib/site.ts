@@ -10,7 +10,8 @@ export const INDUSTRIES = [
   "Healthcare", "Legal", "Financial Services", "Automotive", "Real Estate",
   "Home Services", "Franchise", "Hospitality", "Political", "Other",
 ];
-export const LOGIN_URL = process.env.NEXT_PUBLIC_CLIENT_LOGIN_URL || "/open-account";
+// Where clients log in to the platform. Empty until that is set up; the "Log in" links stay hidden until then.
+export const LOGIN_URL = process.env.NEXT_PUBLIC_CLIENT_LOGIN_URL || "";
 
 // Where a visitor books a call with a person.
 export const MEETING_URL = process.env.NEXT_PUBLIC_MEETING_URL || "https://calendly.com/carmichaelruss/dsp-connect-onboarding";

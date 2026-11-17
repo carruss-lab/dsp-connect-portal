@@ -18,7 +18,7 @@ export function Header() {
           <Link href="/compare">How we compare</Link>
           <a href={MEETING_URL} target="_blank" rel="noopener">Book a call</a>
         </nav>
-        <a className="navlink" href={LOGIN_URL} style={{ color: "var(--ink)" }}>Log in</a>
+        {LOGIN_URL && <a className="navlink" href={LOGIN_URL} style={{ color: "var(--ink)" }}>Log in</a>}
         <Link className="btn btn-blue" href="/#market">See the demo</Link>
       </div>
     </header>
@@ -34,7 +34,7 @@ export function Footer() {
           <div>{BUSINESS_ADDRESS ? `${BUSINESS_ADDRESS} · ` : ""}<a href={`mailto:${SUPPORT_EMAIL}`} style={{ marginLeft: 0 }}>{SUPPORT_EMAIL}</a></div>
         </div>
         <nav aria-label="Footer">
-          <a href={LOGIN_URL}>Client log in</a>
+          {LOGIN_URL && <a href={LOGIN_URL}>Client log in</a>}
           <Link href="/industries">Industries</Link>
           <Link href="/agencies">Agencies</Link>
           <Link href="/compare">Comparisons</Link>
