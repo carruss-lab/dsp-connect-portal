@@ -1,5 +1,5 @@
 import { Footer, Header } from "@/components/Chrome";
-import { BUSINESS_ADDRESS, LEGAL_ENTITY, LEGAL_UPDATED, SUPPORT_EMAIL } from "@/lib/site";
+import { LEGAL_ENTITY, LEGAL_UPDATED, SUPPORT_EMAIL } from "@/lib/site";
 
 export type Part = [heading: string, paragraphs: string[]];
 
@@ -24,7 +24,7 @@ export default function Legal({ title, intro, parts }: { title: string; intro: s
           <h2 className="h3" style={{ fontSize: 19 }}>{parts.length + 1}. How to reach us</h2>
           <p className="p">
             DSP Connect is a service of {LEGAL_ENTITY}. Email <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>
-            {BUSINESS_ADDRESS ? `, or write to ${LEGAL_ENTITY}, ${BUSINESS_ADDRESS}.` : "."}
+            .
           </p>
         </section>
       </main>

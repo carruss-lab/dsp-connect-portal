@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { BUSINESS_ADDRESS, HELP_URL, LEGAL_ENTITY, LOGIN_URL, MEETING_URL, SUPPORT_EMAIL } from "@/lib/site";
+import { HELP_URL, LEGAL_ENTITY, LOGIN_URL, MEETING_URL, SUPPORT_EMAIL } from "@/lib/site";
 
 export function Header() {
   return (
@@ -31,7 +31,7 @@ export function Footer() {
       <div className="wrap">
         <div className="stack g8">
           <div>© {new Date().getFullYear()} {LEGAL_ENTITY}. DSP Connect is a service of {LEGAL_ENTITY}.</div>
-          <div>{BUSINESS_ADDRESS ? `${BUSINESS_ADDRESS} · ` : ""}<a href={`mailto:${SUPPORT_EMAIL}`} style={{ marginLeft: 0 }}>{SUPPORT_EMAIL}</a></div>
+          <div><a href={`mailto:${SUPPORT_EMAIL}`} style={{ marginLeft: 0 }}>{SUPPORT_EMAIL}</a></div>
         </div>
         <nav aria-label="Footer">
           {LOGIN_URL && <a href={LOGIN_URL}>Client log in</a>}
