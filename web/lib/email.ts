@@ -1,9 +1,9 @@
-import { HELP_URL, LEGAL_ENTITY, SETUP_DAYS, siteOrigin } from "./site";
+import { HELP_URL, LEGAL_ENTITY, SETUP_DAYS, SUPPORT_EMAIL, siteOrigin } from "./site";
 
 // Sends through Resend. Does nothing until RESEND_API_KEY is set, so forms keep working without it.
 const FROM = process.env.EMAIL_FROM || "DSP Connect <dspsupport@getdspconnect.com>";
-// The sending address cannot receive mail, so replies go to a real inbox: REPLY_TO if set, otherwise the first team address.
-const REPLY_TO = process.env.REPLY_TO || (process.env.NOTIFY_EMAIL || "").split(",")[0].trim();
+// Replies go to the support address, which is passed into Intercom where Fin answers. REPLY_TO overrides it.
+const REPLY_TO = process.env.REPLY_TO || SUPPORT_EMAIL;
 export const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
 // The newer key name wins, so replacing a key never needs the old one deleted first.

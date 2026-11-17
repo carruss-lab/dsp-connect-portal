@@ -15,7 +15,7 @@ export const LOGIN_URL = process.env.NEXT_PUBLIC_CLIENT_LOGIN_URL || "";
 
 // Where a visitor books a call with a person.
 export const MEETING_URL = process.env.NEXT_PUBLIC_MEETING_URL || "https://calendly.com/carmichaelruss/dsp-connect-onboarding";
-export const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@mail.getdspconnect.com";
+export const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "hello@mail.getdspconnect.com";
 // The company's mailing address. Shown in the footer, legal pages and reminder emails once set.
 /** Postal address for email footers only. It is not shown on the site. */
 export const BUSINESS_ADDRESS = process.env.NEXT_PUBLIC_BUSINESS_ADDRESS || "";
