@@ -28,7 +28,7 @@ const US = {
 
 export const COMPARISONS: Comparison[] = [
   {
-    slug: "dsp-connect-vs.-stackadapt",
+    slug: "dsp-connect-vs-stackadapt",
     name: "StackAdapt",
     headline: "which one sets you up, and which one pays you back?",
     intro: "Both platforms let you buy advertising across apps and websites. The difference is who does the setup, and who keeps the margin.",

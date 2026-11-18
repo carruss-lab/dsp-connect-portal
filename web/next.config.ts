@@ -18,6 +18,8 @@ const nextConfig: NextConfig = {
       { source: "/launch-client.html", destination: "/open-account", permanent: true },
       { source: "/platform-comparisons-dsp-connect", destination: "/compare", permanent: true },
       { source: "/sitemap", destination: "/sitemap.xml", permanent: true },
+      // The StackAdapt comparison first went live with a stray period in its address.
+      { source: "/dsp-connect-vs.-stackadapt", destination: "/dsp-connect-vs-stackadapt", permanent: true },
     ];
   },
 };
