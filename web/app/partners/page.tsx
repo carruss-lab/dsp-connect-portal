@@ -3,10 +3,11 @@ import { Footer, Header } from "@/components/Chrome";
 import ApplyForm from "@/components/partner/ApplyForm";
 import VideoEmbed from "@/components/VideoEmbed";
 import { VIDEOS, videoNode } from "@/lib/videos";
+import { PARTNER_FAQ as FAQ } from "@/lib/faq";
 import { JsonLd, PARTNER_PROGRAM, SITE_URL, pageGraph, pageMeta } from "@/lib/seo";
 import { INDUSTRIES, LEGAL_ENTITY, MIN_BUDGET, SETUP_DAYS, SHARE_PCT } from "@/lib/site";
 
-const DESCRIPTION = `Sell DSP Connect to the local businesses you already call on. Earn ${SHARE_PCT}% of your clients' ad spend, paid daily, with residuals for as long as they spend. For ISOs, merchant-services agents and independent sales pros.`;
+const DESCRIPTION = `For ISOs, merchant-services agents and independent sales pros: earn ${SHARE_PCT}% of your clients' ad spend, paid daily, with residuals for as long as they spend.`;
 export const metadata: Metadata = pageMeta({
   title: "Become an Authorized Sales Partner", description: DESCRIPTION, path: "/partners", image: `${SITE_URL}/partners/opengraph-image`,
   ogTitle: `Authorized Sales Partner program: earn ${SHARE_PCT}% of client ad spend, for life | DSP Connect`,
@@ -24,14 +25,6 @@ const WHY = [
   ["Paid daily", "Each day's commission is paid to your bank through Stripe after a 7-day hold. No waiting for month end."],
   ["Nothing to bill or collect", "Clients pay DSP Connect directly at our published prices. You never handle money, card details or invoices."],
   ["We do the setup", `Your clients are live within ${SETUP_DAYS} days of paying: account, tracking, ad review and audience, done for them.`],
-];
-const FAQ = [
-  ["Who is this for?", "ISOs and merchant-services agents, POS and telecom sellers, marketing consultants and independent reps who already call on local businesses. You can join as an individual or as a company."],
-  ["Do I need advertising experience?", "No. If you can talk to a business owner about getting more customers, the training and the demo cover the rest."],
-  ["What do my clients pay?", `Accounts start from a $${MIN_BUDGET} ad budget. There is no monthly platform fee: our fee is included in the price of the ads, and there is no long-term contract.`],
-  ["Do I set prices or resell?", "No. You are an independent sales partner, not a reseller. Clients contract and pay DSP Connect directly, so you never carry billing risk."],
-  ["Is there a cost to join?", "No. There is no fee to apply or to join. It is commission only: no salary, no draw and no guaranteed income."],
-  ["Can my team sell under my company?", "Yes. If your company is the Sales Partner, people at your company can sell under its link, and your company makes sure they follow our rules. Outside sub-agents are not part of the program."],
 ];
 
 export default function Partners() {

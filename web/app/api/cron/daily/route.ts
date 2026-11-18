@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { runNotices } from "@/lib/notices";
 import { dailyPayouts, type PayoutResult } from "@/lib/payoutRun";
+import { indexNowIfChanged } from "@/lib/indexnow";
 
 export const maxDuration = 60;
 
@@ -21,6 +22,8 @@ function payoutLines(p: PayoutResult): string[] {
 export async function GET(req: Request) {
   const secret = process.env.CRON_SECRET;
   if (!secret || req.headers.get("authorization") !== `Bearer ${secret}`) return NextResponse.json({ error: "forbidden" }, { status: 401 });
+  // Pages changed recently? Tell Bing and the other IndexNow engines. Never blocks the rest of the run.
+  try { const r = await indexNowIfChanged(); if (r) console.log(r); } catch (err) { console.error("IndexNow failed", err); }
   let payouts: PayoutResult | null = null;
   let extra: string[] = [];
   try {

@@ -39,6 +39,7 @@ export function Footer() {
         </div>
         <nav aria-label="Footer">
           {LOGIN_URL && <a href={LOGIN_URL}>Client log in</a>}
+          <Link href="/about">About</Link>
           <Link href="/industries">Industries</Link>
           <Link href="/agencies">Agencies</Link>
           <Link href="/partners">Sales Partners</Link>

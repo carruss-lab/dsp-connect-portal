@@ -3,7 +3,7 @@ import { pageMeta } from "@/lib/seo";
 import Legal, { type Part } from "@/components/Legal";
 import { LEGAL_ENTITY, MIN_BUDGET, SETUP_DAYS } from "@/lib/site";
 
-export const metadata: Metadata = pageMeta({ title: "Client terms", description: "The terms that apply when you open a DSP Connect account.", path: "/terms" });
+export const metadata: Metadata = pageMeta({ title: "Client terms", description: "The client terms that apply when you open a DSP Connect account: setup, your ad budget, our fee, cancelling and refunds.", path: "/terms" });
 
 const PARTS: Part[] = [
   ["Who these terms are between", [

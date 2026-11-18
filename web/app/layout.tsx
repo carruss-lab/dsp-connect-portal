@@ -13,7 +13,7 @@ const GA_ID = process.env.VERCEL_ENV === "production" ? "G-EW1FDG4CE8" : "";
 export const metadata: Metadata = {
   title: { default: "DSP Connect | Enterprise programmatic advertising, without the enterprise contract", template: "%s | DSP Connect" },
   description:
-    "Streaming TV, apps and websites across 50+ ad exchanges, the way big brands buy, open to any business from a $750 ad budget. Set up for you, live within 14 days. No contract.",
+    "Streaming TV, apps and websites across 50+ ad exchanges, open to any business from a $750 ad budget. Set up for you, live within 14 days. No contract.",
   metadataBase: new URL(SITE_URL),
   alternates: { canonical: "./" },
   openGraph: { type: "website", siteName: "DSP Connect", locale: "en_US", url: "./", images: [{ url: "/og", width: 1200, height: 630, alt: "DSP Connect. Done-for-you setup." }] },

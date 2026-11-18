@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Footer, Header } from "@/components/Chrome";
-import { CHECKED, COMPARISONS } from "@/lib/compare";
-import { ID, JsonLd, pageGraph, pageMeta } from "@/lib/seo";
+import { CHECKED, COMPARISONS, compareFaq, compareMeta } from "@/lib/compare";
+import { ID, JsonLd, SITE_URL, pageGraph, pageMeta } from "@/lib/seo";
 import { SHARE_PCT } from "@/lib/site";
 
 export const dynamicParams = false;
@@ -15,7 +15,7 @@ const find = (slug: string) => COMPARISONS.find((c) => c.slug === decodeURICompo
 
 export async function generateMetadata({ params }: PageProps<"/[slug]">): Promise<Metadata> {
   const c = find((await params).slug);
-  return c ? pageMeta({ title: `DSP Connect vs ${c.name}`, description: c.intro, path: `/${c.slug}`, ogTitle: `DSP Connect vs ${c.name}: ${c.headline}`, type: "article" }) : {};
+  return c ? pageMeta({ title: `DSP Connect vs ${c.name}`, description: compareMeta(c), path: `/${c.slug}`, ogTitle: `DSP Connect vs ${c.name}: ${c.headline}`, type: "article" }) : {};
 }
 
 const money = (spend: number) => `$${((spend * SHARE_PCT) / 100).toLocaleString("en-US")}`;
@@ -23,12 +23,17 @@ const money = (spend: number) => `$${((spend * SHARE_PCT) / 100).toLocaleString(
 export default async function ComparePage({ params }: PageProps<"/[slug]">) {
   const c = find((await params).slug);
   if (!c) notFound();
+  const faq = compareFaq(c);
   return (
     <>
       <JsonLd data={pageGraph({
         path: `/${c.slug}`, name: `DSP Connect vs ${c.name}: ${c.headline}`, description: c.intro,
         trail: [["Home", "/"], ["How we compare", "/compare"], [`DSP Connect vs ${c.name}`, `/${c.slug}`]],
-        about: [ID.ads, { "@type": "Thing", name: c.name }],
+        about: [ID.ads, { "@type": "Organization", name: c.name, url: c.site }], faq,
+        nodes: [{
+          "@type": "Table", "@id": `${SITE_URL}/${c.slug}#table`, about: `DSP Connect vs ${c.name}, side by side`,
+          isPartOf: { "@id": `${SITE_URL}/${c.slug}#webpage` },
+        }],
       })} />
       <Header />
       <main className="wrap narrow stack g56" style={{ padding: "64px 32px 80px" }}>
@@ -82,6 +87,16 @@ export default async function ComparePage({ params }: PageProps<"/[slug]">) {
         <section className="card stack g12" style={{ background: "var(--ground)", border: 0 }}>
           <h2 className="h2" style={{ fontSize: 20 }}>When {c.name} makes more sense</h2>
           <p className="p" style={{ maxWidth: 760 }}>{c.whenText}</p>
+        </section>
+
+        <section className="stack g16" aria-labelledby="faq-h">
+          <h2 id="faq-h" className="h2" style={{ fontSize: 24 }}>Common questions</h2>
+          {faq.map(([q, a]) => (
+            <details key={q} className="card stack g8">
+              <summary style={{ cursor: "pointer", fontWeight: 600 }}>{q}</summary>
+              <p className="p" style={{ marginTop: 8 }}>{a}</p>
+            </details>
+          ))}
         </section>
 
         <section className="cta dark">

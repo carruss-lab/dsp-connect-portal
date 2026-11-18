@@ -2,12 +2,11 @@ import type { MetadataRoute } from "next";
 import { COMPARISONS } from "@/lib/compare";
 import { INDUSTRY_PAGES } from "@/lib/industries";
 import { SITE_URL } from "@/lib/seo";
-import { LEGAL_UPDATED } from "@/lib/site";
+import { LEGAL_UPDATED, SITE_UPDATED as UPDATED } from "@/lib/site";
 import { VIDEOS, type Video } from "@/lib/videos";
 
-// When the rebuilt pages last changed. Update SITE_UPDATED when page content changes, so search engines
-// recrawl; legal pages follow the date shown on them.
-const SITE_UPDATED = new Date("2026-11-17");
+// When the pages last changed (set in lib/site.ts); legal pages follow the date shown on them.
+const SITE_UPDATED = new Date(UPDATED);
 const LEGAL = new Date(LEGAL_UPDATED);
 
 // The explainer video on a page, as a video sitemap entry (search engines can show the page as a video result).
@@ -22,6 +21,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     page("/", 1, { videos: [video(VIDEOS.owners)] }),
     page("/open-account", 0.9),
+    page("/about", 0.7),
     page("/agencies", 0.8, { videos: [video(VIDEOS.agencies)] }),
     page("/partners", 0.6, { videos: [video(VIDEOS.partners)] }),
     page("/compare", 0.7),

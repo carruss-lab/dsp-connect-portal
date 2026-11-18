@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { HELP_URL, LEGAL_ENTITY, MIN_BUDGET, SETUP_DAYS, SHARE_PCT, SUPPORT_EMAIL } from "./site";
+import { EXCHANGES, HELP_URL, LEGAL_ENTITY, MIN_BUDGET, SETUP_DAYS, SHARE_PCT, SITE_UPDATED, SUPPORT_EMAIL } from "./site";
 
 // The public address of the site. Search engines are told this is the one true address of every page.
 export const SITE_URL = "https://getdspconnect.com";
@@ -19,7 +19,17 @@ export const ID = {
   ads: `${SITE_URL}/#service`,
   agency: `${SITE_URL}/agencies#program`,
   partner: `${SITE_URL}/partners#program`,
+  about: `${SITE_URL}/about#webpage`,
 };
+
+// The company's official profiles. AI assistants and search engines use these to confirm that the site,
+// the YouTube channel and the LinkedIn page are one company. Add a profile here only once it is live.
+export const PROFILES = [
+  "https://www.youtube.com/@getdspconnect",
+  "https://www.youtube.com/channel/UCYuwOdcS5rS17WtQZRqBFug",
+  "https://www.linkedin.com/company/getdspconnect",
+];
+export const SLOGAN = "Enterprise programmatic advertising. Without the enterprise contract.";
 
 /** One <script type="application/ld+json"> for the page. */
 export function JsonLd({ data }: { data: Node | Node[] }) {
@@ -27,13 +37,18 @@ export function JsonLd({ data }: { data: Node | Node[] }) {
 }
 
 export const ORG: Node = {
-  "@type": "Organization", "@id": ID.org, name: "DSP Connect", legalName: LEGAL_ENTITY, url: SITE_URL,
+  "@type": "Organization", "@id": ID.org, name: "DSP Connect", alternateName: ["getdspconnect", "Get DSP Connect"], legalName: LEGAL_ENTITY, url: SITE_URL,
+  slogan: SLOGAN, sameAs: PROFILES,
   logo: { "@type": "ImageObject", "@id": ID.logo, url: `${SITE_URL}/logo.png`, contentUrl: `${SITE_URL}/logo.png`, caption: "DSP Connect" },
   image: ref(ID.logo),
   description: `Enterprise programmatic advertising without the enterprise contract: streaming TV, apps and websites for business owners and agencies, with done-for-you setup. Live within ${SETUP_DAYS} days.`,
   email: SUPPORT_EMAIL,
   areaServed: { "@type": "Country", name: "United States" },
-  knowsAbout: ["Programmatic advertising", "Local business advertising", "Advertising on apps and websites", "Conversion tracking"],
+  knowsAbout: [
+    "Programmatic advertising", "Demand-side platforms (DSP)", "Connected TV (CTV) advertising", "Streaming TV advertising",
+    "Over-the-top (OTT) advertising", "Real-time bidding", "Retargeting", "Geofencing and location targeting",
+    "Display advertising", "Video advertising", "Native advertising", "Local business advertising", "Conversion tracking",
+  ],
   contactPoint: [
     { "@type": "ContactPoint", contactType: "customer support", email: SUPPORT_EMAIL, url: HELP_URL, areaServed: "US", availableLanguage: "English" },
     { "@type": "ContactPoint", contactType: "sales", email: SUPPORT_EMAIL, url: `${SITE_URL}/open-account`, areaServed: "US", availableLanguage: "English" },
@@ -41,7 +56,11 @@ export const ORG: Node = {
   ],
 };
 
-const WEBSITE: Node = { "@type": "WebSite", "@id": ID.site, url: SITE_URL, name: "DSP Connect", inLanguage: "en-US", publisher: ref(ID.org) };
+const WEBSITE: Node = {
+  "@type": "WebSite", "@id": ID.site, url: SITE_URL, name: "DSP Connect", alternateName: "getdspconnect.com", inLanguage: "en-US",
+  description: `Programmatic advertising on streaming TV, apps and websites across ${EXCHANGES} ad exchanges, open to any business from a $${MIN_BUDGET} ad budget.`,
+  publisher: ref(ID.org),
+};
 
 /** What advertisers buy. */
 export const ADS_SERVICE: Node = {
@@ -100,7 +119,9 @@ export function pageGraph(o: {
     isPartOf: ref(ID.site), publisher: ref(ID.org),
     primaryImageOfPage: { "@type": "ImageObject", url: o.image || `${SITE_URL}/og` },
   };
-  if (o.modified && !isNaN(+o.modified)) page.dateModified = o.modified.toISOString().slice(0, 10);
+  // Every page says when it last changed: the date passed in, or the date the site's pages were last revised.
+  const modified = o.modified && !isNaN(+o.modified) ? o.modified : new Date(SITE_UPDATED);
+  page.dateModified = modified.toISOString().slice(0, 10);
   if (o.main) page.mainEntity = asRef(o.main);
   if (o.about?.length) page.about = o.about.map(asRef);
   graph.push(page);

@@ -10,6 +10,7 @@ export type Comparison = {
   owner: string;
   agency: string;
   whenText: string;
+  site: string; // the competitor's official site, so its name is not mistaken for another company
 };
 
 // Competitor details come from public sources checked in November 2026.
@@ -30,6 +31,7 @@ export const COMPARISONS: Comparison[] = [
   {
     slug: "dsp-connect-vs-stackadapt",
     name: "StackAdapt",
+    site: "https://www.stackadapt.com",
     headline: "which one sets you up, and which one pays you back?",
     intro: "Both platforms let you buy advertising across apps and websites. The difference is who does the setup, and who keeps the margin.",
     tiles: [["Done-for-you setup", "DSP Connect only"], ["Agency revenue share", `DSP Connect only: ${SHARE_PCT}%`], ["Human + AI support", "Both platforms"], ["Creative studio", "StackAdapt only"]],
@@ -50,6 +52,7 @@ export const COMPARISONS: Comparison[] = [
   {
     slug: "dsp-connect-vs-google-dv360",
     name: "Google DV360",
+    site: "https://marketingplatform.google.com/about/display-video-360/",
     headline: "enterprise power, or a platform you can actually get into?",
     intro: "DV360 is Google's enterprise advertising platform. It is powerful, and it was built for brands that spend millions a month. Here is what a smaller advertiser or agency faces.",
     tiles: [["DV360 minimum", "Not published"], ["DSP Connect minimum", US.budget], ["DV360 access", "Usually through a Google partner"], ["DSP Connect setup", `Done for you in ${SETUP_DAYS} days`]],
@@ -69,6 +72,7 @@ export const COMPARISONS: Comparison[] = [
   {
     slug: "dsp-connect-vs-the-trade-desk",
     name: "The Trade Desk",
+    site: "https://www.thetradedesk.com",
     headline: "the gold standard, if you can get in.",
     intro: "The Trade Desk is the benchmark for large-scale programmatic buying. Access starts with a sales conversation and a negotiated contract. Here is what a smaller advertiser or agency faces.",
     tiles: [["Trade Desk minimum", "Not published"], ["DSP Connect minimum", US.budget], ["Trade Desk access", "Sales conversation and contract"], ["DSP Connect setup", `Done for you in ${SETUP_DAYS} days`]],
@@ -89,6 +93,7 @@ export const COMPARISONS: Comparison[] = [
   {
     slug: "dsp-connect-vs-choozle",
     name: "Choozle",
+    site: "https://choozle.com",
     headline: "simple is good. Set up for you, and paid, is better.",
     intro: "Choozle built a friendly platform that is easy to start on. DSP Connect sets everything up for you, charges no monthly fee, and shares revenue with agencies.",
     tiles: [["Choozle monthly fee", "$99 a month"], ["DSP Connect monthly fee", "$0"], ["Agency revenue share", `DSP Connect only: ${SHARE_PCT}%`], ["Done-for-you setup", "DSP Connect only"]],
@@ -108,6 +113,7 @@ export const COMPARISONS: Comparison[] = [
   {
     slug: "dsp-connect-vs-amazon-dsp",
     name: "Amazon DSP",
+    site: "https://advertising.amazon.com/solutions/products/amazon-dsp",
     headline: "the open web, or a platform built for Amazon sellers?",
     intro: "Amazon DSP is powerful if you sell on Amazon. For most other businesses, its focus on Amazon shoppers and Amazon's own properties makes it a poor fit.",
     tiles: [["Amazon managed service", "$50,000 typical minimum"], ["DSP Connect minimum", US.budget], ["Amazon DSP focus", "Amazon sellers"], ["DSP Connect focus", "Any business, any industry"]],
@@ -127,6 +133,7 @@ export const COMPARISONS: Comparison[] = [
   {
     slug: "dsp-connect-vs-basis-technologies",
     name: "Basis Technologies",
+    site: "https://basis.com",
     headline: "one tool for everything, or one that sets you up and pays you back?",
     intro: "Basis combines search, social and programmatic advertising in one interface. DSP Connect does one thing: advertising across apps and websites, set up for you, with a revenue share for agencies.",
     tiles: [["Agency revenue share", `DSP Connect only: ${SHARE_PCT}%`], ["Done-for-you setup", "DSP Connect only"], ["Search and social in one place", "Basis only"], ["Budget to start", `DSP Connect: ${US.budget}`]],
@@ -146,6 +153,7 @@ export const COMPARISONS: Comparison[] = [
   {
     slug: "dsp-connect-vs-simpli.fi",
     name: "Simpli.fi",
+    site: "https://simpli.fi",
     headline: "local targeting specialist, or set up for you with a revenue share?",
     intro: "Simpli.fi is a strong platform for local and multi-location advertisers. DSP Connect serves local, regional and national advertisers, does the setup for you, and shares revenue with agencies.",
     tiles: [["Agency revenue share", `DSP Connect only: ${SHARE_PCT}%`], ["Done-for-you setup", "DSP Connect only"], ["Address-level targeting", "Simpli.fi strength"], ["Budget to start", `DSP Connect: ${US.budget}`]],
@@ -163,3 +171,24 @@ export const COMPARISONS: Comparison[] = [
     whenText: "Simpli.fi is the right choice when address-level and zip-code targeting for franchises and multi-location brands is the heart of what you do.",
   },
 ];
+
+/** A short description for search results: under 160 characters, unlike the on-page intro. */
+export const compareMeta = (c: Comparison) =>
+  `DSP Connect vs ${c.name} compared: who sets up the account, budget to start, fees, contracts and agency revenue share. Checked ${CHECKED}.`;
+
+/**
+ * The questions a buyer asks when comparing, answered from the facts already on the page. Shown on the page and
+ * used for its FAQPage structured data and llms.txt.
+ */
+export const compareFaq = (c: Comparison): [string, string][] => {
+  const row = (f: string) => c.rows.find((r) => r[0] === f);
+  const budget = row("Budget to start");
+  const setup = row("Who sets up the account");
+  return [
+    [`What is the difference between DSP Connect and ${c.name}?`, `${c.intro} ${c.owner}`],
+    ...(budget ? [[`What budget do you need to start with DSP Connect or ${c.name}?`, `DSP Connect: ${budget[1]}. ${c.name}: ${budget[2]}.`] as [string, string]] : []),
+    ...(setup ? [[`Who sets up the account on DSP Connect and on ${c.name}?`, `DSP Connect: ${setup[1]}. ${c.name}: ${setup[2]}.`] as [string, string]] : []),
+    [`Does ${c.name} share revenue with agencies?`, c.agency],
+    [`When is ${c.name} the better choice?`, c.whenText],
+  ];
+};

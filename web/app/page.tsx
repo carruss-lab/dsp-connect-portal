@@ -8,6 +8,7 @@ import VideoEmbed from "@/components/VideoEmbed";
 import { ADS_SERVICE, JsonLd, pageGraph } from "@/lib/seo";
 import { VIDEOS, videoNode } from "@/lib/videos";
 import { INDUSTRY_PAGES } from "@/lib/industries";
+import { HOME_FAQ as FAQ } from "@/lib/faq";
 import { MEETING_URL } from "@/lib/site";
 
 const STEPS = [
@@ -27,14 +28,6 @@ const TRUST: [string, string, string, string][] = [
   ["A person", "Book a 20-minute call and ask us anything about your market, your ads or the setup.", MEETING_URL, "Book a call"],
   ["Your way out", "No long-term contract. Cancel any time and your unspent ad budget is refunded.", "/refunds", "Read the refund policy"],
   ["The terms", "Short, plain client terms. Payment is taken by Stripe; we never see your card details.", "/terms", "Read the client terms"],
-];
-const FAQ = [
-  ["What is the smallest budget I can start with?", `$${MIN_BUDGET}.`],
-  ["How long until my ads are running?", `Within ${SETUP_DAYS} days of paying. We use that time to set up your account, tracking, ads and audience for you.`],
-  ["Where do my ads appear?", `On streaming TV, apps and websites reached through ${EXCHANGES} ad exchanges. You can approve or block specific apps and sites.`],
-  ["How do I know it is working?", "You get your own login showing views, clicks and spend, plus tracking on your website that counts leads and sales."],
-  ["How does the campaign improve over time?", "Automatic rules drop the apps and sites that are not performing and move your budget to the ones that are."],
-  ["What does it cost?", "There is no monthly platform fee. Our fee is included in the price of your ads."],
 ];
 
 export default function Home() {

@@ -4,7 +4,7 @@ import { Footer, Header, TalkBand } from "@/components/Chrome";
 import { INDUSTRY_PAGES } from "@/lib/industries";
 import { JsonLd, pageGraph, pageMeta } from "@/lib/seo";
 
-const DESCRIPTION = "How DSP Connect sets up advertising for healthcare, legal, financial services, automotive, real estate, home services, franchise, hospitality and political advertisers.";
+const DESCRIPTION = "Programmatic advertising set up for healthcare, legal, financial services, automotive, real estate, home services, franchise, hospitality and political.";
 export const metadata: Metadata = pageMeta({ title: "Industries", description: DESCRIPTION, path: "/industries" });
 
 export default function Industries() {

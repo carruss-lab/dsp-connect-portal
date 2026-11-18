@@ -19,6 +19,9 @@ export const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "hello@mai
 // The company's mailing address. Shown in the footer, legal pages and reminder emails once set.
 /** Postal address for email footers only. It is not shown on the site. */
 export const BUSINESS_ADDRESS = process.env.NEXT_PUBLIC_BUSINESS_ADDRESS || "";
+// When the public pages' content last changed. Update this when page content changes, so search engines
+// and AI crawlers recrawl. Used by the sitemap, every page's structured data and llms.txt.
+export const SITE_UPDATED = "2026-11-18";
 // The date the legal pages were last changed.
 export const LEGAL_UPDATED = "November 16, 2026";
 // The public help center.
