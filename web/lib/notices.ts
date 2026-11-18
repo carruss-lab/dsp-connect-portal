@@ -279,7 +279,7 @@ async function partnerOnboarding(r: Report, p: Onboarding) {
   const foot = `<p style="color:#5B6577;font-size:12px;margin-top:28px">You are getting this because you were approved as a DSP Connect Authorized Sales Partner. ${esc(LEGAL_ENTITY)}, ${esc(BUSINESS_ADDRESS)}. <a href="${origin()}/unsubscribe?partner=${p.id}">Unsubscribe from these reminders</a>.</p>`;
   const help = `<p>Questions? Use the chat in your portal or reply to this email.</p>`;
   const btn = (href: string, label: string) => `<p><a href="${href}" style="display:inline-block;background:#1A14D4;color:#fff;padding:12px 18px;border-radius:6px;text-decoration:none;font-weight:600">${label}</a></p>`;
-  const tools = `<ul><li><b>Your sales kit:</b> emails to prospects with your links already in them, a first-call script and answers to common questions.</li><li><b>Your leave-behind:</b> a one-page sheet with your own QR code, to print or attach as a PDF.</li><li><b>Your links:</b> the demo and account links that credit clients to you.</li><li><b>Help:</b> the chat in your portal, where Fin can help you prepare for a client conversation.</li></ul>`;
+  const tools = `<ul><li><b>Your sales kit:</b> emails to prospects with your links already in them, a first-call script and answers to common questions. <a href="${portal}#kit">Open your sales kit</a></li><li><b>Your leave-behind:</b> a one-page sheet with your own QR code, to print or attach as a PDF.</li><li><b>Your links:</b> the demo and account links that credit clients to you.</li><li><b>Help:</b> the chat in your portal, where Fin can help you prepare for a client conversation.</li></ul>`;
 
   if (p.status === "invited") {
     const k = p.days_approved >= 6 && p.days_approved <= 8 ? "partner_sign_2" : p.days_approved >= 2 && p.days_approved <= 4 ? "partner_sign_1" : "";
@@ -305,7 +305,7 @@ async function partnerOnboarding(r: Report, p: Onboarding) {
     await deliver(r, p.id, "partner", "partner_first_client", p.email, "Ready for your first client?",
       hello + `<p>You are fully set up, and everything you need to bring in your first client is in your portal:</p>` + tools +
       `<p>A simple way to start: pick three business owners you already know, send them the first email from your kit, and walk the first one who replies through the demo.</p>` +
-      btn(portal, "Open your sales kit") + help + foot);
+      btn(`${portal}#kit`, "Open your sales kit") + help + foot);
   }
 }
 
