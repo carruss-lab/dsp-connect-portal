@@ -9,7 +9,6 @@ import { ADS_SERVICE, JsonLd, pageGraph } from "@/lib/seo";
 import { VIDEOS, videoNode } from "@/lib/videos";
 import { INDUSTRY_PAGES } from "@/lib/industries";
 import { HOME_FAQ as FAQ } from "@/lib/faq";
-import { MEETING_URL } from "@/lib/site";
 
 const STEPS = [
   ["See the demo", "Open a sample account set up for a business like yours, before you spend anything."],
@@ -25,7 +24,7 @@ const SETUP = [
 ];
 const TRUST: [string, string, string, string][] = [
   ["The account itself", "Open the demo and click through every screen you will use, before you give us a card.", "/#market", "Open the demo"],
-  ["A person", "Book a 20-minute call and ask us anything about your market, your ads or the setup.", MEETING_URL, "Book a call"],
+  ["Answers, any hour", "Ask Fin in the chat about your market, your ads, the setup or the terms, and get a straight answer in seconds.", "/#market", "See it in the demo"],
   ["Your way out", "No long-term contract. Cancel any time and your unspent ad budget is refunded.", "/refunds", "Read the refund policy"],
   ["The terms", "Short, plain client terms. Payment is taken by Stripe; we never see your card details.", "/terms", "Read the client terms"],
 ];
@@ -182,7 +181,7 @@ export default function Home() {
             </div>
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
               <Link className="btn btn-white" href="/open-account">Open your account</Link>
-              <a className="btn btn-line" style={{ borderColor: "#fff", color: "#fff" }} href={MEETING_URL} target="_blank" rel="noopener">Book a call first</a>
+              <Link className="btn btn-line" style={{ borderColor: "#fff", color: "#fff" }} href="/#market">See the demo first</Link>
             </div>
           </div>
         </section>

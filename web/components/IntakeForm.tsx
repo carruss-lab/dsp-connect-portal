@@ -24,7 +24,7 @@ export default function IntakeForm({ lead, saved, defaults }: { lead: string; sa
   }
 
   if (state === "done")
-    return <p className="note note-ok" role="status">Thank you. We have your campaign brief. Your next step is the kickoff call, where we walk through it with you and agree the plan. You can come back to this page at any time to see progress or update your answers.</p>;
+    return <p className="note note-ok" role="status">Thank you. We have your campaign brief. Next, we review it and email you your campaign plan to approve. You can come back to this page at any time to see progress or update your answers.</p>;
 
   const input = (f: Field) => {
     const id = `b-${f.key}`, v = start[f.key] || "";

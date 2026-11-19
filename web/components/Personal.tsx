@@ -1,7 +1,6 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { MEETING_URL } from "@/lib/site";
 import { firstName, forgetProfile, onProfile, readProfile, saveProfile, type Profile } from "@/lib/profile";
 
 /** Reads the visitor's remembered details after the page loads, and stays current when they change. */
@@ -24,7 +23,7 @@ export function WelcomeBar() {
   if (p.stage === "paid" && p.setup) next = ["Go to your setup page", `/welcome?id=${p.setup}`];
   else if (p.stage === "signup") next = ["Finish opening your account", "/open-account"];
   else if (p.stage === "demo") next = [p.industry && p.market ? `Your ${p.industry.toLowerCase()} demo for ${p.market}` : "Back to your demo", demoLink(p)];
-  else if (p.stage === "agency") next = ["Book a call about the agency program", MEETING_URL];
+  else if (p.stage === "agency") next = ["Open the agency demo", "/demo?view=agency"];
   return (
     <div style={{ background: "#EEF0FF", borderBottom: "1px solid #DADDF7", fontSize: 14 }}>
       <div className="wrap" style={{ display: "flex", flexWrap: "wrap", gap: "6px 16px", alignItems: "center", padding: "8px 32px" }}>

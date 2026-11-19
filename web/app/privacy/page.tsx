@@ -8,7 +8,7 @@ export const metadata: Metadata = pageMeta({ title: "Privacy policy", descriptio
 const PARTS: Part[] = [
   ["Who we are", [`DSP Connect is a service of ${LEGAL_ENTITY}. This policy covers this website and the DSP Connect service.`]],
   ["What we collect", [
-    "What you give us: your name, business name, email, phone, website, industry, area, budget and goals, when you open the demo, open an account, ask about an agency agreement, book a call or write to us.",
+    "What you give us: your name, business name, email, phone, website, industry, area, budget and goals, when you open the demo, open an account, ask about an agency agreement or write to us.",
     "Payment details: your payment is taken by Stripe. We receive confirmation and the amount. We never see or store your full card or bank details.",
     "How the site is used: pages visited, the page or campaign that brought you here, and general device and browser information. We use this in combined form to see which pages are useful. We do not use advertising cookies on this website.",
     "Details you type into our forms (such as your name, business, industry and area) are also remembered in your own browser, so the site can greet you, fill in forms for you and take you back to your demo or setup page. They stay on your device; use \"Not you?\" at the top of any page to clear them.",

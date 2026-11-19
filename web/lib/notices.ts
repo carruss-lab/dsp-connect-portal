@@ -1,7 +1,7 @@
 import { emailOn, esc, send, wrap } from "./email";
 import { ensureAttributes, syncPerson } from "./intercom";
 import { secretRpc } from "./server";
-import { BUSINESS_ADDRESS, LEGAL_ENTITY, LOGIN_URL, MEETING_URL, MIN_BUDGET, SETUP_DAYS, SHARE_PCT, siteOrigin } from "./site";
+import { BUSINESS_ADDRESS, LEGAL_ENTITY, LOGIN_URL, MIN_BUDGET, SETUP_DAYS, SHARE_PCT, siteOrigin } from "./site";
 
 // The proactive side: emails to clients at each setup step, a weekly account summary,
 // low-budget warnings, and a daily list for the team. Every message is recorded in the
@@ -86,7 +86,7 @@ async function clientNotices(r: Report, l: FeedLead, today: string) {
     await deliver(r, l.id, "lead", "need_ads", l.email, "Your campaign brief is the next step",
       hi(l) + `<p>To keep your launch on time, we need your campaign brief. It covers your goals, your customers, the campaigns you want, your ads and your website, so we build the right thing first time.</p>` +
       `<p><a href="${origin()}/welcome?id=${l.id}#brief">Fill in your campaign brief</a>. It takes about ten minutes.</p>` +
-      `<p>Prefer to talk it through? <a href="${MEETING_URL}">Book a 20-minute call</a> and we will fill it in together. ${due}</p>`);
+      `<p>Stuck on a question? Reply to this email or ask in the chat on your setup page. ${due}</p>`);
   }
   const b = budget(l);
   if (l.live_at && b.low) {
@@ -202,7 +202,7 @@ async function finishSignup(r: Report, u: Unpaid) {
   await deliver(r, u.id, "lead", "finish_signup", u.email, "Your DSP Connect account is one step from starting",
     `<p>Hello${u.name ? " " + esc(u.name.split(" ")[0]) : ""},</p><p>You started opening a DSP Connect account${u.business ? ` for ${esc(u.business)}` : ""} and stopped before payment. Nothing has been charged.</p>` +
     `<p>If you would like to carry on, your ${SETUP_DAYS}-day setup starts the day your ad budget is paid: <a href="${origin()}/open-account">finish opening your account</a>.</p>` +
-    `<p>If you have questions first, <a href="${MEETING_URL}">book a 20-minute call</a> or reply to this email. Our <a href="${origin()}/refunds">refund policy</a> explains what happens if you change your mind later.</p>` +
+    `<p>If you have questions first, ask Fin in the chat on our website or reply to this email. Our <a href="${origin()}/refunds">refund policy</a> explains what happens if you change your mind later.</p>` +
     `<p style="color:#5B6577;font-size:12px;margin-top:28px">This is the only reminder we will send. ${esc(LEGAL_ENTITY)}, ${esc(BUSINESS_ADDRESS)}. <a href="${origin()}/unsubscribe?id=${u.id}">Unsubscribe</a>.</p>`);
 }
 
@@ -228,13 +228,13 @@ async function demoFollowUps(r: Report, d: Demo) {
     await deliver(r, d.id, "lead", "demo_2", d.email, `What happens in the ${SETUP_DAYS} days after you start`,
       hello + `<p>A few people ask what happens between opening an account and seeing their ads run. Here it is, in order:</p>` +
       `<ol><li>Your account is created and your ad budget is loaded.</li><li>Tracking is placed on your website, so visits and leads are counted.</li><li>Your ads are checked and approved.</li><li>Your audience is built, so the ads reach the right people${where}.</li></ol>` +
-      `<p>We do all four for you, and you get an email as each one is finished. Your part is one short campaign brief and a 20-minute kickoff call.</p>` +
+      `<p>We do all four for you, and you get an email as each one is finished. Your part is one short campaign brief, and approving the campaign plan we send you.</p>` +
       `<p>Before you pay you can read our <a href="${origin()}/terms">terms</a> and <a href="${origin()}/refunds">refund policy</a>. You can cancel at any time.</p>` +
       `<p><a href="${origin()}/open-account">Open your account</a> when you are ready, or reply with a question.</p>` + foot(false));
   } else {
-    await deliver(r, d.id, "lead", "demo_3", d.email, "Would a 20-minute call help?",
-      hello + `<p>You looked at the DSP Connect demo a little while ago. If it left you with questions about whether this fits your business, the quickest way to answer them is a short call.</p>` +
-      `<p><a href="${MEETING_URL}">Choose a time for a 20-minute call</a>. No preparation needed, and no obligation.</p>` +
+    await deliver(r, d.id, "lead", "demo_3", d.email, "Any questions about your demo?",
+      hello + `<p>You looked at the DSP Connect demo a little while ago. If it left you with questions about whether this fits your business, ask them in the chat on our website, any hour, or reply to this email.</p>` +
+      `<p>The demo shows the same screens you get: the campaign builder, the SSP endpoints your ads can run on, and reporting by app, site and device.</p>` +
       `<p>If you would rather look again on your own, <a href="${origin()}/demo">the demo is here</a>${d.industry ? ` and there are examples for your industry <a href="${origin()}/industries">here</a>` : ""}.</p>` + foot(true));
   }
 }
@@ -253,17 +253,17 @@ async function agencyFollowUps(r: Report, a: Agency) {
   if (step === 1) {
     await deliver(r, a.id, "lead", "agency_1", a.email, "Your DSP Connect agency enquiry",
       hello + `<p>Thanks for asking about an agency agreement${a.business ? ` for ${esc(a.business)}` : ""}. In short: you run your clients' advertising on streaming TV, websites and apps on DSP Connect, your clients stay yours, and you earn ${SHARE_PCT}% of the ad spend you manage.</p>` +
-      `<p>The quickest way to see if it fits is a 20-minute call: <a href="${MEETING_URL}">choose a time</a>. Or look around first in the <a href="${origin()}/demo?view=agency">agency demo</a>.</p>` +
+      `<p>The quickest way to see if it fits is the <a href="${origin()}/demo?view=agency">agency demo</a>: your clients, managed spend and your share, on the same screens your clients use.</p>` +
       `<p>Questions? Just reply to this email.</p>` + foot(false));
   } else if (step === 2) {
     await deliver(r, a.id, "lead", "agency_2", a.email, "How agencies run clients on DSP Connect",
       hello + `<p>Here is how it works day to day:</p>` +
       `<ol><li><b>Your clients stay yours.</b> We never contact, bill or sell to them.</li><li><b>One account for all of them.</b> Each client gets their own login, with the access you choose.</li><li><b>We set each client up.</b> Account, tracking, ad review and audience, live within ${SETUP_DAYS} days.</li><li><b>You earn ${SHARE_PCT}% of the ad spend you manage,</b> on top of the fees you already charge.</li></ol>` +
-      `<p><a href="${MEETING_URL}">Book a 20-minute call</a> to go through the agreement, or reply with your questions.</p>` + foot(false));
+      `<p>Questions about the agreement? Reply to this email or ask in the chat on our website.</p>` + foot(false));
   } else {
     await deliver(r, a.id, "lead", "agency_3", a.email, "Still interested in an agency agreement?",
       hello + `<p>A last note on your agency enquiry. If the timing is not right, no problem: <a href="${origin()}/agencies">the details stay here</a> for when it is.</p>` +
-      `<p>If you would like to talk it through, <a href="${MEETING_URL}">choose a time for a call</a>.</p>` + foot(true));
+      `<p>Any questions, reply to this email.</p>` + foot(true));
   }
 }
 

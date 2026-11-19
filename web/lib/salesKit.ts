@@ -87,7 +87,7 @@ export const CALL_SCRIPT: { step: string; say: string[] }[] = [
     "There is no long-term contract.",
   ] },
   { step: "One next step (2 minutes)", say: [
-    "Agree one next step before you hang up: open the account now, a second look at the demo, or a call with DSP Connect.",
+    "Agree one next step before you hang up: open the account now, or a second look at the demo with their questions answered by Fin in the chat.",
     "Send the matching email from your kit the same day.",
   ] },
 ];

@@ -5,7 +5,7 @@ import { messengerJwt } from "@/lib/chatId";
 import { Remember } from "@/components/Personal";
 import IntakeForm from "@/components/IntakeForm";
 import { isUuid, secretRpc } from "@/lib/server";
-import { HELP_URL, MEETING_URL, SETUP_DAYS, SUPPORT_EMAIL } from "@/lib/site";
+import { HELP_URL, SETUP_DAYS, SUPPORT_EMAIL } from "@/lib/site";
 
 export const metadata: Metadata = { title: "Your setup", robots: { index: false, follow: false } };
 
@@ -22,7 +22,7 @@ const STEPS: [keyof Status, string, string][] = [
 ];
 const TODO = (s: Status): [boolean, string, React.ReactNode][] => [
   [!!s.intake_at, "Fill in your campaign brief", <>Your goals, customers, campaigns, ads and website. <a href="#brief">Go to the brief</a>. Please send it within 5 days of paying.</>],
-  [false, "Book your kickoff call", <>Twenty minutes to walk through your brief and agree the plan. <a href={MEETING_URL} target="_blank" rel="noopener">Choose a time</a>.</>],
+  [false, "Approve your campaign plan", "Once your brief is in, we email you your campaign plan. Reply to approve it, or ask for changes."],
   [false, "Watch for your login emails", "Once your account is approved, your login details arrive in separate emails. Keep them safe."],
 ];
 const day = (iso: string) => new Date(iso.slice(0, 10) + "T12:00:00Z").toLocaleDateString("en-US", { month: "long", day: "numeric", timeZone: "UTC" });
@@ -101,7 +101,7 @@ export default async function Welcome({ searchParams }: PageProps<"/welcome">) {
         <section className="grid cols-3">
           <div className="stack g8"><h2 className="h3">Emails to expect</h2><p className="p" style={{ fontSize: 14 }}>One from us each time a step is finished and when you go live. Your login details arrive in separate emails once your account is approved.</p></div>
           <div className="stack g8"><h2 className="h3">Questions</h2><p className="p" style={{ fontSize: 14 }}>Use the chat on this page, read <a href={HELP_URL}>the help center</a>, or email <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.</p></div>
-          <div className="stack g8"><h2 className="h3">Talk to a person</h2><p className="p" style={{ fontSize: 14 }}><a href={MEETING_URL} target="_blank" rel="noopener">Book a 20-minute call</a> and we will walk through your setup with you.</p></div>
+          <div className="stack g8"><h2 className="h3">Anything else</h2><p className="p" style={{ fontSize: 14 }}>Ask Fin in the chat at any hour. If something needs our team, Fin passes it on and we reply by email.</p></div>
         </section>
       </main>
       <Footer />

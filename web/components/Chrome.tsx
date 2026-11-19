@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { WelcomeBar } from "./Personal";
-import { HELP_URL, LEGAL_ENTITY, LOGIN_URL, MEETING_URL, SUPPORT_EMAIL } from "@/lib/site";
+import { HELP_URL, LEGAL_ENTITY, LOGIN_URL, SUPPORT_EMAIL } from "@/lib/site";
 
 export function Header() {
   return (
@@ -18,7 +18,6 @@ export function Header() {
           <Link href="/industries">Industries</Link>
           <Link href="/agencies">For agencies</Link>
           <Link href="/compare">How we compare</Link>
-          <a href={MEETING_URL} target="_blank" rel="noopener">Book a call</a>
         </nav>
         {LOGIN_URL && <a className="navlink" href={LOGIN_URL} style={{ color: "var(--ink)" }}>Log in</a>}
         <Link className="btn btn-blue" href="/#market">See the demo</Link>
@@ -44,7 +43,6 @@ export function Footer() {
           <Link href="/agencies">Agencies</Link>
           <Link href="/partners">Sales Partners</Link>
           <Link href="/compare">Comparisons</Link>
-          <a href={MEETING_URL} target="_blank" rel="noopener">Book a call</a>
           <a href={HELP_URL}>Help center</a>
           <Link href="/terms">Terms</Link>
           <Link href="/refunds">Refunds</Link>
@@ -55,18 +53,18 @@ export function Footer() {
   );
 }
 
-/** A plain band that offers the two next steps: see the demo, or talk to a person. */
+/** A plain band that offers the two next steps: see the demo, then open an account. */
 export function TalkBand({ industry }: { industry?: string }) {
   return (
     <section className="section dark" style={{ padding: "64px 0" }}>
       <div className="wrap" style={{ display: "flex", flexWrap: "wrap", gap: 32, alignItems: "center", justifyContent: "space-between" }}>
         <div className="stack g12" style={{ flex: "1 1 460px", minWidth: 0 }}>
-          <h2 className="h2">See it first, or talk to a person.</h2>
-          <p className="p" style={{ fontSize: 16 }}>Open the demo account in under a minute, or book a 20-minute call and we will walk you through it.</p>
+          <h2 className="h2">See it first. Start when you are ready.</h2>
+          <p className="p" style={{ fontSize: 16 }}>Open the demo account in under a minute and click through every screen. Questions? Ask Fin in the chat, any hour.</p>
         </div>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
           <Link className="btn btn-white" href={industry ? `/?industry=${encodeURIComponent(industry)}#market` : "/#market"}>See the demo</Link>
-          <a className="btn btn-line" style={{ borderColor: "#fff", color: "#fff" }} href={MEETING_URL} target="_blank" rel="noopener">Book a call</a>
+          <Link className="btn btn-line" style={{ borderColor: "#fff", color: "#fff" }} href="/open-account">Open your account</Link>
         </div>
       </div>
     </section>

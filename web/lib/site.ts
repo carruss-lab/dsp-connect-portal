@@ -13,15 +13,13 @@ export const INDUSTRIES = [
 // Where clients log in to the platform. Empty until that is set up; the "Log in" links stay hidden until then.
 export const LOGIN_URL = process.env.NEXT_PUBLIC_CLIENT_LOGIN_URL || "";
 
-// Where a visitor books a call with a person.
-export const MEETING_URL = process.env.NEXT_PUBLIC_MEETING_URL || "https://calendly.com/carmichaelruss/dsp-connect-onboarding";
 export const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "hello@mail.getdspconnect.com";
 // The company's mailing address. Shown in the footer, legal pages and reminder emails once set.
 /** Postal address for email footers only. It is not shown on the site. */
 export const BUSINESS_ADDRESS = process.env.NEXT_PUBLIC_BUSINESS_ADDRESS || "";
 // When the public pages' content last changed. Update this when page content changes, so search engines
 // and AI crawlers recrawl. Used by the sitemap, every page's structured data and llms.txt.
-export const SITE_UPDATED = "2026-11-18";
+export const SITE_UPDATED = "2026-11-19";
 // The date the legal pages were last changed.
 export const LEGAL_UPDATED = "November 16, 2026";
 // The public help center.

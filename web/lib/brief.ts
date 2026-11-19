@@ -33,7 +33,7 @@ export const BRIEF: Section[] = [
     ],
   },
   {
-    id: "campaigns", title: "The campaigns you want", why: "Most clients start with one or two. Tick what fits; we will advise on the rest in your kickoff call.",
+    id: "campaigns", title: "The campaigns you want", why: "Most clients start with one or two. Tick what fits; we will advise on the rest in your campaign plan.",
     fields: [
       { key: "campaign_types", label: "Which of these do you want to run?", type: "checks",
         options: ["Reach new people in my area", "Bring back people who visited my website", "Promote a specific offer or event", "Reach people near specific places", "Build name recognition", "Not sure, please advise"] },
