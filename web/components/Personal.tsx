@@ -27,7 +27,7 @@ export function WelcomeBar() {
   return (
     <div style={{ background: "#EEF0FF", borderBottom: "1px solid #DADDF7", fontSize: 14 }}>
       <div className="wrap" style={{ display: "flex", flexWrap: "wrap", gap: "6px 16px", alignItems: "center", padding: "8px 32px" }}>
-        <span>Welcome back.{p.stage !== "agency" && (p.business || p.industry) ? ` Ads for ${p.business || `your ${p.industry!.toLowerCase()} business`}${p.market ? ` in ${p.market}` : ""}.` : ""}</span>
+        <span>Welcome back.{p.stage !== "agency" && p.industry ? ` Ads for ${`your ${p.industry.toLowerCase()} business`}${p.market ? ` in ${p.market}` : ""}.` : ""}</span>
         {next && <Link href={next[1]} style={{ fontWeight: 600 }}>{next[0]} →</Link>}
         {p.stage === "demo" && <Link href="/open-account" style={{ fontWeight: 600 }}>Open your account →</Link>}
         <button onClick={forgetProfile} style={{ marginLeft: "auto", background: "none", border: 0, color: "#5B6577", cursor: "pointer", fontSize: 13, textDecoration: "underline" }}>Not you?</button>
@@ -40,7 +40,7 @@ export function WelcomeBar() {
 export function Hello({ withName, fallback }: { withName: string; fallback: string }) {
   const p = useProfile();
   const name = ""; // names are never shown on the public site
-  const biz = p?.business || "";
+  const biz = ""; // business names are never shown on the public site
   if (!p || (!name && withName.includes("{name}")) || (!biz && withName.includes("{business}"))) return <>{fallback}</>;
   return <>{withName.replace("{name}", name).replace("{business}", biz).replace("{market}", p.market || "your area")}</>;
 }
@@ -51,7 +51,7 @@ export function IndustryNote({ industry }: { industry: string }) {
   if (!p || p.industry !== industry) return null;
   return (
     <p className="note note-ok" style={{ maxWidth: 720 }}>
-      This is the page for {p.business || "businesses like yours"}{p.market ? ` in ${p.market}` : ""}.{" "}
+      This is the page for businesses like yours{p.market ? ` in ${p.market}` : ""}.{" "}
       <Link href={demoLink(p)} style={{ fontWeight: 600 }}>Open your demo set up for it →</Link>
     </p>
   );

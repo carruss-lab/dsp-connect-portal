@@ -3,7 +3,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import LeadForm from "./LeadForm";
-import { useProfile } from "./Personal";
 import { SHARE_PCT } from "@/lib/site";
 import Builder from "./demo/Builder";
 import Chart from "./demo/Chart";
@@ -88,7 +87,6 @@ function Table({ head, rows, foot, num = [] }: { head: string[]; rows: React.Rea
 const Status = ({ on, children }: { on: boolean; children?: React.ReactNode }) => <span><span className={`dm-dot${on ? "" : " off"}`} />{children ?? (on ? "Active" : "Inactive")}</span>;
 
 export default function Demo({ industry, market, agency = false }: { industry: string; market: string; agency?: boolean }) {
-  const who = useProfile();
   const [allowed, setAllowed] = useState<boolean | null>(null);
   const [sec, setSec] = useState<Sec>(agency ? "Clients" : "Explore");
   const [open, setOpen] = useState<Record<string, boolean>>({});
@@ -233,7 +231,7 @@ export default function Demo({ industry, market, agency = false }: { industry: s
             <Link className="dm-cta" href={agency ? "/agencies" : "/open-account"}>{agency ? "Ask about an agreement" : "Open your account"}</Link>
           </div>
         </header>
-        <div className="dm-note">{agency ? "Demo agency account with sample clients and sample data. Not real results." : `Demo account with sample data for ${who?.business ? who.business : `a ${industry.toLowerCase()} business`} in ${market}. Not real results.`}</div>
+        <div className="dm-note">{agency ? "Demo agency account with sample clients and sample data. Not real results." : `Demo account with sample data for a ${industry.toLowerCase()} business in ${market}. Not real results.`}</div>
 
         <div className="dm-body">
           {tour !== null && !agency && sec !== "Create new campaign" && (
