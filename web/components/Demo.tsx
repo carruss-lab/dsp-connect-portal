@@ -125,7 +125,8 @@ export default function Demo({ industry, market, agency = false }: { industry: s
   const range = a <= b ? `${dmy(acc.dates[a])} - ${dmy(acc.dates[b])}` : `${dmy(new Date())} - ${dmy(new Date())}`;
   const sum = a <= b ? acc.totals(a, b) : null;
   const prevSum = a <= b && a - (b - a + 1) >= 0 ? acc.totals(a - (b - a + 1), a - 1) : null;
-  const name = agency ? "Demo Agency" : who?.name || "Demo User";
+  // Never show a visitor's own name in the demo: it is always the sample user.
+  const name = agency ? "Demo Agency" : "Demo User";
 
   if (allowed === null) return null;
   if (!allowed) {
