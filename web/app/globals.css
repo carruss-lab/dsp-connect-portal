@@ -83,3 +83,32 @@ td.us{font-weight:600}td.them{color:var(--body)}
 /* Shared with the partner pages and back office (the demo has its own styles in components/demo/demo.css) */
 .dm-link{background:none;border:0;padding:0;font:inherit;font-weight:600;text-decoration:underline;cursor:pointer;color:#000;min-height:24px}
 .dm-code{margin-top:14px;background:#F1F2F6;border-radius:4px;padding:12px;font-family:var(--font-mono),monospace;font-size:12px;overflow-wrap:anywhere}
+/* Video library (/videos) */
+.vl-toc{display:flex;flex-wrap:wrap;gap:8px}
+.vl-toc a{border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-size:14px;font-weight:500;color:var(--ink);text-decoration:none;background:#fff}
+.vl-toc a:hover{border-color:var(--ink)}
+.vl-toc a span{color:var(--muted);font-family:var(--font-mono),monospace;font-size:12px;margin-left:6px}
+.vl-section{scroll-margin-top:84px}
+.vl-list{display:flex;flex-direction:column;gap:28px}
+.vl-card{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:28px;border:1px solid var(--line);border-radius:12px;padding:20px;background:#fff;scroll-margin-top:84px}
+.vl-card:target{border-color:var(--blue);box-shadow:0 0 0 3px rgba(10,79,214,.12)}
+@media (max-width:860px){.vl-card{grid-template-columns:1fr;gap:18px;padding:14px}}
+.vl-player{position:relative;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:var(--ink);align-self:start}
+.vl-player iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.vl-body{display:flex;flex-direction:column;gap:14px;min-width:0}
+.vl-meta{display:flex;flex-wrap:wrap;align-items:center;gap:10px;font-family:var(--font-mono),monospace;font-size:12px;color:var(--muted)}
+.vl-n{display:inline-grid;place-items:center;min-width:26px;height:26px;border-radius:13px;background:var(--ink);color:#fff;font-size:12px;padding:0 6px}
+.vl-badge{background:#EEF2FF;color:#1A14D4;border-radius:4px;padding:3px 8px;font-family:var(--font-sans),sans-serif;font-weight:600}
+.vl-title{font-size:20px;font-weight:700;letter-spacing:-.01em;line-height:1.25}
+.vl-sum{font-size:15px;color:var(--body);line-height:1.6}
+.vl-label{font-family:var(--font-mono),monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.vl-points{margin:0;padding-left:18px;font-size:14px;color:var(--body);line-height:1.55;display:flex;flex-direction:column;gap:4px}
+.vl-chapters{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.vl-chapters button{background:none;border:0;padding:4px 0;font:inherit;font-size:14px;color:var(--ink);cursor:pointer;text-align:left}
+.vl-chapters button:hover{color:var(--blue)}
+.vl-time{font-family:var(--font-mono),monospace;font-size:12px;color:var(--blue);display:inline-block;min-width:40px}
+.vl-transcript summary{cursor:pointer;font-size:14px;font-weight:600;color:var(--ink)}
+.vl-transcript p{margin-top:10px;font-size:14px;line-height:1.7;color:var(--body);background:var(--ground);border-radius:8px;padding:14px 16px}
+.vl-links{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:14px;font-weight:500}
+.vl-stat{display:flex;flex-wrap:wrap;gap:8px 28px;font-size:14px;color:var(--body)}
+.vl-stat b{color:var(--ink);font-size:22px;display:block;letter-spacing:-.02em}

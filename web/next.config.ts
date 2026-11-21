@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
       // Old sub-addresses now forward to their replacements, whatever page was asked for.
       { source: "/:path*", has: [{ type: "host", value: "portal.getdspconnect.com" }], destination: "https://getdspconnect.com/open-account", permanent: false },
       { source: "/:path*", has: [{ type: "host", value: "helpdesk.getdspconnect.com" }], destination: "https://help.getdspconnect.com", permanent: true },
-      { source: "/:path*", has: [{ type: "host", value: "academy.getdspconnect.com" }], destination: "https://getdspconnect.com", permanent: true },
+      { source: "/:path*", has: [{ type: "host", value: "academy.getdspconnect.com" }], destination: "https://getdspconnect.com/videos", permanent: true },
       { source: "/:path*", has: [{ type: "host", value: "join.getdspconnect.com" }], destination: "https://getdspconnect.com/partners", permanent: false },
       // Short address for recruiting: business cards, emails, ads.
       { source: "/:path*", has: [{ type: "host", value: "partners.getdspconnect.com" }], destination: "https://getdspconnect.com/partners", permanent: false },

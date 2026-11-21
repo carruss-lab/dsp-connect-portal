@@ -7,7 +7,12 @@ import { HOME_FAQ, PARTNER_FAQ } from "./faq";
 import { INDUSTRY_PAGES } from "./industries";
 import { PROFILES, SITE_URL, SLOGAN } from "./seo";
 import { EXCHANGES, HELP_URL, LEGAL_ENTITY, MIN_BUDGET, SETUP_DAYS, SHARE_PCT, SITE_UPDATED, SUPPORT_EMAIL } from "./site";
-import { VIDEOS } from "./videos";
+import LIBRARY from "./video-library.json";
+import { VIDEO_FAQ } from "./videoFaq";
+import { SECTIONS, type LibraryVideo } from "./videoLibrary";
+
+const LIB = LIBRARY as LibraryVideo[];
+const vlink = (v: LibraryVideo) => `${SITE_URL}/videos#v-${v.key}`;
 
 const qa = (items: readonly (readonly string[])[]) => items.map(([q, a]) => `### ${q}\n${a}`).join("\n\n");
 const link = (name: string, path: string, note: string) => `- [${name}](${SITE_URL}${path}): ${note}`;
@@ -30,6 +35,7 @@ ${link("For agencies", "/agencies", `run client campaigns and earn ${SHARE_PCT}%
 ${link("Sales Partners", "/partners", `commission-only partner program for ISOs and independent sales reps: ${SHARE_PCT}% of client ad spend, paid daily`)}
 ${link("Industries", "/industries", "how advertising is set up for each industry, and the rules that apply")}
 ${link("How we compare", "/compare", "DSP Connect side by side with other advertising platforms")}
+${link("Videos", "/videos", `${LIB.length} free video lessons on programmatic advertising, with transcripts and chapters; new uploads appear automatically`)}
 
 ## Industries
 ${INDUSTRY_PAGES.map((i) => link(`Programmatic advertising for ${i.name.toLowerCase()}`, `/industries/${i.slug}`, i.intro)).join("\n")}
@@ -37,8 +43,8 @@ ${INDUSTRY_PAGES.map((i) => link(`Programmatic advertising for ${i.name.toLowerC
 ## Comparisons (competitor details from public sources, checked ${CHECKED})
 ${COMPARISONS.map((c) => link(`DSP Connect vs ${c.name}`, `/${c.slug}`, c.intro)).join("\n")}
 
-## Videos
-${Object.values(VIDEOS).map((v) => `- [${v.title}](https://www.youtube.com/watch?v=${v.id}): ${v.description}`).join("\n")}
+## Videos (${SITE_URL}/videos, YouTube: https://www.youtube.com/@getdspconnect)
+${SECTIONS.filter((s) => LIB.some((v) => v.section === s.id)).map((s) => `### ${s.title}\n${LIB.filter((v) => v.section === s.id).map((v) => `- [${v.title}](${vlink(v)}): ${v.summary}`).join("\n")}`).join("\n\n")}
 
 ## Contact and profiles
 - Email: ${SUPPORT_EMAIL}
@@ -96,6 +102,16 @@ ${industries}
 ## Comparisons in full
 ${c(CHECKED)}
 ${comparisons}
+
+## Questions the videos answer
+${VIDEO_FAQ.map(([q, a, key]) => { const v = LIB.find((x) => x.key === key); return `### ${q}\n${a}${v ? ` (Video: [${v.title}](${vlink(v)}))` : ""}`; }).join("\n\n")}
+
+## Video transcripts
+${LIB.map((v) => `### ${v.title}
+${vlink(v)} | YouTube: https://www.youtube.com/watch?v=${v.id} | Published ${v.published.slice(0, 10)}${v.seconds ? ` | ${Math.floor(v.seconds / 60)}:${String(v.seconds % 60).padStart(2, "0")}` : ""}
+${v.points.length ? `Key points: ${v.points.join("; ")}.\n` : ""}${v.chapters.length ? `Chapters: ${v.chapters.map(([t, n]) => `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")} ${n}`).join("; ")}.\n` : ""}Transcript: ${v.transcript || ""}`).join("\n\n")}
+
+Advertising can't guarantee results. Demo screens shown in the videos use sample data.
 `;
 }
 
