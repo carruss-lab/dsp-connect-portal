@@ -49,7 +49,10 @@ const ATTRIBUTES: [string, "string" | "float" | "date"][] = [
   // What Sales needs to see about a lead. Fin fills the same fields when it qualifies someone in chat.
   ["business_name", "string"], ["business_website", "string"], ["monthly_ad_budget", "float"], ["lead_goal", "string"], ["lead_stage", "string"], ["sales_qualified", "string"], ["agency_client_count", "float"], ["agency_managed_spend", "string"],
   // Basics every contact carries, used by Fin, audiences and the on-site banners.
-  ["customer_role", "string"], ["account_status", "string"], ["industry", "string"], ["market", "string"], ["setup_due", "date"],
+  ["customer_role", "string"],
+  // Sales Partners: their onboarding step (approved_needs_to_sign, signed_needs_payouts, payouts_ready_needs_training,
+  // ready_no_clients_yet, active) and how many clients are credited to them.
+  ["partner_stage", "string"], ["partner_clients", "float"], ["account_status", "string"], ["industry", "string"], ["market", "string"], ["setup_due", "date"],
 ];
 let ensured = false;
 export async function ensureAttributes() {
