@@ -13,7 +13,7 @@ export const FACTS: [string, string][] = [
   ["Contract", "No long-term contract. Cancel any time; unspent ad budget is refunded, less the payment processing fee."],
   ["Reporting", "Your own login with views, clicks and spend, plus tracking on your website that counts leads and sales"],
   ["Agency program", `Agencies earn ${SHARE_PCT}% of the ad spend they manage and keep their client relationships`],
-  ["Sales partner program", `Free to join; partners earn ${SHARE_PCT}% of their clients' qualified ad spend, paid daily`],
+  ["Sales partner program", `Free to join; partners earn ${SHARE_PCT}% of their clients' qualified ad spend. Paid daily through Stripe in the United States, and through PartnerStack in other countries`],
   ["Who it is for", "Business owners, advertising agencies and independent sales partners in English-speaking countries"],
   ["Countries served", COUNTRIES.join(", ")],
 ];
