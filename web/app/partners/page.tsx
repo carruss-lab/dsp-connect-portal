@@ -16,13 +16,13 @@ export const metadata: Metadata = pageMeta({
 const STEPS = [
   ["Apply", "Tell us who you sell to today. It takes three minutes."],
   ["Get approved", "We review every application and reply by email, usually within two business days."],
-  ["Sign and set up", "Sign your Sales Partner Agreement online, as yourself or for your company, and set up payouts: daily with Stripe in the United States, or with PartnerStack in other countries."],
+  ["Sign and set up", "Sign your Sales Partner Agreement online, as yourself or for your company, and set up daily payouts with Stripe."],
   ["Train", "A short course on the product, the demo, the conversation and the rules."],
   ["Sell and earn", `Clients open their account through your link. You earn ${SHARE_PCT}% of what they spend, for as long as they spend.`],
 ];
 const WHY = [
   ["Residuals for life", "You keep earning on every client you bring for as long as they keep spending, even if you stop selling. No cap, no end date."],
-  ["Paid daily", "In the United States, each day's commission is paid to your bank through Stripe after a 7-day hold. Partners in other countries are paid through PartnerStack."],
+  ["Paid daily", "Each day's commission is paid to your bank through Stripe after a 7-day hold. No waiting for month end."],
   ["Nothing to bill or collect", "Clients pay DSP Connect directly at our published prices. You never handle money, card details or invoices."],
   ["We do the setup", `Your clients are live within ${SETUP_DAYS} days of paying: account, tracking, ad review and audience, done for them.`],
 ];
@@ -75,7 +75,7 @@ export default function Partners() {
 
         <section className="section band"><div className="wrap stack g24" style={{ maxWidth: 860 }}>
           <h2 className="h2">How commission works.</h2>
-          <p className="p" style={{ fontSize: 16 }}>You earn <b>{SHARE_PCT}%</b> of the <b>qualified ad spend</b> of every client credited to you: ad budget the client has paid in full that has actually run as ads. Each day&apos;s commission is held for 7 days, then paid to your bank through Stripe. Partners outside the United States are paid through PartnerStack, to the payout method they set up in their PartnerStack account.</p>
+          <p className="p" style={{ fontSize: 16 }}>You earn <b>{SHARE_PCT}%</b> of the <b>qualified ad spend</b> of every client credited to you: ad budget the client has paid in full that has actually run as ads. Each day&apos;s commission is held for 7 days, then paid to your bank through Stripe.</p>
           <ul className="list"><li>Residuals continue for as long as the client keeps spending, including after your partnership ends, unless it is ended for cause.</li><li>Refunds, chargebacks and unpaid amounts are not qualified, and commission on them is reversed.</li><li>There is no salary and no guaranteed income. What you earn depends on the clients you bring and what they spend.</li></ul>
           <p className="small">Full terms are in the Sales Partner Agreement you review and sign after approval.</p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 32, alignItems: "baseline" }}>

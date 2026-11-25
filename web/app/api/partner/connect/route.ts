@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { stripe } from "@/lib/payments";
-import { paidByStripe, partnerCountry } from "@/lib/partnerCountry";
 import { isUuid, secretRpc } from "@/lib/server";
 import { LEGAL_ENTITY, siteOrigin } from "@/lib/site";
 
@@ -15,8 +14,6 @@ export async function POST(req: Request) {
   try {
     const [partner] = await secretRpc<Partner[]>("partner_by_token", { p_token: token });
     if (!partner || ["ended", "applied", "declined"].includes(partner.status)) return NextResponse.json({ error: "This invitation link is not valid." }, { status: 404 });
-    // Stripe payouts are for partners in the United States; everyone else is paid through PartnerStack.
-    if (!paidByStripe(await partnerCountry(token))) return NextResponse.json({ error: "Partners outside the United States are paid through PartnerStack, not Stripe. Your PartnerStack invitation comes by email." }, { status: 400 });
     let account = partner.stripe_account_id;
     if (!account) {
       // Partners only receive commission, so the account is set up to receive transfers and nothing else.

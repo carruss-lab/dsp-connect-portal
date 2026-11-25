@@ -12,14 +12,6 @@ export const COUNTRIES = [
   "Kenya", "Ghana", "Jamaica", "Trinidad and Tobago", "Singapore", "United States",
 ];
 export const COUNTRY_CODES = ["GB", "CA", "AU", "IE", "NZ", "ZA", "NG", "KE", "GH", "JM", "TT", "SG", "US"];
-// For the partner application: each country by name, A to Z, then any other country (ZZ).
-export const PARTNER_COUNTRIES: { code: string; name: string }[] = [
-  ...COUNTRY_CODES.map((code, i) => ({ code, name: COUNTRIES[i] })).sort((a, b) => a.name.localeCompare(b.name)),
-  { code: "ZZ", name: "Another country" },
-];
-// Sales partners in the United States are paid through Stripe; partners anywhere else through PartnerStack.
-// The PartnerStack sign-up link for partners outside the US. Set in Vercel: NEXT_PUBLIC_PARTNERSTACK_URL.
-export const PARTNERSTACK_URL = process.env.NEXT_PUBLIC_PARTNERSTACK_URL || "";
 export const INDUSTRIES = [
   "Healthcare", "Legal", "Financial Services", "Automotive", "Real Estate",
   "Home Services", "Franchise", "Hospitality", "Political", "Other",

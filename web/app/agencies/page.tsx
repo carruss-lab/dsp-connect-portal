@@ -13,7 +13,7 @@ export const metadata: Metadata = pageMeta({ title: "For agencies", description:
 const POINTS = [
   ["Your clients stay yours", "We never contact, bill or sell to your clients. You own the relationship."],
   ["All clients in one account", "Each client gets their own login, with the access you choose for them."],
-  [`${SHARE_PCT}% of the ad spend you manage`, "Paid on spend your clients actually run, on top of the fees you already charge."],
+  [`${SHARE_PCT}% of the ad spend you manage`, "Paid through PartnerStack on spend your clients actually run, on top of the fees you already charge."],
   [`Each client set up in ${SETUP_DAYS} days`, "We create the account, place tracking, review ads and build the audience."],
 ];
 const money = (s: number) => `$${((s * SHARE_PCT) / 100).toLocaleString("en-US")}`;
