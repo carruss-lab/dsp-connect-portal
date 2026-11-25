@@ -112,6 +112,9 @@ export async function POST(req: Request) {
         mode: "payment",
         client_reference_id: id,
         customer_email: email,
+        // A real Stripe customer (not a guest) with this email: PartnerStack's Stripe app matches
+        // customers by email, so the payment is credited to the partner who referred them.
+        customer_creation: "always",
         line_items: [{
           quantity: 1,
           price_data: {
