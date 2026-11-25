@@ -10,6 +10,9 @@ import "./globals.css";
 // Google Analytics runs on the live site only, so test visits do not count.
 const GA_ID = process.env.VERCEL_ENV === "production" ? "G-EW1FDG4CE8" : "";
 
+// PartnerStack: records which partner link a visitor came from, so their sign-up and payments are credited.
+const PARTNERSTACK = `(function(){var gs=document.createElement("script");gs.src="https://get.getdspconnect.com/pr/js";gs.type="text/javascript";gs.async=true;gs.onload=gs.onreadystatechange=function(){var rs=this.readyState;if(rs&&rs!=="complete"&&rs!=="loaded")return;try{growsumo._initialize("pk_R4Vzb2YOLhyQSCiQFbeUilKCs7ACDmwL",["join.getdspconnect.com","dspconnect.partnerlinks.io","get.getdspconnect.com"]);if(typeof growsumoInit==="function"){growsumoInit();}}catch(e){}};var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(gs,s);})();`;
+
 export const metadata: Metadata = {
   title: { default: "DSP Connect | Enterprise programmatic advertising, without the enterprise contract", template: "%s | DSP Connect" },
   description:
@@ -23,6 +26,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en">
+      <head>
+        <script id="partnerstack" dangerouslySetInnerHTML={{ __html: PARTNERSTACK }} />
+      </head>
       <body>
         {children}
         <Intercom />

@@ -58,6 +58,20 @@ export default function LeadForm({ kind, cta }: { kind: Kind; cta: string }) {
       const out = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(out.error || "Something went wrong. Please try again.");
       identify(String(data.email || ""), data.name ? String(data.name) : null);
+      // PartnerStack: a sign-up from a partner's link is credited to that partner. The customer key is the
+      // email, the same key the Stripe customer carries, so later payments are matched to this sign-up.
+      if (kind === "account") {
+        try {
+          const gs = (window as unknown as { growsumo?: { data: Record<string, string>; createSignup: (cb?: () => void) => void } }).growsumo;
+          const em = String(data.email || "").trim().toLowerCase();
+          if (gs && em) {
+            gs.data.name = String(data.name || "");
+            gs.data.email = em;
+            gs.data.customer_key = em;
+            await new Promise<void>((done) => { const t = setTimeout(done, 1500); gs.createSignup(() => { clearTimeout(t); done(); }); });
+          }
+        } catch {}
+      }
       saveProfile({
         name: String(data.name || ""), email: String(data.email || ""), phone: String(data.phone || ""), business: String(data.business || ""),
         website: String(data.website || ""), industry: String(data.industry || ""), market: String(data.market || ""), goals: String(data.goals || ""),
