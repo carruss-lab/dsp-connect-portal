@@ -6,6 +6,12 @@ export const SETUP_DAYS = 14;
 export const SHARE_PCT = 10;
 // Number of ad exchanges reached (owner confirmed 50+, 2026-11-17).
 export const EXCHANGES = "50+";
+// Countries DSP Connect serves: English-speaking markets (owner confirmed 2026-11-24).
+export const COUNTRIES = [
+  "United Kingdom", "Canada", "Australia", "Ireland", "New Zealand", "South Africa", "Nigeria",
+  "Kenya", "Ghana", "Jamaica", "Trinidad and Tobago", "Singapore", "United States",
+];
+export const COUNTRY_CODES = ["GB", "CA", "AU", "IE", "NZ", "ZA", "NG", "KE", "GH", "JM", "TT", "SG", "US"];
 export const INDUSTRIES = [
   "Healthcare", "Legal", "Financial Services", "Automotive", "Real Estate",
   "Home Services", "Franchise", "Hospitality", "Political", "Other",
@@ -19,7 +25,7 @@ export const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "hello@mai
 export const BUSINESS_ADDRESS = process.env.NEXT_PUBLIC_BUSINESS_ADDRESS || "";
 // When the public pages' content last changed. Update this when page content changes, so search engines
 // and AI crawlers recrawl. Used by the sitemap, every page's structured data and llms.txt.
-export const SITE_UPDATED = "2026-11-20";
+export const SITE_UPDATED = "2026-11-25";
 // The date the legal pages were last changed.
 export const LEGAL_UPDATED = "November 16, 2026";
 // The public help center.

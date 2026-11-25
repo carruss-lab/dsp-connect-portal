@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
-import { EXCHANGES, HELP_URL, LEGAL_ENTITY, MIN_BUDGET, SETUP_DAYS, SHARE_PCT, SITE_UPDATED, SUPPORT_EMAIL } from "./site";
+import { COUNTRIES, COUNTRY_CODES, EXCHANGES, HELP_URL, LEGAL_ENTITY, MIN_BUDGET, SETUP_DAYS, SHARE_PCT, SITE_UPDATED, SUPPORT_EMAIL } from "./site";
+
+/** The countries DSP Connect serves, as structured data. */
+export const AREA_SERVED = COUNTRIES.map((name) => ({ "@type": "Country", name }));
 
 // The public address of the site. Search engines are told this is the one true address of every page.
 export const SITE_URL = "https://getdspconnect.com";
@@ -43,16 +46,16 @@ export const ORG: Node = {
   image: ref(ID.logo),
   description: `Enterprise programmatic advertising without the enterprise contract: streaming TV, apps and websites for business owners and agencies, with done-for-you setup. Live within ${SETUP_DAYS} days.`,
   email: SUPPORT_EMAIL,
-  areaServed: { "@type": "Country", name: "United States" },
+  areaServed: AREA_SERVED,
   knowsAbout: [
     "Programmatic advertising", "Demand-side platforms (DSP)", "Connected TV (CTV) advertising", "Streaming TV advertising",
     "Over-the-top (OTT) advertising", "Real-time bidding", "Retargeting", "Geofencing and location targeting",
     "Display advertising", "Video advertising", "Native advertising", "Local business advertising", "Conversion tracking",
   ],
   contactPoint: [
-    { "@type": "ContactPoint", contactType: "customer support", email: SUPPORT_EMAIL, url: HELP_URL, areaServed: "US", availableLanguage: "English" },
-    { "@type": "ContactPoint", contactType: "sales", email: SUPPORT_EMAIL, url: `${SITE_URL}/open-account`, areaServed: "US", availableLanguage: "English" },
-    { "@type": "ContactPoint", contactType: "partner program", email: SUPPORT_EMAIL, url: `${SITE_URL}/partners`, areaServed: "US", availableLanguage: "English" },
+    { "@type": "ContactPoint", contactType: "customer support", email: SUPPORT_EMAIL, url: HELP_URL, areaServed: COUNTRY_CODES, availableLanguage: "English" },
+    { "@type": "ContactPoint", contactType: "sales", email: SUPPORT_EMAIL, url: `${SITE_URL}/open-account`, areaServed: COUNTRY_CODES, availableLanguage: "English" },
+    { "@type": "ContactPoint", contactType: "partner program", email: SUPPORT_EMAIL, url: `${SITE_URL}/partners`, areaServed: COUNTRY_CODES, availableLanguage: "English" },
   ],
 };
 
@@ -65,7 +68,7 @@ const WEBSITE: Node = {
 /** What advertisers buy. */
 export const ADS_SERVICE: Node = {
   "@type": "Service", "@id": ID.ads, name: "Programmatic advertising with done-for-you setup", serviceType: "Programmatic advertising",
-  provider: ref(ID.org), brand: ref(ID.org), areaServed: { "@type": "Country", name: "United States" }, url: `${SITE_URL}/`,
+  provider: ref(ID.org), brand: ref(ID.org), areaServed: AREA_SERVED, url: `${SITE_URL}/`,
   audience: [{ "@type": "BusinessAudience", name: "Business owners" }, { "@type": "BusinessAudience", name: "Advertising agencies" }],
   description: `Programmatic advertising on streaming TV, apps and websites, open to any business without an enterprise contract. We set up the account, tracking, ads and audience, and ads are live within ${SETUP_DAYS} days of payment.`,
   offers: {
@@ -77,7 +80,7 @@ export const ADS_SERVICE: Node = {
 /** The agency revenue-share program. */
 export const AGENCY_PROGRAM: Node = {
   "@type": "Service", "@id": ID.agency, name: "DSP Connect agency program", serviceType: "Advertising platform for agencies",
-  provider: ref(ID.org), url: `${SITE_URL}/agencies`, areaServed: { "@type": "Country", name: "United States" },
+  provider: ref(ID.org), url: `${SITE_URL}/agencies`, areaServed: AREA_SERVED,
   audience: { "@type": "BusinessAudience", name: "Advertising and marketing agencies" },
   description: `Agencies run their clients' advertising on DSP Connect and earn ${SHARE_PCT}% of the ad spend they manage. Each client is set up within ${SETUP_DAYS} days.`,
   isRelatedTo: ref(ID.ads),
@@ -87,7 +90,7 @@ export const AGENCY_PROGRAM: Node = {
 export const PARTNER_PROGRAM: Node = {
   "@type": "Service", "@id": ID.partner, name: "DSP Connect Authorized Sales Partner program", alternateName: "DSP Connect Sales Partner program",
   serviceType: "Independent sales partner program", provider: ref(ID.org), url: `${SITE_URL}/partners`,
-  areaServed: { "@type": "Country", name: "United States" },
+  areaServed: AREA_SERVED,
   audience: { "@type": "BusinessAudience", name: "ISOs, merchant-services agents and independent sales representatives who call on local businesses" },
   description: `Independent individuals and companies refer local businesses to DSP Connect and earn ${SHARE_PCT}% of their clients' qualified ad spend, with residuals for as long as the client's account is open. Commission only; no fee to join.`,
   isRelatedTo: ref(ID.ads),

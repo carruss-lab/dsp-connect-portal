@@ -4,7 +4,7 @@ import { IndustryNote } from "@/components/Personal";
 import { notFound } from "next/navigation";
 import { Footer, Header, TalkBand } from "@/components/Chrome";
 import { INDUSTRY_PAGES, industryBySlug } from "@/lib/industries";
-import { ID, JsonLd, SITE_URL, pageGraph, pageMeta } from "@/lib/seo";
+import { AREA_SERVED, ID, JsonLd, SITE_URL, pageGraph, pageMeta } from "@/lib/seo";
 import { MIN_BUDGET, SETUP_DAYS } from "@/lib/site";
 
 export const dynamicParams = false;
@@ -31,7 +31,7 @@ export default async function IndustryPage({ params }: PageProps<"/industries/[s
         main: {
           "@type": "Service", "@id": `${SITE_URL}/industries/${i.slug}#service`, name: `Programmatic advertising for ${i.name.toLowerCase()}`,
           serviceType: "Programmatic advertising", category: i.name, description: i.intro, url: `${SITE_URL}/industries/${i.slug}`,
-          provider: { "@id": ID.org }, isRelatedTo: { "@id": ID.ads }, areaServed: { "@type": "Country", name: "United States" },
+          provider: { "@id": ID.org }, isRelatedTo: { "@id": ID.ads }, areaServed: AREA_SERVED,
           audience: { "@type": "BusinessAudience", name: `${i.name} businesses` },
         },
       })} />
