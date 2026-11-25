@@ -17,6 +17,9 @@ export const INDUSTRIES = [
   "Home Services", "Franchise", "Hospitality", "Political", "Other",
 ];
 // Where clients log in to the platform. Empty until that is set up; the "Log in" links stay hidden until then.
+// Agencies join the agency program, sign up and set up payouts through PartnerStack (sales partners use Stripe).
+// The PartnerStack sign-up link for agencies. Set in Vercel: NEXT_PUBLIC_PARTNERSTACK_AGENCY_URL.
+export const PARTNERSTACK_AGENCY_URL = process.env.NEXT_PUBLIC_PARTNERSTACK_AGENCY_URL || "";
 export const LOGIN_URL = process.env.NEXT_PUBLIC_CLIENT_LOGIN_URL || "";
 
 export const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "hello@mail.getdspconnect.com";
