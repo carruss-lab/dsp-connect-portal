@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { trackLead } from "@/lib/analytics";
-import { INDUSTRIES } from "@/lib/site";
+import { INDUSTRIES, PARTNER_COUNTRIES } from "@/lib/site";
 
 /** Public application to become an Authorized Sales Partner. */
 export default function ApplyForm() {
@@ -44,7 +44,11 @@ export default function ApplyForm() {
         <div className="field" style={{ flex: "1 1 160px" }}><label htmlFor="ap-phone">Phone</label><input id="ap-phone" name="phone" type="tel" className="input" autoComplete="tel" /></div>
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
-        <div className="field" style={{ flex: "1 1 200px" }}><label htmlFor="ap-loc">Where you sell (city, state)</label><input id="ap-loc" name="location" className="input" placeholder="e.g. Phoenix, AZ" /></div>
+        <div className="field" style={{ flex: "1 1 200px" }}><label htmlFor="ap-country">Country you live in</label>
+          <select id="ap-country" name="country" className="input" required defaultValue=""><option value="" disabled>Choose your country</option>{PARTNER_COUNTRIES.map((c) => <option key={c.code} value={c.code}>{c.name}</option>)}</select></div>
+        <div className="field" style={{ flex: "1 1 200px" }}><label htmlFor="ap-loc">Where you sell (city and state or region)</label><input id="ap-loc" name="location" className="input" placeholder="e.g. Phoenix, AZ" /></div>
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
         <div className="field" style={{ flex: "1 1 200px" }}><label htmlFor="ap-vert">Main industry you sell into</label>
           <select id="ap-vert" name="vertical" className="input">{INDUSTRIES.map((i) => <option key={i}>{i}</option>)}</select></div>
       </div>

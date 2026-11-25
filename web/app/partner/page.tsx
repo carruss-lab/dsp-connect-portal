@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import ConnectButton from "@/components/ConnectButton";
+import PartnerStackPayout from "@/components/partner/PartnerStackPayout";
+import { paidByStripe, partnerCountry } from "@/lib/partnerCountry";
 import IdentifyClient from "@/components/IdentifyClient";
 import { messengerJwt } from "@/lib/chatId";
 import { CopyLink, CopyTemplate, LessonDone, LoginForm, SignDocs } from "@/components/partner/PartnerBits";
@@ -55,10 +57,11 @@ export default async function PartnerPortal({ searchParams }: { searchParams: Pr
   if (portal.partner.stripe_started && !portal.partner.payouts_ready) {
     portal.partner.payouts_ready = await refreshPayouts({ invite_token: portal.partner.invite_token, stripe_account_id: portal.partner.stripe_account_id, payouts_ready: false });
   }
-  return <Dashboard portal={portal} />;
+  const stripePayouts = paidByStripe(await partnerCountry(portal.partner.invite_token));
+  return <Dashboard portal={portal} stripePayouts={stripePayouts} />;
 }
 
-function Dashboard({ portal }: { portal: Portal }) {
+function Dashboard({ portal, stripePayouts }: { portal: Portal; stripePayouts: boolean }) {
   const { partner: p, clients, earnings: e, payouts, training, today } = portal;
   const signed = !!p.signed_at;
   const trained = !!p.training_done_at;
@@ -66,7 +69,7 @@ function Dashboard({ portal }: { portal: Portal }) {
   const first = p.name.split(" ")[0];
   const steps = [
     { t: "Sign your Sales Partner Agreement", done: signed },
-    { t: "Set up payouts with Stripe", done: p.payouts_ready },
+    { t: stripePayouts ? "Set up payouts with Stripe" : "Set up payouts with PartnerStack", done: p.payouts_ready },
     { t: "Complete the training", done: trained },
     { t: "Bring your first client", done: clients.some((c) => c.paid_at) },
   ];
@@ -126,15 +129,19 @@ function Dashboard({ portal }: { portal: Portal }) {
               <div className="card stack g8"><span className="small">Clients</span><span className="h2">{clients.filter((c) => c.paid_at).length}</span><span className="small">{live} live</span></div>
               <div className="card stack g8"><span className="small">Client spend, last 7 days</span><span className="h2">{usd(week)}</span></div>
               <div className="card stack g8"><span className="small">Commission on hold</span><span className="h2">{usd(e.holding)}</span><span className="small">{e.next_release ? `Next release ${day(e.next_release)}` : "7-day hold"}</span></div>
-              <div className="card stack g8"><span className="small">Paid to you</span><span className="h2">{usd(e.paid)}</span><span className="small">{Number(e.ready) > 0 ? `${usd(e.ready)} ready to pay` : "Paid daily through Stripe"}</span></div>
+              <div className="card stack g8"><span className="small">Paid to you</span><span className="h2">{usd(e.paid)}</span><span className="small">{Number(e.ready) > 0 ? `${usd(e.ready)} ready to pay` : stripePayouts ? "Paid daily through Stripe" : "Paid through PartnerStack"}</span></div>
             </section>
 
             {!p.payouts_ready && (
               <section className="card stack g12" aria-labelledby="pay">
                 <h2 id="pay" className="h3">Set up your payouts</h2>
-                <p className="p">Commission is paid daily to your bank through Stripe, after a 7-day hold. You give your bank and tax details to Stripe directly; DSP Connect never sees them.</p>
-                <ConnectButton token={p.invite_token} label={p.stripe_started ? "Finish payout setup" : "Set up payouts with Stripe"} />
-                {p.stripe_started && <p className="small">If Stripe is still reviewing your details this can take a day. Use the button if Stripe asks for anything more.</p>}
+                {stripePayouts ? (
+                  <>
+                    <p className="p">Commission is paid daily to your bank through Stripe, after a 7-day hold. You give your bank and tax details to Stripe directly; DSP Connect never sees them.</p>
+                    <ConnectButton token={p.invite_token} label={p.stripe_started ? "Finish payout setup" : "Set up payouts with Stripe"} />
+                    {p.stripe_started && <p className="small">If Stripe is still reviewing your details this can take a day. Use the button if Stripe asks for anything more.</p>}
+                  </>
+                ) : <PartnerStackPayout />}
               </section>
             )}
 

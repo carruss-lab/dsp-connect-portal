@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import ConnectButton from "@/components/ConnectButton";
+import PartnerStackPayout from "@/components/partner/PartnerStackPayout";
+import { paidByStripe, partnerCountry } from "@/lib/partnerCountry";
 import { refreshPayouts } from "@/lib/partnerStripe";
 import { isUuid, secretRpc } from "@/lib/server";
 import { LEGAL_ENTITY, SHARE_PCT } from "@/lib/site";
@@ -16,6 +18,9 @@ export default async function Join({ params }: PageProps<"/partners/join/[token]
   }
   const started = !!partner?.stripe_account_id;
   const ready = partner ? await refreshPayouts({ ...partner, invite_token: token }) : false;
+  // Stripe in the United States, PartnerStack everywhere else. null means the country couldn't be read.
+  const country = partner ? await partnerCountry(token) : null;
+  const stripePayouts = paidByStripe(country);
 
   return (
     <>
@@ -38,13 +43,16 @@ export default async function Join({ params }: PageProps<"/partners/join/[token]
               </li>
               <li className="card stack g12" style={ready ? { borderColor: "#14532D" } : undefined}>
                 <div className="num">02</div><h2 className="h3">Set up your payouts</h2>
-                {ready ? (
+                {!stripePayouts && !ready ? (
+                  <PartnerStackPayout />
+                ) : ready ? (
                   <p className="note note-ok">Your payout account is set up. Commission will be paid to the bank account you gave Stripe.</p>
                 ) : (
                   <>
-                    <p className="p">Payouts are made through Stripe{partner.entity_type === "company" ? ", into your company's account" : ""}. You give your bank and tax details directly to Stripe on their secure page; DSP Connect never sees or stores them.</p>
+                    <p className="p">In the United States, payouts are made through Stripe{partner.entity_type === "company" ? ", into your company's account" : ""}. You give your bank and tax details directly to Stripe on their secure page; DSP Connect never sees or stores them.</p>
                     <ConnectButton token={token} label={started ? "Finish payout setup" : partner.stripe_account_id ? "Continue payout setup" : "Set up payouts with Stripe"} />
                     {started && <p className="small">Stripe is still reviewing your details. If it asks for anything more, use the button above.</p>}
+                    {country === null && <p className="small">Stripe payouts are for partners in the United States. Partners in other countries are paid through PartnerStack and get their invitation by email.</p>}
                   </>
                 )}
               </li>
