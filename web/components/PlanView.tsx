@@ -30,14 +30,15 @@ export default function PlanView({ saved, actions, compact = false }: { saved: S
         {actions && <div className="pv-actions">{actions}</div>}
       </header>
 
-      <Sec n="01" t="What we learned from your website">
+      <Sec n="01" t={p.siteRead === false ? "Your business" : "What we learned from your website"}>
         <dl className="pv-kv">
           <div><dt>You sell</dt><dd>{p.learned.offer}</dd></div>
           <div><dt>Your customer</dt><dd>{p.learned.customer}</dd></div>
           <div><dt>Where they are</dt><dd>{p.learned.area}</dd></div>
           <div><dt>What they do on your site</dt><dd>{p.learned.action}</dd></div>
         </dl>
-        {p.learned.notes.length > 0 && <ul className="pv-notes">{p.learned.notes.map((x) => <li key={x}>{x}</li>)}</ul>}
+        {p.siteRead === false && <p className="pv-p" style={{ marginTop: 14 }}>We could not read your website, so this plan uses what you told us. We will check your site with you before anything runs.</p>}
+        {p.siteRead !== false && p.learned.notes.length > 0 && <ul className="pv-notes">{p.learned.notes.map((x) => <li key={x}>{x}</li>)}</ul>}
       </Sec>
 
       <Sec n="02" t={`Your channel mix for a $${budget.toLocaleString()} starting budget`}>

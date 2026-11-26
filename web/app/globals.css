@@ -161,3 +161,8 @@ li[data-on] .pl-dot{border-color:var(--blue);border-top-color:transparent;animat
 .plan-offer legend{font-weight:700;color:var(--ink);padding:0 6px;font-size:15px}
 .plan-offer p{margin:0;font-size:14px;line-height:1.5;color:var(--body)}
 .mi-star{color:#E0A800}
+/* Inside the demo account its own heading and text colours must not win over the plan's dark header */
+.pv .pv-top .pv-title{color:#fff}
+.pv .pv-top .pv-lead{color:#E3EAF7;font-size:17px;line-height:1.5}
+.pv .pv-top .pv-goal span:not(.pv-pill){color:#C9D6EE}
+.pv .pv-h{color:var(--ink)}

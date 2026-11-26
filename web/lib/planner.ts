@@ -76,7 +76,7 @@ function clean(p: Plan): Plan {
   const total = channels.reduce((t, c) => t + c.share, 0) || 1;
   channels = channels.map((c) => ({ ...c, share: Math.round((c.share / total) * 100) }));
   return {
-    budget: p.budget, headline: fix(p.headline), goal: p.goal, goalWhy: fix(p.goalWhy), channels,
+    budget: p.budget, siteRead: p.siteRead, headline: fix(p.headline), goal: p.goal, goalWhy: fix(p.goalWhy), channels,
     learned: { offer: fix(p.learned.offer).slice(0, 80), customer: fix(p.learned.customer), area: fix(p.learned.area), action: fix(p.learned.action), notes: list(p.learned.notes, 5) },
     targeting: { locations: list(p.targeting.locations, 8), ages: fix(p.targeting.ages), interests: p.targeting.interests.filter((t) => TAXONOMIES.includes(t)).slice(0, 4), audiences: list(p.targeting.audiences, 4), exclude: list(p.targeting.exclude, 4) },
     tracking: { action: fix(p.tracking.action), steps: list(p.tracking.steps, 4) },
@@ -92,7 +92,7 @@ function brief(i: PlanInput, s: Signals | null) {
     `Starting ad budget they chose: $${i.budget}`, `Business name: ${i.business}`, `Website: ${i.website}`, `Industry they chose: ${i.industry}`, `Where their customers are (they told us): ${i.market}`,
   ];
   if (!s?.reachable) {
-    lines.push("We could not read the website, so plan from the details above and ask the key questions.");
+    lines.push("We could not read the website, so plan from the details above and ask the key questions. In learned.notes, only state that the website could not be read; do not repeat the details above as notes.");
     return lines.join("\n");
   }
   const yes = (b: boolean) => (b ? "yes" : "no");
@@ -154,7 +154,7 @@ export async function writePlan(i: PlanInput, s: Signals | null): Promise<{ plan
         maxRetries: 1,
         abortSignal: AbortSignal.timeout(40_000),
       });
-      return { plan: clean({ ...(output as Plan), budget: i.budget }), model };
+      return { plan: clean({ ...(output as Plan), budget: i.budget, siteRead: !!s?.reachable }), model };
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       console.error("planner model failed", model, msg.slice(0, 300));
@@ -162,5 +162,5 @@ export async function writePlan(i: PlanInput, s: Signals | null): Promise<{ plan
       if (!/free tier|no_providers|not have access|not found|unsupported/i.test(msg)) break;
     }
   }
-  return { plan: clean({ ...rulePlan(i, s), budget: i.budget }), model: "rules" };
+  return { plan: clean({ ...rulePlan(i, s), budget: i.budget, siteRead: !!s?.reachable }), model: "rules" };
 }

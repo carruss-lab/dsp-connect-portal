@@ -18,6 +18,8 @@ export type PlanChannel = { key: ChannelKey; share: number; role: string; why: s
 export type Plan = {
   /** The starting ad budget the visitor entered (MIN_BUDGET or more). */
   budget?: number;
+  /** False when the website could not be read and the plan rests on what the visitor told us. */
+  siteRead?: boolean;
   headline: string;
   learned: { offer: string; customer: string; area: string; action: string; notes: string[] };
   goal: (typeof GOAL_OPTIONS)[number];
