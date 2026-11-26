@@ -12,7 +12,7 @@ export const VIDEOS = {
   partners: { id: "R7fH73uYp6o", seconds: 104, poster: "/video/vsl-partners.jpg", title: "Become a DSP Connect Authorized Sales Partner",
     description: "How ISOs and local sales pros introduce DSP Connect to the business owners they already call on, and earn 10% of their clients' ad spend for life." },
   // How to use the free ad planner (/planner), for each audience.
-  plannerOwners: { id: "r-Oz_PGezZ0", seconds: 80, poster: "/video/plan-owners.jpg", uploaded: "2026-11-25", title: "Get a free streaming TV ad plan for your business in 30 seconds",
+  plannerOwners: { id: "xgLxVnZ55c0", seconds: 80, poster: "/video/plan-owners.jpg", uploaded: "2026-11-25", title: "Get a free streaming TV ad plan for your business in 30 seconds",
     description: "Enter your website and get a free ad plan for streaming TV, online video, display, native and retargeting ads, split for the budget you choose, then build the campaign in your demo account." },
   plannerAgencies: { id: "N5mNVCRGbr8", seconds: 94, poster: "/video/plan-agencies.jpg", uploaded: "2026-11-25", title: "Walk into every pitch with a plan",
     description: "How agencies turn any prospect's website into a streaming TV and programmatic plan in about 30 seconds, build the campaign live in the meeting, and find room to grow with existing clients." },

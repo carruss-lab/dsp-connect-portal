@@ -263,7 +263,7 @@ async function planFollowUps(r: Report, d: Demo, step: number, hello: string, fo
       hello + `<p>If you decide to go ahead with your plan, here is what happens, in order:</p>` +
       `<ol><li>You open your account with the plan attached and pay your starting budget.</li><li>Your plan becomes the start of your campaign brief, so there is less to fill in.</li><li>We create your account, place tracking on your website, review your ads and build your audience${where}.</li><li>Your ads go live within ${SETUP_DAYS} days, and you get an email as each step is finished.</li></ol>` +
       `<p>No monthly platform fee. Our fee is included in the price of your ads. No long-term contract; our <a href="${origin()}/refunds">refund policy</a> explains what happens if you change your mind.</p>` +
-      `<p>Want the short version? <a href="https://www.youtube.com/watch?v=r-Oz_PGezZ0">This one-minute video</a> walks through a plan from start to finish.</p>` +
+      `<p>Want the short version? <a href="https://www.youtube.com/watch?v=xgLxVnZ55c0">This one-minute video</a> walks through a plan from start to finish.</p>` +
       `<p><a href="${open}">Open your account with this plan</a> when you are ready. There is no rush: your plan stays saved.</p>` + foot(false));
   } else {
     const qs = p.questions.length ? `<p>Before anything runs, we would confirm a few things with you:</p><ul>${p.questions.map((q) => `<li>${esc(q)}</li>`).join("")}</ul><p>If you know the answers, just reply to this email with them.</p>` : "";
