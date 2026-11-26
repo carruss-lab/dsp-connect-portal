@@ -3,14 +3,14 @@ import { track } from "@vercel/analytics";
 import { identify } from "@/lib/identify";
 import { readProfile, saveProfile } from "@/lib/profile";
 import { useEffect, useState } from "react";
-import { INDUSTRIES, MIN_BUDGET, SETUP_DAYS } from "@/lib/site";
+import { INDUSTRIES, MIN_BUDGET, PARTNERSTACK_AGENCY_URL, SETUP_DAYS } from "@/lib/site";
 import { trackLead } from "@/lib/analytics";
 
 type Kind = "market_check" | "account" | "agency";
 const DONE: Record<Kind, string> = {
   market_check: "Thank you. Opening the demo.",
   account: `Thank you. We have your details and will be in touch to take payment. Your ${SETUP_DAYS}-day setup starts when payment is received.`,
-  agency: "Thank you. We will be in touch about an agency agreement within one business day.",
+  agency: "Thank you. We will be in touch about an agency agreement within one business day. Agencies join the program and set up payouts through PartnerStack.",
 };
 
 export default function LeadForm({ kind, cta }: { kind: Kind; cta: string }) {
@@ -61,6 +61,20 @@ export default function LeadForm({ kind, cta }: { kind: Kind; cta: string }) {
       const out = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(out.error || "Something went wrong. Please try again.");
       identify(String(data.email || ""), data.name ? String(data.name) : null);
+      // PartnerStack: a sign-up from a partner's link is credited to that partner. The customer key is the
+      // email, the same key the Stripe customer carries, so later payments are matched to this sign-up.
+      if (kind === "account") {
+        try {
+          const gs = (window as unknown as { growsumo?: { data: Record<string, string>; createSignup: (cb?: () => void) => void } }).growsumo;
+          const em = String(data.email || "").trim().toLowerCase();
+          if (gs && em) {
+            gs.data.name = String(data.name || "");
+            gs.data.email = em;
+            gs.data.customer_key = em;
+            await new Promise<void>((done) => { const t = setTimeout(done, 1500); gs.createSignup(() => { clearTimeout(t); done(); }); });
+          }
+        } catch {}
+      }
       saveProfile({
         name: String(data.name || ""), email: String(data.email || ""), phone: String(data.phone || ""), business: String(data.business || ""),
         website: String(data.website || ""), industry: String(data.industry || ""), market: String(data.market || ""), goals: String(data.goals || ""),
@@ -95,6 +109,14 @@ export default function LeadForm({ kind, cta }: { kind: Kind; cta: string }) {
     }
   }
 
+  if (state === "done" && kind === "agency" && PARTNERSTACK_AGENCY_URL) {
+    return (
+      <div className="note note-ok stack g8" role="status">
+        <span>Thank you. Next, join the agency program on PartnerStack. That is where you sign up and set up your payouts. We will also be in touch within one business day.</span>
+        <a className="btn btn-blue" style={{ alignSelf: "flex-start" }} href={PARTNERSTACK_AGENCY_URL} target="_blank" rel="noopener noreferrer">Join the agency program</a>
+      </div>
+    );
+  }
   if (state === "done") return <p className="note note-ok" role="status">{DONE[kind]}</p>;
 
   const full = kind !== "market_check";

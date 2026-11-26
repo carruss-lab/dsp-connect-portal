@@ -150,7 +150,7 @@ async function partnerBriefs(r: Report, f: Feed) {
     await deliver(r, pid, "partner", `brief_${f.today}`, first.partner_email!, `Your client brief: ${leads.length} account${leads.length === 1 ? "" : "s"}`,
       `<p>Hello${first.partner_name ? " " + esc(first.partner_name.split(" ")[0]) : ""},</p><p>Here is what to raise with each of your clients this week.</p>${blocks}` +
       `<p>Want help preparing for a client conversation? Use the chat on our website.</p>`);
-    await syncPerson({ email: first.partner_email!, name: first.partner_name, role: "sales_partner" });
+    await syncPerson({ email: first.partner_email!, name: first.partner_name, role: "sales_partner", extra: { partner_stage: "active", partner_clients: leads.length } });
   }
 }
 
@@ -272,7 +272,16 @@ async function agencyFollowUps(r: Report, a: Agency) {
  * each step: the agreement, payouts, training, then their sales kit, leave-behind and links. A few
  * emails at most, each only while that step is still open. They stop if the partner unsubscribes.
  */
+/** Where a Sales Partner is in onboarding, in words Fin can act on: it gives them only the next step. */
+function partnerStage(p: Onboarding) {
+  if (p.status === "invited") return "approved_needs_to_sign";
+  if (!p.payouts_ready) return "signed_needs_payouts";
+  if (!p.trained) return "payouts_ready_needs_training";
+  return p.clients > 0 ? "active" : "ready_no_clients_yet";
+}
+
 async function partnerOnboarding(r: Report, p: Onboarding) {
+  await syncPerson({ email: p.email, name: p.name, role: "sales_partner", extra: { partner_stage: partnerStage(p), partner_clients: p.clients } }).catch(() => {});
   if (!BUSINESS_ADDRESS) return;
   const portal = `${origin()}/partner`;
   const hello = `<p>Hello ${esc(p.name.split(" ")[0])},</p>`;

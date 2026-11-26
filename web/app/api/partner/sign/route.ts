@@ -40,6 +40,6 @@ export async function POST(req: Request) {
         `<p>Next in your portal: set up your payouts and complete the short training. Your client link starts crediting you now, and you keep earning on every client you bring for as long as they spend.</p>`),
       undefined, [{ filename: `DSP-Connect-Sales-Partner-Agreement-${VERSION}.pdf`, content: pdf }], process.env.NOTIFY_EMAIL || undefined);
   } catch (err) { console.error("signed copy failed", err); }
-  await syncPerson({ email: p.email, name: p.name, role: "sales_partner", extra: company ? { business_name: company } : {} }).catch(() => {});
+  await syncPerson({ email: p.email, name: p.name, role: "sales_partner", extra: { partner_stage: "signed_needs_payouts", ...(company ? { business_name: company } : {}) } }).catch(() => {});
   return NextResponse.json({ ok: true });
 }
