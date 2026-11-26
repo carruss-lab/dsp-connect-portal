@@ -22,11 +22,12 @@ export async function POST(req: Request) {
       // Partners only receive commission, so the account is set up to receive transfers and nothing else.
       // A partner who signed for a company is paid into a business account in the company's name.
       const company = partner.entity_type === "company";
-      const created = await client.v2.core.accounts.create({
-        contact_email: partner.email, display_name: company && partner.company_name ? partner.company_name : partner.name, dashboard: "express",
-        identity: { country: "us", entity_type: company ? "company" : "individual" },
-        defaults: { responsibilities: { fees_collector: "application", losses_collector: "application" } },
-        configuration: { recipient: { capabilities: { stripe_balance: { stripe_transfers: { requested: true } } } } },
+      // Accounts API v1 (Express): the site's Stripe key has Accounts and Account Links permissions.
+      const created = await client.accounts.create({
+        type: "express", country: "US", email: partner.email, business_type: company ? "company" : "individual",
+        ...(company && partner.company_name ? { company: { name: partner.company_name } } : {}),
+        capabilities: { transfers: { requested: true } },
+        business_profile: { name: company && partner.company_name ? partner.company_name : partner.name, product_description: `Authorized Sales Partner for DSP Connect (${LEGAL_ENTITY})` },
         metadata: { partner_id: partner.id, role: `Authorized Sales Partner for DSP Connect (${LEGAL_ENTITY})` },
       });
       account = created.id;
@@ -34,9 +35,8 @@ export async function POST(req: Request) {
     }
     // Stripe sends the partner back to their portal, which re-checks their payout status on load.
     const portal = `${siteOrigin()}/partner`;
-    const link = await client.v2.core.accountLinks.create({
-      account,
-      use_case: { type: "account_onboarding", account_onboarding: { refresh_url: `${portal}?payouts=retry#pay`, return_url: `${portal}?payouts=back#pay` } },
+    const link = await client.accountLinks.create({
+      account, type: "account_onboarding", refresh_url: `${portal}?payouts=retry#pay`, return_url: `${portal}?payouts=back#pay`,
     });
     return NextResponse.json({ url: link.url });
   } catch (err) {

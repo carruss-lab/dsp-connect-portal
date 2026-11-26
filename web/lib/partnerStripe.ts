@@ -11,8 +11,8 @@ export async function refreshPayouts(p: { invite_token: string; stripe_account_i
   const client = stripe();
   if (p.payouts_ready || !id || !client) return p.payouts_ready;
   try {
-    const acct = await client.v2.core.accounts.retrieve(id, { include: ["configuration.recipient"] });
-    const ready = acct.configuration?.recipient?.capabilities?.stripe_balance?.stripe_transfers?.status === "active";
+    const acct = await client.accounts.retrieve(id);
+    const ready = acct.capabilities?.transfers === "active" && !!acct.payouts_enabled;
     if (ready) {
       const approvedNow = await secretRpc<boolean>("partner_set_payouts", { p_token: p.invite_token, p_account: null, p_ready: true });
       if (approvedNow) await welcomeApproved(p.invite_token);
