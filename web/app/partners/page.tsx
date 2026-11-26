@@ -16,8 +16,8 @@ export const metadata: Metadata = pageMeta({
 
 const STEPS = [
   ["Apply", "Tell us who you sell to today. It takes three minutes."],
-  ["Get approved", "We review every application and reply by email, usually within two business days."],
-  ["Sign and set up", "Sign your Sales Partner Agreement online, as yourself or for your company, and set up daily payouts with Stripe."],
+  ["Sign your agreement", "Your enrolment link arrives by email right away. Sign your Sales Partner Agreement online, as yourself or for your company."],
+  ["Verify with Stripe", "Set up daily payouts with Stripe, which verifies your identity and bank details. Once Stripe verifies you, you are approved automatically."],
   ["Train", "A short course on the product, the demo, the conversation and the rules."],
   ["Sell and earn", `Clients open their account through your link. You earn ${SHARE_PCT}% of what they spend, for as long as they spend.`],
 ];
@@ -80,7 +80,7 @@ export default function Partners() {
           <h2 className="h2">How commission works.</h2>
           <p className="p" style={{ fontSize: 16 }}>You earn <b>{SHARE_PCT}%</b> of the <b>qualified ad spend</b> of every client credited to you: ad budget the client has paid in full that has actually run as ads. Each day&apos;s commission is held for 7 days, then paid to your bank through Stripe.</p>
           <ul className="list"><li>Residuals continue for as long as the client keeps spending, including after your partnership ends, unless it is ended for cause.</li><li>Refunds, chargebacks and unpaid amounts are not qualified, and commission on them is reversed.</li><li>There is no salary and no guaranteed income. What you earn depends on the clients you bring and what they spend.</li></ul>
-          <p className="small">Full terms are in the Sales Partner Agreement you review and sign after approval.</p>
+          <p className="small">Full terms are in the Sales Partner Agreement you review and sign when you enrol.</p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 32, alignItems: "baseline" }}>
             <h3 className="h3" style={{ fontSize: 18, flex: "1 1 240px" }}>Industries our partners sell into</h3>
             <div className="chips" style={{ flex: "999 1 560px" }}>{INDUSTRIES.filter((i) => i !== "Other").map((i) => <span className="chip" key={i}>{i}</span>)}</div>

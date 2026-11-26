@@ -2,13 +2,15 @@ import { NextResponse } from "next/server";
 import { esc, notifyTeam, send, wrap } from "@/lib/email";
 import { syncPerson } from "@/lib/intercom";
 import { secretRpc } from "@/lib/server";
-import { INDUSTRIES, SHARE_PCT } from "@/lib/site";
+import { INDUSTRIES, SHARE_PCT, siteOrigin } from "@/lib/site";
 
 const t = (v: unknown, n: number) => String(v ?? "").trim().replace(/\s+/g, " ").slice(0, n);
 const long = (v: unknown, n: number) => String(v ?? "").trim().slice(0, n);
 
-// Public application to become an Authorized Sales Partner. Staff review it in the back office;
-// nobody is admitted until they are approved and sign the agreement.
+// Public application to become an Authorized Sales Partner. Enrolment starts straight away: the applicant gets their
+// get-started link, signs the agreement and sets up payouts with Stripe. Stripe's verification is the approval step:
+// once it passes and the agreement is signed they are approved automatically (see lib/partnerApproved.ts).
+// Staff can still decline anyone in the back office.
 export async function POST(req: Request) {
   const b = (await req.json().catch(() => ({}))) as Record<string, unknown>;
   if (t(b.company_fax, 10)) return NextResponse.json({ ok: true }); // hidden field only bots fill in
@@ -30,19 +32,22 @@ export async function POST(req: Request) {
   catch (err) { console.error("partner apply failed", err); return NextResponse.json({ error: "We could not save your application. Please try again." }, { status: 502 }); }
   if (result === "invalid") return NextResponse.json({ error: "Please check your name and email address." }, { status: 400 });
   if (result === "exists") return NextResponse.json({ ok: true, existing: true });
+  const link = `${siteOrigin()}/partners/join/${result.replace(/^created:/, "")}`;
 
   await Promise.all([
-    notifyTeam("Sales Partner application", {
+    notifyTeam("Sales Partner application (enrolling; approved automatically once Stripe verifies them)", {
       name, email, company: company || undefined, entity, phone: row.p_phone, location: row.p_location, industry: vertical,
       website: row.p_website, linkedin: row.p_linkedin, experience: row.p_experience, network: row.p_network,
       business: company || name,
     }),
-    send(email, "We received your DSP Connect Authorized Sales Partner application",
+    send(email, "Your DSP Connect Authorized Sales Partner enrolment: next steps",
       wrap(`<p>Hello ${esc(name.split(" ")[0])},</p>` +
-        `<p>Thank you for applying to become a DSP Connect Authorized Sales Partner${company ? ` with ${esc(company)}` : ""}. We review every application and will reply by email, usually within two business days.</p>` +
-        `<p>If you are approved, you sign your Sales Partner Agreement online, set up your payouts through Stripe and complete a short training. Then you earn ${SHARE_PCT}% of the qualified ad spend of every client you bring, paid daily, for as long as they keep spending.</p>` +
-        `<p>Questions in the meantime? Just reply to this email.</p>`)),
-    syncPerson({ email, name, role: "partner_applicant", industry: vertical, market: row.p_location || null, extra: company ? { business_name: company } : {} }),
+        `<p>Thank you for applying to become a DSP Connect Authorized Sales Partner${company ? ` with ${esc(company)}` : ""}. You can start your enrolment now:</p>` +
+        `<ol><li><b>Sign your Sales Partner Agreement</b> online, as yourself or for your company.</li><li><b>Verify with Stripe</b> and set up your payouts. Stripe checks your identity and bank details; we never see them.</li></ol>` +
+        `<p>As soon as Stripe verifies you and your agreement is signed, you are approved automatically and your client links start crediting you. Then a short training, and you earn ${SHARE_PCT}% of the qualified ad spend of every client you bring, paid daily, for as long as they keep spending.</p>` +
+        `<p><a href="${link}" style="display:inline-block;background:#1A14D4;color:#fff;padding:12px 18px;border-radius:6px;text-decoration:none;font-weight:600">Start your enrolment</a></p>` +
+        `<p>This link is personal to you; please do not forward it. Questions? Just reply to this email.</p>`)),
+    syncPerson({ email, name, role: "sales_partner", industry: vertical, market: row.p_location || null, extra: { partner_stage: "approved_needs_to_sign", ...(company ? { business_name: company } : {}) } }),
   ]).catch((err) => console.error("partner apply follow-up failed", err));
   return NextResponse.json({ ok: true });
 }

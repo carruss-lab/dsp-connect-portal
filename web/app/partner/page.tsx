@@ -132,8 +132,8 @@ function Dashboard({ portal }: { portal: Portal }) {
 
             {!p.payouts_ready && (
               <section className="card stack g12" aria-labelledby="pay">
-                <h2 id="pay" className="h3">Set up your payouts</h2>
-                <p className="p">Commission is paid daily to your bank through Stripe, after a 7-day hold. You give your bank and tax details to Stripe directly; DSP Connect never sees them.</p>
+                <h2 id="pay" className="h3">Verify with Stripe to get approved</h2>
+                <p className="p">This is your last step to approval: once Stripe verifies you, you are approved automatically and your client links start crediting you. Commission is paid daily to your bank through Stripe, after a 7-day hold. You give your bank and tax details to Stripe directly; DSP Connect never sees them.</p>
                 <ConnectButton token={p.invite_token} label={p.stripe_started ? "Finish payout setup" : "Set up payouts with Stripe"} />
                 {p.stripe_started && <p className="small">If Stripe is still reviewing your details this can take a day. Use the button if Stripe asks for anything more.</p>}
               </section>
@@ -141,7 +141,7 @@ function Dashboard({ portal }: { portal: Portal }) {
 
             <section className="card stack g16" aria-labelledby="links">
               <h2 id="links" className="h3">Your client links</h2>
-              <p className="p">Clients who open their account through these links are credited to you. Your partner code is <b>{p.code}</b>.</p>
+              <p className="p">Clients who open their account through these links are credited to you{p.status === "invited" ? " once you are approved (Stripe verified)" : ""}. Your partner code is <b>{p.code}</b>.</p>
               <CopyLink label="Open an account" url={`${origin}/open-account?p=${p.code}`} />
               <CopyLink label="Free ad plan from their website" url={`${origin}/planner?p=${p.code}`} />
               <CopyLink label="Show the demo" url={`${origin}/demo?p=${p.code}`} />

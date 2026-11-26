@@ -4,6 +4,7 @@ import { syncPerson } from "@/lib/intercom";
 import { clientIp, loadPortal, session } from "@/lib/partner";
 import { DOCS, VERSION, docHash } from "@/lib/partnerDocs";
 import { signedPdf } from "@/lib/partnerPdf";
+import { welcomeApproved } from "@/lib/partnerApproved";
 import { secretRpc } from "@/lib/server";
 
 const tidy = (v: unknown, n: number) => String(v || "").trim().replace(/\s+/g, " ").slice(0, n);
@@ -37,9 +38,12 @@ export async function POST(req: Request) {
     const who = company ? `${esc(company)}'s` : "Your";
     await send(p.email, "Your signed DSP Connect Authorized Sales Partner Agreement",
       wrap(`<p>Hello ${esc(p.name.split(" ")[0])},</p><p>Thank you. ${who} Authorized Sales Partner Agreement is signed. A copy of what you signed is attached for your records.</p>` +
-        `<p>Next in your portal: set up your payouts and complete the short training. Your client link starts crediting you now, and you keep earning on every client you bring for as long as they spend.</p>`),
+        (p.payouts_ready
+          ? `<p>Stripe has already verified your payout account, so you are now approved. Next in your portal: complete the short training. Your client links credit you from today, and you keep earning on every client you bring for as long as they spend.</p>`
+          : `<p>Next in your portal: set up your payouts with Stripe. As soon as Stripe verifies your account you are approved automatically, and your client links start crediting you. Then complete the short training.</p>`)),
       undefined, [{ filename: `DSP-Connect-Sales-Partner-Agreement-${VERSION}.pdf`, content: pdf }], process.env.NOTIFY_EMAIL || undefined);
   } catch (err) { console.error("signed copy failed", err); }
-  await syncPerson({ email: p.email, name: p.name, role: "sales_partner", extra: { partner_stage: "signed_needs_payouts", ...(company ? { business_name: company } : {}) } }).catch(() => {});
+  if (p.payouts_ready) await welcomeApproved(p.invite_token);
+  await syncPerson({ email: p.email, name: p.name, role: "sales_partner", extra: { partner_stage: p.payouts_ready ? "payouts_ready_needs_training" : "signed_needs_payouts", ...(company ? { business_name: company } : {}) } }).catch(() => {});
   return NextResponse.json({ ok: true });
 }

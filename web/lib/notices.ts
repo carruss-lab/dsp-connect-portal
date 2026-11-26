@@ -1,5 +1,6 @@
 import { emailOn, esc, send, wrap } from "./email";
 import { ensureAttributes, syncPerson } from "./intercom";
+import { refreshPayouts } from "./partnerStripe";
 import { secretRpc } from "./server";
 import { CHANNELS, planBudget, split, type Plan } from "./plan";
 import { BUSINESS_ADDRESS, LEGAL_ENTITY, LOGIN_URL, MIN_BUDGET, SETUP_DAYS, SHARE_PCT, siteOrigin } from "./site";
@@ -20,7 +21,7 @@ type Unpaid = { id: string; email: string; name: string | null; business: string
 type Demo = { id: string; email: string; name: string | null; business: string | null; industry: string | null; market: string | null; days: number; plan?: { id: string; website: string; plan: Plan } | null };
 type Agency = { id: string; email: string; name: string | null; business: string | null; days: number };
 type Onboarding = {
-  id: string; name: string; email: string; status: string; invite_token: string; payouts_ready: boolean; company_name: string | null;
+  id: string; name: string; email: string; status: string; invite_token: string; payouts_ready: boolean; company_name: string | null; stripe_account_id?: string | null;
   days_approved: number; days_signed: number | null; days_trained: number | null; trained: boolean; clients: number;
 };
 type Feed = { today: string; leads: FeedLead[]; unpaid?: Unpaid[]; demo?: Demo[]; agency?: Agency[]; partner_onboarding?: Onboarding[]; applications_waiting?: string[]; pending_commission: number; due_commission: number; partners_not_ready: string[] };
@@ -307,13 +308,15 @@ async function agencyFollowUps(r: Report, a: Agency) {
  */
 /** Where a Sales Partner is in onboarding, in words Fin can act on: it gives them only the next step. */
 function partnerStage(p: Onboarding) {
-  if (p.status === "invited") return "approved_needs_to_sign";
+  if (p.days_signed === null) return "approved_needs_to_sign";
   if (!p.payouts_ready) return "signed_needs_payouts";
   if (!p.trained) return "payouts_ready_needs_training";
   return p.clients > 0 ? "active" : "ready_no_clients_yet";
 }
 
 async function partnerOnboarding(r: Report, p: Onboarding) {
+  // Stripe's verification approves them: check it daily too, for anyone who has not come back to their portal since.
+  if (!p.payouts_ready && p.stripe_account_id) p.payouts_ready = await refreshPayouts({ invite_token: p.invite_token, stripe_account_id: p.stripe_account_id, payouts_ready: false });
   await syncPerson({ email: p.email, name: p.name, role: "sales_partner", extra: { partner_stage: partnerStage(p), partner_clients: p.clients } }).catch(() => {});
   if (!BUSINESS_ADDRESS) return;
   const portal = `${origin()}/partner`;
@@ -323,17 +326,17 @@ async function partnerOnboarding(r: Report, p: Onboarding) {
   const btn = (href: string, label: string) => `<p><a href="${href}" style="display:inline-block;background:#1A14D4;color:#fff;padding:12px 18px;border-radius:6px;text-decoration:none;font-weight:600">${label}</a></p>`;
   const tools = `<ul><li><b>Your sales kit:</b> emails to prospects with your links already in them, a first-call script and answers to common questions. <a href="${portal}#kit">Open your sales kit</a></li><li><b>Your leave-behind:</b> a one-page sheet with your own QR code, to print or attach as a PDF.</li><li><b>Your links:</b> the demo and account links that credit clients to you.</li><li><b>Help:</b> the chat in your portal, where Fin can help you prepare for a client conversation.</li></ul>`;
 
-  if (p.status === "invited") {
+  if (p.days_signed === null) {
     const k = p.days_approved >= 6 && p.days_approved <= 8 ? "partner_sign_2" : p.days_approved >= 2 && p.days_approved <= 4 ? "partner_sign_1" : "";
     if (!k) return;
     await deliver(r, p.id, "partner", k, p.email, "Your Sales Partner Agreement is ready to sign",
-      hello + `<p>You are approved as a DSP Connect Authorized Sales Partner${p.company_name ? ` for ${esc(p.company_name)}` : ""}. The next step is to read and sign your agreement online. It takes about ten minutes, and you can sign as yourself or for your company.</p>` +
+      hello + `<p>Your DSP Connect Authorized Sales Partner enrolment${p.company_name ? ` for ${esc(p.company_name)}` : ""} is open. The next step is to read and sign your agreement online. It takes about ten minutes, and you can sign as yourself or for your company. Then verify with Stripe, and you are approved automatically.</p>` +
       btn(`${origin()}/partners/join/${p.invite_token}`, "Sign your agreement") +
-      `<p>Once it is signed you get your sales kit, your leave-behind and your own client links straight away.</p>` + help + foot);
+      `<p>Once it is signed you get your sales kit, your leave-behind and your own client links straight away. Your links credit you from the moment Stripe verifies you.</p>` + help + foot);
     return;
   }
   const open: string[] = [];
-  if (!p.payouts_ready) open.push(`<li><b>Set up your payouts</b> with Stripe, so commission can reach your bank. <a href="${portal}#pay">Set up payouts</a></li>`);
+  if (!p.payouts_ready) open.push(`<li><b>Verify with Stripe and set up your payouts.</b> This is what approves you: once Stripe verifies you, your client links start crediting you and commission can reach your bank. <a href="${portal}#pay">Verify with Stripe</a></li>`);
   if (!p.trained) open.push(`<li><b>Finish the training:</b> six short lessons on the product, the demo, the conversation and the rules. <a href="${portal}#tr">Go to the training</a></li>`);
   if (open.length && p.days_signed !== null) {
     const k = p.days_signed >= 8 && p.days_signed <= 10 ? "partner_setup_2" : p.days_signed >= 3 && p.days_signed <= 5 ? "partner_setup_1" : "";
