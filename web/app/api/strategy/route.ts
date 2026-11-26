@@ -1,9 +1,9 @@
 import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import { chatCookie } from "@/lib/chatId";
-import { notifyTeam } from "@/lib/email";
+import { esc, notifyTeam, send, wrap } from "@/lib/email";
 import { syncPerson } from "@/lib/intercom";
-import { planSummary, type Plan } from "@/lib/plan";
+import { CHANNELS, planBudget, planSummary, split, type Plan } from "@/lib/plan";
 import { writePlan } from "@/lib/planner";
 import { normaliseUrl, scanSite } from "@/lib/scan";
 import { isUuid, rest, secretRpc } from "@/lib/server";
@@ -14,8 +14,8 @@ import { INDUSTRIES, MIN_BUDGET, siteOrigin } from "@/lib/site";
 
 export const maxDuration = 60;
 
-const PER_EMAIL = 3;
-const PER_IP = 10;
+// Sales Partners and agencies make plans for many businesses, so their links allow more.
+const PER_EMAIL = 3, PER_IP = 10, PARTNER_PER_EMAIL = 15, PARTNER_PER_IP = 30;
 const clean = (v: unknown, max = 200) => (typeof v === "string" ? v.trim().slice(0, max) : "");
 
 export async function POST(req: Request) {
@@ -41,8 +41,9 @@ export async function POST(req: Request) {
   const ipHash = createHash("sha256").update(`${ip}:${process.env.SERVER_SECRET || ""}`).digest("hex").slice(0, 32);
   try {
     const used = await secretRpc<{ email: number; ip: number }>("strategy_count", { p_email: email, p_ip: ipHash });
-    if (used.email >= PER_EMAIL || used.ip >= PER_IP) {
-      return NextResponse.json({ error: `You have made ${PER_EMAIL} plans today, which is the daily limit. Your plans are saved; ask in the chat if you need another.` }, { status: 429 });
+    const [maxEmail, maxIp] = partnerCode ? [PARTNER_PER_EMAIL, PARTNER_PER_IP] : [PER_EMAIL, PER_IP];
+    if (used.email >= maxEmail || used.ip >= maxIp) {
+      return NextResponse.json({ error: `You have made ${maxEmail} plans today, which is the daily limit. Your plans are saved; ask in the chat if you need another.` }, { status: 429 });
     }
   } catch (err) {
     console.error("strategy count failed", err);
@@ -70,6 +71,7 @@ export async function POST(req: Request) {
     rest("leads", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ kind: "market_check", email, business, website: input.website, industry, market, partner_code: partnerCode, source: `planner | ${source}`.slice(0, 240) }) })
       .then(async (r) => { if (!r.ok) console.error("planner lead insert failed", r.status, await r.text()); }).catch((e) => console.error("planner lead insert failed", e)),
     notifyTeam("plan", { email, business, website: input.website, industry, market, budget, plan: planSummary(plan), link, read_website: signals?.reachable ? "yes" : "no", written_by: model }),
+    send(email, "Your DSP Connect ad plan", planEmail(plan, input.website, link)).catch((e) => console.error("plan email failed", e)),
     syncPerson({
       email, role: "prospect", status: "lead", industry, market,
       extra: { lead_stage: "ad_plan", monthly_ad_budget: budget, business_name: business, business_website: input.website, ad_plan_url: link, ad_plan_summary: planSummary(plan) },
@@ -79,6 +81,20 @@ export async function POST(req: Request) {
   const res = NextResponse.json({ ok: true, id, plan, business, website: input.website, industry, market, read: !!signals?.reachable });
   res.cookies.set(chatCookie(email));
   return res;
+}
+
+/** The plan link by email, so the person (or the partner who made it with them) can come back to it. */
+function planEmail(p: Plan, website: string, link: string) {
+  const host = website.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
+  const rows = split(p.channels, planBudget(p)).map((c) => `<li>${esc(CHANNELS[c.key].name)}: ${c.pct}% ($${c.usd.toLocaleString()}). ${esc(c.role)}</li>`).join("");
+  return wrap(
+    `<p>Here is the ad plan we wrote from <b>${esc(host)}</b>.</p>` +
+    `<p>${esc(p.headline)}</p>` +
+    `<p><b>Your channel mix for a $${planBudget(p).toLocaleString()} starting budget</b></p><ul>${rows}</ul>` +
+    `<p><a href="${link}" style="display:inline-block;background:#0A4FD6;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none">Open your full plan</a></p>` +
+    `<p>From the plan you can see it in your demo account, build the campaign, or open your account with the plan attached. Questions? Reply to this email or ask in the chat on the site.</p>` +
+    `<p style="color:#5B6577;font-size:13px">No monthly platform fee. Our fee is included in the price of your ads. A starting plan written from your website; advertising can't guarantee results.</p>`,
+  );
 }
 
 /** A saved plan by its id, for the planner page, the demo and the sign-up form. */
