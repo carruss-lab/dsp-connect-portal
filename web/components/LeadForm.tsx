@@ -112,7 +112,7 @@ export default function LeadForm({ kind, cta }: { kind: Kind; cta: string }) {
   if (state === "done" && kind === "agency" && PARTNERSTACK_AGENCY_URL) {
     return (
       <div className="note note-ok stack g8" role="status">
-        <span>Thank you. Next, join the agency program on PartnerStack. That is where you sign up and set up your payouts. We will also be in touch within one business day.</span>
+        <span><b>Thank you. One more step:</b> join the agency program on PartnerStack. That is where you sign up and set up your payouts. We also emailed you this link, and we will be in touch within one business day.</span>
         <a className="btn btn-blue" style={{ alignSelf: "flex-start" }} href={PARTNERSTACK_AGENCY_URL} target="_blank" rel="noopener noreferrer">Join the agency program</a>
       </div>
     );

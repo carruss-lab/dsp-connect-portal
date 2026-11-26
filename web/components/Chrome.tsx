@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { WelcomeBar } from "./Personal";
-import { HELP_URL, LEGAL_ENTITY, LOGIN_URL, SUPPORT_EMAIL } from "@/lib/site";
+import { HELP_URL, LEGAL_ENTITY, LOGIN_URL, PARTNERSTACK_AGENCY_URL, SUPPORT_EMAIL } from "@/lib/site";
 
 export function Header() {
   return (
@@ -58,7 +58,23 @@ export function Footer() {
 }
 
 /** A plain band that offers the two next steps: see the demo, then open an account. */
-export function TalkBand({ industry }: { industry?: string }) {
+export function TalkBand({ industry, agency = false }: { industry?: string; agency?: boolean }) {
+  if (agency) {
+    return (
+      <section className="section dark" style={{ padding: "64px 0" }}>
+        <div className="wrap" style={{ display: "flex", flexWrap: "wrap", gap: 32, alignItems: "center", justifyContent: "space-between" }}>
+          <div className="stack g12" style={{ flex: "1 1 460px", minWidth: 0 }}>
+            <h2 className="h2">Ready to join the agency program?</h2>
+            <p className="p" style={{ fontSize: 16 }}>Apply on PartnerStack in a couple of minutes. That is where you sign up and set up your payouts. Questions? Ask Fin in the chat, any hour.</p>
+          </div>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <a className="btn btn-white" href={PARTNERSTACK_AGENCY_URL} target="_blank" rel="noopener noreferrer">Join the agency program</a>
+            <Link className="btn btn-line" style={{ borderColor: "#fff", color: "#fff" }} href="/demo?view=agency">See the agency demo</Link>
+          </div>
+        </div>
+      </section>
+    );
+  }
   return (
     <section className="section dark" style={{ padding: "64px 0" }}>
       <div className="wrap" style={{ display: "flex", flexWrap: "wrap", gap: 32, alignItems: "center", justifyContent: "space-between" }}>

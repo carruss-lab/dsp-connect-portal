@@ -8,7 +8,7 @@ import PlannerForm, { PlanProgress } from "./PlannerForm";
 import { builderPreset, type BuilderPreset, type SavedPlan } from "@/lib/plan";
 import { accountHref, askAboutPlan, loadPlan, requestPlan, storedPlan, type PlanRequest } from "@/lib/planClient";
 import { readProfile } from "@/lib/profile";
-import { SHARE_PCT } from "@/lib/site";
+import { PARTNERSTACK_AGENCY_URL, SHARE_PCT } from "@/lib/site";
 import Builder from "./demo/Builder";
 import Chart from "./demo/Chart";
 import { DATE_PRESETS, GROUP_BY, type Dim, type Row, account, dmy, n, pct, usd } from "./demo/data";
@@ -123,6 +123,8 @@ export default function Demo({ industry, market, agency = false }: { industry: s
   useEffect(() => {
     let ok = false;
     try { ok = sessionStorage.getItem("demo_ok") === "1"; } catch {}
+    // The agency demo is sample clients only, so it opens straight away (agencies ask about the program on /agencies).
+    if (agency) ok = true;
     setAllowed(ok);
     if (ok && !agency) {
       const prof = readProfile();
@@ -259,7 +261,9 @@ export default function Demo({ industry, market, agency = false }: { industry: s
                 </div>
               )}
             </div>
-            <Link className="dm-cta" href={agency ? "/agencies" : "/open-account"}>{agency ? "Ask about an agreement" : "Open your account"}</Link>
+            {agency
+              ? <a className="dm-cta" href={PARTNERSTACK_AGENCY_URL} target="_blank" rel="noopener noreferrer">Join the agency program</a>
+              : <Link className="dm-cta" href="/open-account">Open your account</Link>}
           </div>
         </header>
         <div className="dm-note">{agency ? "Demo agency account with sample clients and sample data. Not real results." : `Demo account with sample data for a ${industry.toLowerCase()} business in ${market}. Not real results.`}</div>
@@ -740,7 +744,7 @@ export default function Demo({ industry, market, agency = false }: { industry: s
       {toast && (
         <div className="dm-toast" role="status">
           <Mi i={toast.includes("demo") ? "warning" : "check_circle"} />
-          <span>{toast} {toast.includes("demo") && <Link href={agency ? "/agencies" : "/open-account"}>Open your account</Link>}</span>
+          <span>{toast} {toast.includes("demo") && (agency ? <a href={PARTNERSTACK_AGENCY_URL} target="_blank" rel="noopener noreferrer">Join the agency program</a> : <Link href="/open-account">Open your account</Link>)}</span>
           <button type="button" className="dm-iconbtn" aria-label="Close" onClick={() => setToast(null)}><Mi i="close" s={18} /></button>
         </div>
       )}

@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { notifyTeam } from "@/lib/email";
+import { esc, notifyTeam, send, wrap } from "@/lib/email";
 import { syncPerson } from "@/lib/intercom";
 import { chatCookie } from "@/lib/chatId";
 import { stripe } from "@/lib/payments";
-import { LEGAL_ENTITY, MIN_BUDGET, siteOrigin } from "@/lib/site";
+import { LEGAL_ENTITY, MIN_BUDGET, PARTNERSTACK_AGENCY_URL, SHARE_PCT, siteOrigin } from "@/lib/site";
 import { isUuid, secretRpc } from "@/lib/server";
 
 const KINDS = ["market_check", "account", "agency"] as const;
@@ -92,6 +92,7 @@ export async function POST(req: Request) {
   }
 
   await Promise.all([
+    kind === "agency" ? send(email, "Next step: join the DSP Connect agency program", agencyEmail(row.name || "")).catch((e) => console.error("agency email failed", e)) : null,
     notifyTeam(kind, { ...row, id: undefined, ...(planLinked ? { ad_plan: `${siteOrigin()}/planner?plan=${planId}` } : {}) }),
     syncPerson({
       email, name: row.name, role: kind === "agency" ? "agency" : "prospect", status: "lead", industry: row.industry, market: row.market,
@@ -146,4 +147,21 @@ export async function POST(req: Request) {
   const ok = NextResponse.json({ ok: true });
   ok.cookies.set(chatCookie(email));
   return ok;
+}
+
+/** Sent once when an agency asks about the program: the one step left is applying on PartnerStack. */
+function agencyEmail(name: string) {
+  const first = name.trim().split(/\s+/)[0];
+  const site = siteOrigin();
+  return wrap(
+    `<p>${first ? `Hi ${esc(first)},` : "Hi,"}</p>` +
+    `<p>Thanks for asking about the DSP Connect agency program. There is one step left: join the program on PartnerStack. That is where you sign up, accept the program terms and set up your payouts.</p>` +
+    `<p><a href="${PARTNERSTACK_AGENCY_URL}" style="display:inline-block;background:#0A4FD6;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none">Join the agency program</a></p>` +
+    `<p><b>What happens next</b></p><ol>` +
+    `<li>Apply on PartnerStack (about two minutes).</li>` +
+    `<li>We reply within one business day to set up your agency account.</li>` +
+    `<li>Each client gets their own login. You earn ${SHARE_PCT}% of the ad spend you manage, paid through PartnerStack.</li></ol>` +
+    `<p>Before then, you can click through the <a href="${site}/demo?view=agency">agency demo</a> or make a free ad plan for a prospect with the <a href="${site}/planner">ad planner</a>.</p>` +
+    `<p>Questions? Reply to this email or ask in the chat on the site.</p>`,
+  );
 }
