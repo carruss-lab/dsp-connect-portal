@@ -18,6 +18,10 @@ export const VIDEOS = {
     description: "How agencies turn any prospect's website into a streaming TV and programmatic plan in about 30 seconds, build the campaign live in the meeting, and find room to grow with existing clients." },
   plannerPartners: { id: "7ROx5q_a6dw", seconds: 84, poster: "/video/plan-partners.jpg", uploaded: "2026-11-25", title: "Hand any business owner an ad plan in 30 seconds",
     description: "How Authorized Sales Partners use their planner link to give a business owner a streaming TV and programmatic ad plan built from their own website, credited to the partner." },
+  teamOwners: { id: "5_wFTJKWq9k", seconds: 97, poster: "/video/team-owners.jpg", uploaded: "2026-11-26", title: "Build your sales team",
+    description: "For Authorized Sales Partners: add reps in your partner portal. Each gets their own sign-in and links, every client is credited to you, and all commission is paid to you." },
+  teamReps: { id: "hdKgI_vLSpQ", seconds: 90, poster: "/video/team-reps.jpg", uploaded: "2026-11-26", title: "Welcome to the team",
+    description: "For reps on a Sales Partner's team: your portal, your own links, the free ad planner, and how credit and pay work." },
 } satisfies Record<string, Video>;
 
 /** schema.org VideoObject for a page's structured data. */

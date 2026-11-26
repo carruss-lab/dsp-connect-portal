@@ -139,8 +139,6 @@ function Dashboard({ portal }: { portal: Portal }) {
               </section>
             )}
 
-            <Selling code={p.code} me={p.name} company={p.company_name} credited={p.status !== "invited"} clients={clients} training={training} trained={trained} today={today} />
-
             <section className="card stack g16" aria-labelledby="team">
               <div className="stack g8">
                 <h2 id="team" className="h3">Your team</h2>
@@ -163,9 +161,15 @@ function Dashboard({ portal }: { portal: Portal }) {
                   ))}</tbody>
                 </table></div>
               )}
+              <details className="card stack g12" style={{ background: "var(--ground)" }} open={team.length === 0}>
+                <summary style={{ cursor: "pointer", fontWeight: 600 }}>Watch: build your sales team <span className="small" style={{ fontWeight: 400 }}>· 1 min 37 s</span></summary>
+                <VideoEmbed id={VIDEOS.teamOwners.id} title={VIDEOS.teamOwners.title} poster={VIDEOS.teamOwners.poster} />
+              </details>
               <TeamInvite />
               <p className="small">You are responsible for your reps following the Operating Rules. Removing a rep stops their sign-in and their links; clients they already brought stay credited to you.</p>
             </section>
+
+            <Selling code={p.code} me={p.name} company={p.company_name} credited={p.status !== "invited"} clients={clients} training={training} trained={trained} today={today} />
 
             <section className="stack g16" aria-labelledby="po">
               <h2 id="po" className="h3">Payments to you</h2>
@@ -308,6 +312,7 @@ function RepDashboard({ portal }: { portal: MemberPortal }) {
           <div className="eyebrow">{company.name} · Authorized Sales Partner team</div>
           <h1 className="h1" style={{ fontSize: "clamp(30px,4vw,42px)" }}>Welcome, {m.name.split(" ")[0]}.</h1>
           <p className="lead">You sell for {company.name}, an Authorized Sales Partner of DSP Connect. Clients you bring through your links are credited to {company.name} and show up under your name. Commission is paid to {company.name}; your pay is between you and {company.owner}.</p>
+          <VideoEmbed id={VIDEOS.teamReps.id} title={VIDEOS.teamReps.title} poster={VIDEOS.teamReps.poster} />
           {!company.credited && <p className="note" style={{ background: "#FFF6E5", color: "#7A4B00" }}>{company.name} is still finishing its approval with DSP Connect. Your links start crediting clients as soon as that is done.</p>}
         </div>
         <section className="grid cols-3" aria-label="Your numbers">
