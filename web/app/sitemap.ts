@@ -27,6 +27,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     page("/", 1, { videos: [video(VIDEOS.owners)] }),
     page("/open-account", 0.9),
+    page("/planner", 0.8),
     page("/about", 0.7),
     page("/agencies", 0.8, { videos: [video(VIDEOS.agencies)] }),
     page("/partners", 0.6, { videos: [video(VIDEOS.partners)] }),

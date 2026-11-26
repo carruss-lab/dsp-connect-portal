@@ -3,6 +3,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import LeadForm from "./LeadForm";
+import PlanView from "./PlanView";
+import PlannerForm, { PlanProgress } from "./PlannerForm";
+import { builderPreset, type BuilderPreset, type SavedPlan } from "@/lib/plan";
+import { accountHref, askAboutPlan, loadPlan, requestPlan, storedPlan, type PlanRequest } from "@/lib/planClient";
+import { readProfile } from "@/lib/profile";
 import { SHARE_PCT } from "@/lib/site";
 import Builder from "./demo/Builder";
 import Chart from "./demo/Chart";
@@ -18,12 +23,13 @@ import "./demo/demo.css";
    columns and campaign builder. Every figure is sample data, labelled as such on every screen. */
 
 type Sec =
-  | "Clients" | "Explore" | "Dashboard" | "Campaigns" | "Create new campaign" | "Audience" | "Conversion Tracking" | "Analytics"
+  | "Your ad plan" | "Clients" | "Explore" | "Dashboard" | "Campaigns" | "Create new campaign" | "Audience" | "Conversion Tracking" | "Analytics"
   | "Traffic Funnel" | "Creative Assets" | "Allowlist / Blocklist" | "Segments" | "IFA Lists" | "User IDs" | "Custom Locations"
   | "Billing" | "Media plannings" | "Demand Analytics" | "Bidding Rules" | "Autopilot Log" | "Bid Modifiers" | "Tag Manager";
 
-type NavItem = { label: string; icon: string; sec?: Sec; children?: { sec: Sec; icon: string }[] };
+type NavItem = { label: string; icon: string; sec?: Sec; hot?: boolean; children?: { sec: Sec; icon: string }[] };
 const NAV: NavItem[] = [
+  { label: "Your ad plan", icon: "auto_awesome", sec: "Your ad plan", hot: true },
   { label: "Explore", icon: "rocket_launch", sec: "Explore" },
   { label: "Dashboard", icon: "dashboard", sec: "Dashboard" },
   { label: "Campaigns", icon: "campaign", sec: "Campaigns" },
@@ -107,11 +113,31 @@ export default function Demo({ industry, market, agency = false }: { industry: s
   const [funnelCamp, setFunnelCamp] = useState("");
   const [planGroup, setPlanGroup] = useState("SSP Endpoint");
   const [tz, setTz] = useState("UTC+00:00");
+  // The visitor's own ad plan, written from their website: the first thing in the menu, highlighted everywhere.
+  const [plan, setPlan] = useState<SavedPlan | null>(null);
+  const [planBusy, setPlanBusy] = useState(false);
+  const [planErr, setPlanErr] = useState("");
+  const [planPreset, setPlanPreset] = useState<BuilderPreset | null>(null);
+  const [known, setKnown] = useState<{ email?: string; industry?: string; market?: string }>({});
 
   useEffect(() => {
     let ok = false;
     try { ok = sessionStorage.getItem("demo_ok") === "1"; } catch {}
     setAllowed(ok);
+    if (ok && !agency) {
+      const prof = readProfile();
+      setKnown({ email: prof.email, industry: industry === "Local" ? undefined : industry, market: market === "your area" ? undefined : market });
+      const id = new URLSearchParams(location.search).get("plan");
+      let req: PlanRequest | null = null;
+      try { req = JSON.parse(sessionStorage.getItem("plan_req") || "null"); sessionStorage.removeItem("plan_req"); } catch {}
+      const mine = storedPlan();
+      if (id) { setSec("Your ad plan"); loadPlan(id).then((p) => p && setPlan(p)); }
+      else if (req?.website && req.email) {
+        // They gave their website at the demo sign-in: write the plan while they look around.
+        setSec("Your ad plan"); setPlanBusy(true);
+        requestPlan(req).then(setPlan).catch((e) => setPlanErr(e instanceof Error ? e.message : "We could not make your plan.")).finally(() => setPlanBusy(false));
+      } else if (mine) { setPlan(mine); }
+    }
     if (window.innerWidth < 760) setMini(true); // on phones the menu opens from the button
     const off = -new Date().getTimezoneOffset();
     setTz(`UTC${off >= 0 ? "+" : "-"}${String(Math.floor(Math.abs(off) / 60)).padStart(2, "0")}:${String(Math.abs(off) % 60).padStart(2, "0")}`);
@@ -196,6 +222,11 @@ export default function Demo({ industry, market, agency = false }: { industry: s
               ))}
             </div>
           ) : (
+            item.hot ? (agency ? null : (
+              <button key={item.label} type="button" className="dm-nav dm-hot" data-on={sec === item.sec || undefined} aria-current={sec === item.sec ? "page" : undefined} onClick={() => go(item.sec!)}>
+                <Mi i={item.icon} /><span>{item.label}</span>{!mini && <span className="dm-hot-badge">{planBusy ? "Writing" : plan ? "Ready" : "Free"}</span>}
+              </button>
+            )) :
             <button key={item.label} type="button" className="dm-nav" data-on={sec === item.sec || (item.sec === "Campaigns" && sec === "Create new campaign") || undefined} aria-current={sec === item.sec ? "page" : undefined} onClick={() => go(item.sec!)}><Mi i={item.icon} /><span>{item.label}</span></button>
           ))}
         </nav>
@@ -234,7 +265,36 @@ export default function Demo({ industry, market, agency = false }: { industry: s
         <div className="dm-note">{agency ? "Demo agency account with sample clients and sample data. Not real results." : `Demo account with sample data for a ${industry.toLowerCase()} business in ${market}. Not real results.`}</div>
 
         <div className="dm-body">
-          {tour !== null && !agency && sec !== "Create new campaign" && (
+          {!agency && sec !== "Your ad plan" && (
+            <button type="button" className="dm-planbar" onClick={() => go("Your ad plan")}>
+              <Mi i="auto_awesome" />
+              <span><b>{plan ? "Your ad plan is ready." : planBusy ? "We are writing your ad plan from your website." : "Get your free ad plan."}</b>{" "}
+                {plan ? "Streaming TV, video, display, native and retargeting, split for your budget." : planBusy ? "It takes about 30 seconds. Keep looking around." : "Enter your website and we plan your streaming TV, video, display, native and retargeting ads."}</span>
+              <span className="dm-planbar-go">{plan ? "View your plan" : planBusy ? "Open" : "Build my plan"}<Mi i="arrow_forward" s={18} /></span>
+            </button>
+          )}
+
+          {sec === "Your ad plan" && (
+            <div className="dm-plan">
+              {plan ? (
+                <PlanView saved={plan} actions={<>
+                  <button type="button" className="btn btn-white" onClick={() => { setPlanPreset(builderPreset(plan.plan, market)); go("Create new campaign"); }}>Build this campaign</button>
+                  <Link className="btn btn-line" style={{ borderColor: "#fff", color: "#fff" }} href={accountHref(plan)}>Open your account with this plan</Link>
+                  <button type="button" className="btn btn-line" style={{ borderColor: "#A9C1F5", color: "#A9C1F5" }} onClick={() => askAboutPlan(plan)}>Ask about this plan</button>
+                </>} />
+              ) : (
+                <div className="dm-plan-start">
+                  <div className="dm-plan-art"><Mi i="auto_awesome" /></div>
+                  <h1>{planBusy ? "Writing your ad plan" : "Your free ad plan"}</h1>
+                  <p>{planBusy ? "We are reading your website and planning your channels, audience, ads and tracking." : "Enter your website. We read it the way a media planner would and write a plan for streaming TV, online video, display, native and retargeting ads, split for your budget. Then build the campaign right here."}</p>
+                  {planErr && <p className="note note-err" role="alert">{planErr}</p>}
+                  <div className="dm-plan-form">{planBusy ? <PlanProgress /> : <PlannerForm known={known} dark onPlan={(p) => { setPlan(p); setPlanErr(""); }} />}</div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {tour !== null && !agency && sec !== "Create new campaign" && sec !== "Your ad plan" && (
             <div className="dm-tour" role="region" aria-label="Guided tour">
               {tour === -1 ? (
                 <><div><strong>New here?</strong> Take the one-minute tour of the platform.</div>
@@ -253,7 +313,7 @@ export default function Demo({ industry, market, agency = false }: { industry: s
           {sec === "Create new campaign" && (
             <>
               {tour === 2 && <div className="dm-tour" role="region" aria-label="Guided tour" style={{ margin: "-16px -16px 16px" }}><div><span className="dm-k">Stop 3 of {TOUR.length}</span><br /><strong>{TOUR[2][1]}.</strong> {TOUR[2][2]} The Traffic source step lists the SSP endpoints.</div><div className="dm-row"><button type="button" className="dm-btn" onClick={() => stop(1)}>Back</button><button type="button" className="dm-btn dm-btn-blue" onClick={() => stop(3)}>Next</button></div></div>}
-              <Builder industry={acc.short} market={market} audiences={audiences.map((x) => x[0])} onCancel={() => go("Campaigns")} />
+              <Builder key={planPreset ? "plan" : "blank"} industry={acc.short} market={market} audiences={audiences.map((x) => x[0])} onCancel={() => go("Campaigns")} preset={planPreset || undefined} />
             </>
           )}
 

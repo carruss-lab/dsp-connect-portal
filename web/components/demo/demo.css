@@ -234,3 +234,27 @@
   .dm-funnel-row{grid-template-columns:1fr 1fr}
   .dm-toast{left:16px;right:16px;bottom:16px}
 }
+/* The visitor's own ad plan: first in the menu, highlighted on every screen */
+.dm-nav.dm-hot{margin:4px 8px 10px;width:calc(100% - 16px);height:46px;border-radius:8px;background:linear-gradient(135deg,#0A4FD6,#5B3FD6);font-weight:700;box-shadow:0 0 0 1px rgba(255,255,255,.15),0 4px 14px rgba(10,79,214,.45);position:relative}
+.dm-nav.dm-hot:hover{background:linear-gradient(135deg,#0B5BF0,#6A4CF0)}
+.dm-nav.dm-hot[data-on]{box-shadow:0 0 0 2px #fff,0 4px 14px rgba(10,79,214,.55)}
+.dm-hot-badge{margin-left:auto;background:#FFD34D;color:#0B1220;border-radius:999px;padding:2px 8px;font-size:11px;font-weight:700;letter-spacing:.02em}
+.dm-side[data-mini] .dm-nav.dm-hot{margin:4px 4px 10px;width:calc(100% - 8px);padding:0;justify-content:center}
+.dm-planbar{display:flex;align-items:center;gap:14px;width:100%;margin:0 0 16px;padding:14px 18px;border:0;border-radius:10px;background:linear-gradient(135deg,#0B1220,#12306E);color:#fff;font:inherit;font-size:14px;text-align:left;cursor:pointer;line-height:1.45;box-shadow:0 0 0 2px #FFD34D inset}
+.dm-planbar:hover{background:linear-gradient(135deg,#101a30,#183c86)}
+.dm-planbar>.mi{color:#FFD34D;font-size:26px}
+.dm-planbar span{flex:1 1 auto;min-width:0}
+.dm-planbar b{color:#fff}
+.dm-planbar .dm-planbar-go{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;background:#FFD34D;color:#0B1220;font-weight:700;border-radius:6px;padding:8px 12px;white-space:nowrap}
+.dm-plan{max-width:1100px}
+.dm-plan .pv{font-family:inherit}
+.dm-plan-start{border-radius:14px;padding:32px;background:linear-gradient(135deg,#0B1220 0%,#12306E 100%);color:#fff;display:flex;flex-direction:column;gap:12px;max-width:760px;box-shadow:0 0 0 2px #FFD34D inset}
+.dm-plan-start h1{color:#fff;font-size:26px}
+.dm-plan-start p{color:#E3EAF7;max-width:620px;line-height:1.55}
+.dm-plan-art{width:52px;height:52px;border-radius:12px;background:#FFD34D;color:#0B1220;display:flex;align-items:center;justify-content:center}
+.dm-plan-art .mi{font-size:30px}
+.dm-plan-form{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:20px;margin-top:6px}
+.dm-plan-form .pl-progress li{color:#A9C1F5}
+.dm-plan-form .pl-progress li[data-on],.dm-plan-form .pl-progress li[data-done]{color:#fff}
+.dm-plan-form .small{color:#C9D6EE}
+@media (max-width:760px){.dm-planbar{flex-wrap:wrap}.dm-plan-start{padding:20px}}

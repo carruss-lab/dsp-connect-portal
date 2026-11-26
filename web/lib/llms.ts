@@ -35,6 +35,7 @@ ${link("For agencies", "/agencies", `run client campaigns and earn ${SHARE_PCT}%
 ${link("Sales Partners", "/partners", `commission-only partner program for ISOs and independent sales reps: ${SHARE_PCT}% of client ad spend, paid daily`)}
 ${link("Industries", "/industries", "how advertising is set up for each industry, and the rules that apply")}
 ${link("How we compare", "/compare", "DSP Connect side by side with other advertising platforms")}
+${link("Free ad planner", "/planner", `enter a website and get a free ad plan for streaming TV, online video, display, native and retargeting, split for the budget you choose (from $${MIN_BUDGET})`)}
 ${link("Videos", "/videos", `${LIB.length} free video lessons on programmatic advertising, with transcripts and chapters; new uploads appear automatically`)}
 
 ## Industries

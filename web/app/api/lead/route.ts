@@ -4,6 +4,7 @@ import { syncPerson } from "@/lib/intercom";
 import { chatCookie } from "@/lib/chatId";
 import { stripe } from "@/lib/payments";
 import { LEGAL_ENTITY, MIN_BUDGET, siteOrigin } from "@/lib/site";
+import { isUuid, secretRpc } from "@/lib/server";
 
 const KINDS = ["market_check", "account", "agency"] as const;
 const clean = (v: unknown, max = 500) => (typeof v === "string" ? v.trim().slice(0, max) : "");
@@ -83,8 +84,15 @@ export async function POST(req: Request) {
     return fail;
   }
 
+  // An ad plan they made with the planner travels with the sign-up (only if it belongs to the same email).
+  const planId = clean(body.plan, 40);
+  let planLinked = false;
+  if (isUuid(planId)) {
+    planLinked = await secretRpc<boolean>("strategy_link", { p_lead: id, p_strategy: planId }).catch((e) => { console.error("strategy link failed", e); return false; });
+  }
+
   await Promise.all([
-    notifyTeam(kind, { ...row, id: undefined }),
+    notifyTeam(kind, { ...row, id: undefined, ...(planLinked ? { ad_plan: `${siteOrigin()}/planner?plan=${planId}` } : {}) }),
     syncPerson({
       email, name: row.name, role: kind === "agency" ? "agency" : "prospect", status: "lead", industry: row.industry, market: row.market,
       extra: {
@@ -120,7 +128,7 @@ export async function POST(req: Request) {
             product_data: { name: "DSP Connect ad budget", description: `Starting ad budget for ${row.business}. Sold by ${LEGAL_ENTITY}.` },
           },
         }],
-        metadata: { lead_id: id },
+        metadata: { lead_id: id, ...(planLinked ? { strategy_id: planId } : {}) },
         success_url: `${origin}/open-account/thanks?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${origin}/open-account`,
       } as unknown as Parameters<typeof client.checkout.sessions.create>[0];

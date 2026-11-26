@@ -4,6 +4,8 @@ import IdentifyClient from "@/components/IdentifyClient";
 import { messengerJwt } from "@/lib/chatId";
 import { Remember } from "@/components/Personal";
 import IntakeForm from "@/components/IntakeForm";
+import PlanView from "@/components/PlanView";
+import { CHANNELS, type Plan } from "@/lib/plan";
 import { isUuid, secretRpc } from "@/lib/server";
 import { HELP_URL, SETUP_DAYS, SUPPORT_EMAIL } from "@/lib/site";
 
@@ -13,6 +15,14 @@ type Status = {
   email: string; business: string | null; name: string | null; paid_at: string; amount_paid: number | null; setup_due: string | null; website: string | null;
   step_account_at: string | null; step_tracking_at: string | null; step_ads_at: string | null; step_audience_at: string | null; live_at: string | null; intake_at: string | null;
   intake: Record<string, string> | null; formats: string | null; market: string | null; goals: string | null;
+  strategy_id?: string | null; plan?: Plan | null; industry?: string | null;
+};
+
+/** The brief starts from the ad plan they made before signing up, where it has an answer. */
+const fromPlan = (p: Plan | null | undefined): Record<string, string> => !p ? {} : {
+  promoting: p.learned.offer, ideal_customer: p.learned.customer, areas: p.targeting.locations.join(", "), result_definition: p.tracking.action,
+  formats: [...new Set(p.channels.map((c) => CHANNELS[c.key].format))].join(", "),
+  campaign_types: [p.channels.some((c) => c.key === "retargeting") ? "Bring back people who visited my website" : "", "Reach new people in my area"].filter(Boolean).join(", "),
 };
 const STEPS: [keyof Status, string, string][] = [
   ["step_account_at", "Account created", "Your account exists and your ad budget is loaded."],
@@ -85,6 +95,14 @@ export default async function Welcome({ searchParams }: PageProps<"/welcome">) {
           </ol>
         </section>
 
+        {s.plan && s.strategy_id && (
+          <section className="stack g12" aria-labelledby="plan-h">
+            <h2 id="plan-h" className="h3" style={{ fontSize: 19 }}>Your ad plan</h2>
+            <p className="p" style={{ fontSize: 14 }}>The plan you made from your website before you signed up. We use it as the starting point for your setup, and your brief below is filled in from it.</p>
+            <PlanView compact saved={{ id: s.strategy_id, business: s.business || "", website: s.website || "", industry: "", market: s.market || "", plan: s.plan }} />
+          </section>
+        )}
+
         {!s.live_at && (
           <section id="brief" className="card stack g24" style={{ background: "var(--ground)", maxWidth: 820, scrollMarginTop: 80 }}>
             <div className="stack g8">
@@ -94,7 +112,7 @@ export default async function Welcome({ searchParams }: PageProps<"/welcome">) {
                   : "These are the questions an advertising consultant asks before building a first campaign. Your answers decide what we build, who we aim it at and what we count as a result. It takes about ten minutes, and only a few answers are required. The rest help us do a better job."}
               </p>
             </div>
-            <IntakeForm lead={id} saved={s.intake} defaults={{ landing_page: s.website || "", areas: s.market || "", formats: s.formats || "", other_goals: s.goals || "" }} />
+            <IntakeForm lead={id} saved={s.intake} defaults={{ ...fromPlan(s.plan), landing_page: s.website || "", ...(s.market && !s.plan ? { areas: s.market } : {}), ...(s.formats ? { formats: s.formats } : {}), other_goals: s.goals || "" }} />
           </section>
         )}
 

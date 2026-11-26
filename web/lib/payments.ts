@@ -2,6 +2,9 @@ import Stripe from "stripe";
 import { confirmPayment, notifyTeam } from "./email";
 import { syncPerson } from "./intercom";
 import { runNotices } from "./notices";
+import { planSummary, type Plan } from "./plan";
+import { secretRpc } from "./server";
+import { siteOrigin } from "./site";
 
 export function stripe(): Stripe | null {
   const key = process.env.STRIPE_SECRET_KEY;
@@ -30,9 +33,12 @@ export async function markPaid(session: Stripe.Checkout.Session): Promise<"paid"
     if ((await res.json()) === true) {
       const amount = (session.amount_total ?? 0) / 100;
       const email = session.customer_details?.email || session.customer_email || "";
+      // If they made an ad plan before signing up, the team sees it with the payment.
+      const st = await secretRpc<{ strategy_id: string | null; plan: Plan | null } | null>("client_status", { p_lead: lead }).catch(() => null);
+      const plan = st?.plan && st.strategy_id ? { ad_plan: `${siteOrigin()}/planner?plan=${st.strategy_id}`, plan_summary: planSummary(st.plan) } : {};
       await Promise.all([
         email ? confirmPayment(email, amount, lead) : Promise.resolve(),
-        notifyTeam("paid", { email, amount, sign_up: lead }),
+        notifyTeam("paid", { email, amount, sign_up: lead, ...plan }),
         email ? syncPerson({ email, role: "client", status: "paid_in_setup", setupDue: new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10), extra: { lead_stage: "paid" } }) : Promise.resolve(),
       ]);
       await runNotices({ lead }).catch((e) => console.error("notices failed", e));

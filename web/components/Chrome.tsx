@@ -19,6 +19,7 @@ export function Header() {
           <Link href="/agencies">For agencies</Link>
           <Link href="/compare">How we compare</Link>
           <Link href="/videos">Videos</Link>
+          <Link href="/planner">Free ad plan</Link>
         </nav>
         {LOGIN_URL && <a className="navlink" href={LOGIN_URL} style={{ color: "var(--ink)" }}>Log in</a>}
         <Link className="btn btn-blue" href="/#market">See the demo</Link>
@@ -45,6 +46,7 @@ export function Footer() {
           <Link href="/partners">Sales Partners</Link>
           <Link href="/compare">Comparisons</Link>
           <Link href="/videos">Videos</Link>
+          <Link href="/planner">Ad planner</Link>
           <a href={HELP_URL}>Help center</a>
           <Link href="/terms">Terms</Link>
           <Link href="/refunds">Refunds</Link>

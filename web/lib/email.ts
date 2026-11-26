@@ -40,7 +40,7 @@ type Lead = Record<string, string | number | null | undefined>;
 export async function notifyTeam(kind: string, lead: Lead) {
   const to = process.env.NOTIFY_EMAIL;
   if (!to) return;
-  const label = { market_check: "Demo opened", account: "Account sign-up started", agency: "Agency enquiry", paid: "Payment received", intake: "Client sent their campaign brief" }[kind] || kind;
+  const label = { market_check: "Demo opened", account: "Account sign-up started", agency: "Agency enquiry", paid: "Payment received", intake: "Client sent their campaign brief", plan: "Ad plan made" }[kind] || kind;
   const rows = Object.entries(lead)
     .filter(([, v]) => v !== null && v !== undefined && v !== "")
     .map(([k, v]) => `<tr><td style="padding:4px 12px 4px 0;color:#5B6577">${esc(k)}</td><td style="padding:4px 0">${esc(String(v))}</td></tr>`)

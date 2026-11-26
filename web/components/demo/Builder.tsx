@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { MIN_BUDGET } from "@/lib/site";
+import { TAXONOMIES, type BuilderPreset } from "@/lib/plan";
 import { SSP_ENDPOINTS, SSP_LABELS, usd } from "./data";
 
 // The campaign builder, step for step as the client platform has it: General, Audience, Price & Optimization,
@@ -25,7 +26,6 @@ const FORMATS = [
 const DEVICES = ["Desktop", "Mobile", "Tablet", "Connected TV", "Connected Device", "Set Top Box"];
 const OSES = ["Android", "iOS", "Windows", "macOS", "Roku OS", "Tizen", "Fire OS", "webOS", "tvOS"];
 const BROWSERS = ["Chrome", "Safari", "Firefox", "Edge", "Samsung Internet", "Opera"];
-const TAXONOMIES = ["IAB1 Arts & Entertainment", "IAB3 Business", "IAB5 Education", "IAB7 Health & Fitness", "IAB8 Food & Drink", "IAB10 Home & Garden", "IAB12 News", "IAB13 Personal Finance", "IAB17 Sports", "IAB19 Technology & Computing", "IAB20 Travel", "IAB21 Real Estate"];
 
 type Sel = Record<string, "inc" | "exc">;
 
@@ -76,7 +76,7 @@ function Multi({ label, items, value, onChange, incExc }: { label: string; items
   );
 }
 
-export default function Builder({ industry, market, audiences, onCancel }: { industry: string; market: string; audiences: string[]; onCancel: () => void }) {
+export default function Builder({ industry, market, audiences, onCancel, preset }: { industry: string; market: string; audiences: string[]; onCancel: () => void; preset?: BuilderPreset }) {
   const [step, setStep] = useState(0);
   const [done, setDone] = useState(false);
   const [f, setF] = useState({
@@ -86,6 +86,8 @@ export default function Builder({ industry, market, audiences, onCancel }: { ind
     lang: "", schedule: "", conn: "Any", taxonomies: [] as string[],
     model: "", price: "", decay: "0", floorInc: "", cap24: "", cap30: "", recency: "", maxBid: "", fraud: "High", pixalate: false,
     budgetStart: "", budgetEnd: "", limitType: "Total limits", spend: "", impLimit: "", pacing: true, budgetSaved: false,
+    // Opened from the visitor's ad plan: its first campaign is filled in.
+    ...(preset ? { name: preset.name, goal: preset.goal, conversion: preset.goal === "Conversions" ? "Registration (1 event)" : "", format: preset.format, geo: preset.geo || (market === "your area" ? "" : market), devices: preset.devices, taxonomies: preset.taxonomies, spend: preset.spend } : {}),
   });
   const set = <K extends keyof typeof f>(k: K, v: (typeof f)[K]) => setF((o) => ({ ...o, [k]: v }));
   const [ssp, setSsp] = useState<Sel>({});
@@ -176,6 +178,7 @@ export default function Builder({ industry, market, audiences, onCancel }: { ind
         </nav>
 
         <div className={`dm-b-scroll${step === 4 ? " wide" : ""}`}>
+          {preset && step === 0 && <div className="dm-info" style={{ marginBottom: 12, background: "#EAF1FF", borderColor: "#0A4FD6" }}><span className="mi" aria-hidden="true">auto_awesome</span><span>Filled in from your ad plan: the first campaign, its goal, format, location and devices. Add a CPA and price, then step through.</span></div>}
           {step === 0 && (
             <>
               <div className="dm-card dm-stack">

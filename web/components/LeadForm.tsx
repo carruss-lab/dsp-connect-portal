@@ -24,6 +24,9 @@ export default function LeadForm({ kind, cta }: { kind: Kind; cta: string }) {
     const o: Record<string, string> = {};
     for (const k of ["name", "email", "phone", "business", "website", "goals", "budget", "formats", "market", "industry"]) { const v = prof[k]; if (typeof v === "string" && v) o[k] = v; }
     for (const k of ["budget", "formats", "goals", "market", "industry"]) { const v = q.get(k); if (v) o[k] = v.slice(0, 200); }
+    // An ad plan from the planner travels with the sign-up: from the link, or the last one made in this browser.
+    const planId = q.get("plan") || (() => { try { return JSON.parse(localStorage.getItem("dsp_ad_plan") || "null")?.id || ""; } catch { return ""; } })();
+    if (kind === "account" && /^[0-9a-f-]{36}$/i.test(planId)) o.plan = planId;
     if (Object.keys(o).length) setPre(o);
     if (!o.market) {
       fetch("/api/geo").then((r) => r.json()).then((g) => { if (g?.market) setPre((cur) => (cur.market ? cur : { ...cur, market: g.market })); }).catch(() => {});
@@ -70,6 +73,12 @@ export default function LeadForm({ kind, cta }: { kind: Kind; cta: string }) {
       if (out.pay) { location.assign(out.pay); return; }
       if (kind === "market_check") {
         try { sessionStorage.setItem("demo_ok", "1"); } catch {}
+        // A website given here gets an ad plan written while the demo opens.
+        const site = String(data.website || "").trim();
+        if (site) {
+          const host = site.replace(/^https?:\/\//i, "").replace(/^www\./i, "").split(/[/?#]/)[0];
+          try { sessionStorage.setItem("plan_req", JSON.stringify({ email: String(data.email || ""), business: String(data.business || "").trim() || host, website: site, industry: String(data.industry || ""), market: String(data.market || ""), budget: Math.max(MIN_BUDGET, Number(data.budget) || MIN_BUDGET) })); } catch {}
+        }
         const q = new URLSearchParams({ industry: String(data.industry || ""), market: String(data.market || "") });
         if (location.pathname === "/demo") {
           const cur = new URLSearchParams(location.search);
@@ -126,6 +135,27 @@ export default function LeadForm({ kind, cta }: { kind: Kind; cta: string }) {
             <input className="input" id={`${kind}-market`} name="market" required placeholder="City or state" defaultValue={pre.market || ""} />
           </div>
         </>
+      )}
+      {kind === "market_check" && (
+        <fieldset className="plan-offer">
+          <legend><span className="mi-star" aria-hidden="true">★</span> Get your free ad plan with the demo</legend>
+          <p>Add your website and we write a plan for streaming TV, video, display, native and retargeting ads while the demo opens.</p>
+          <div className="field">
+            <label htmlFor="mc-website">Your website <span className="small">(optional)</span></label>
+            <input className="input" id="mc-website" name="website" inputMode="url" autoComplete="url" placeholder="yourbusiness.com" defaultValue={pre.website || ""} />
+          </div>
+          <div className="field">
+            <label htmlFor="mc-business">Business name <span className="small">(optional)</span></label>
+            <input className="input" id="mc-business" name="business" autoComplete="organization" defaultValue={pre.business || ""} />
+          </div>
+          <div className="field">
+            <label htmlFor="mc-budget">Starting ad budget, US dollars <span className="small">(from ${MIN_BUDGET})</span></label>
+            <input className="input mono" id="mc-budget" name="budget" type="number" min={MIN_BUDGET} step={50} inputMode="numeric" defaultValue={Number(pre.budget) >= MIN_BUDGET ? Number(pre.budget) : MIN_BUDGET} />
+          </div>
+        </fieldset>
+      )}
+      {kind === "account" && pre.plan && (
+        <p className="note note-ok" style={{ margin: 0 }}><input type="hidden" name="plan" value={pre.plan} />Your ad plan is attached. We use it for your setup and your campaign brief.</p>
       )}
       {kind === "account" && (
         <>
