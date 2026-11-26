@@ -99,7 +99,7 @@ export const DOCS: Doc[] = [
       ] },
       { h: "2. What you never say", p: [
         "Never name or describe our technology providers, our costs, margins, mark-ups or how our fee is calculated.",
-        "Never offer to run, manage or optimise a client's campaigns for them, or offer any service we do not sell. DSP Connect sets accounts up; the client runs them with our help.",
+        "Never offer to run, manage or optimize a client's campaigns for them, or offer any service we do not sell. DSP Connect sets accounts up; the client runs them with our help.",
         "Never advise a client to add money, raise their budget or spend more. Give advice on creative, audience, areas, tracking, landing pages and pacing instead.",
         "Never describe yourself as DSP Connect staff, or as a reseller who sets prices or bills clients. Describe yourself as an independent Authorized Sales Partner of DSP Connect.",
       ] },

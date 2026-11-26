@@ -66,7 +66,7 @@ Rules you must follow:
 - Write for a business owner: plain English, short sentences, no jargon (say "streaming TV" alongside CTV once), no exclamation marks, no emojis.`;
 
 const TRIM = (s: string, n = 400) => s.replace(/\s+/g, " ").trim().slice(0, n);
-/** Last line of defence: nothing that names our provider, talks about margins, or promises results. */
+/** Last line of defense: nothing that names our provider, talks about margins, or promises results. */
 const BANNED = /\b(epom|mark-?up|margin|take rate|guarantee[ds]?)\b/i;
 function clean(p: Plan): Plan {
   const fix = (s: string) => (BANNED.test(s) ? "" : TRIM(s));

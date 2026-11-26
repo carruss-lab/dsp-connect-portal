@@ -14,9 +14,9 @@ export async function POST(req: Request) {
   try {
     const who = await secretRpc<{ business: string | null; email: string; name: string | null } | null>("client_intake", { p_lead: lead, p_data: data });
     if (!who) return NextResponse.json({ error: "We could not find a paid account for this link." }, { status: 404 });
-    const labelled = Object.fromEntries(Object.entries(data).map(([k, v]) => [fieldLabel(k), v]));
+    const labeled = Object.fromEntries(Object.entries(data).map(([k, v]) => [fieldLabel(k), v]));
     await Promise.all([
-      notifyTeam("intake", { Business: who.business, email: who.email, ...labelled }),
+      notifyTeam("intake", { Business: who.business, email: who.email, ...labeled }),
       syncPerson({ email: who.email, name: who.name, role: "client", extra: { setup_details_received: "Yes", primary_goal: data.primary_goal || "", campaign_types: (data.campaign_types || "").slice(0, 250) } }),
     ]);
     return NextResponse.json({ ok: true });

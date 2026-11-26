@@ -142,7 +142,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "We saved your details but could not open the payment page. Please try again." }, { status: 502 });
     }
   }
-  // This browser has now proved who it is, so the chat can recognise them (see lib/chatId.ts).
+  // This browser has now proved who it is, so the chat can recognize them (see lib/chatId.ts).
   const ok = NextResponse.json({ ok: true });
   ok.cookies.set(chatCookie(email));
   return ok;

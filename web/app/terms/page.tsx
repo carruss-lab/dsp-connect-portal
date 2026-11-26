@@ -3,7 +3,7 @@ import { pageMeta } from "@/lib/seo";
 import Legal, { type Part } from "@/components/Legal";
 import { LEGAL_ENTITY, MIN_BUDGET, SETUP_DAYS } from "@/lib/site";
 
-export const metadata: Metadata = pageMeta({ title: "Client terms", description: "The client terms that apply when you open a DSP Connect account: setup, your ad budget, our fee, cancelling and refunds.", path: "/terms" });
+export const metadata: Metadata = pageMeta({ title: "Client terms", description: "The client terms that apply when you open a DSP Connect account: setup, your ad budget, our fee, canceling and refunds.", path: "/terms" });
 
 const PARTS: Part[] = [
   ["Who these terms are between", [
@@ -21,7 +21,7 @@ const PARTS: Part[] = [
     "There is no monthly platform fee. Our fee is included in the price of your ads. The prices shown in your account are the prices you pay.",
     "Payments are processed by Stripe. We do not see or store your card or bank details.",
   ]],
-  ["Cancelling and refunds", [
+  ["Canceling and refunds", [
     "There is no long-term contract. You can cancel at any time. What is refunded is set out in our Refund policy, which is part of these terms.",
   ]],
   ["Your ads and your website", [

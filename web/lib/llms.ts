@@ -54,7 +54,7 @@ ${PROFILES.map((u) => `- ${u}`).join("\n")}
 
 ## Policies
 ${link("Client terms", "/terms", "the agreement for advertisers")}
-${link("Refund policy", "/refunds", "cancelling and refunds of unspent ad budget")}
+${link("Refund policy", "/refunds", "canceling and refunds of unspent ad budget")}
 ${link("Privacy policy", "/privacy", "what information is collected and why")}`;
 }
 

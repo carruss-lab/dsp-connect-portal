@@ -22,11 +22,11 @@ export default async function Join({ params }: PageProps<"/partners/join/[token]
       <header className="header"><div className="wrap"><span className="brand"><Image src="/logo.png" alt="" width={30} height={30} />DSP Connect</span><span className="small">Authorized Sales Partner</span></div></header>
       <main className="wrap stack g32" style={{ padding: "72px 32px 96px", maxWidth: 760 }}>
         {!partner || ["ended", "applied", "declined"].includes(partner.status) ? (
-          <><h1 className="h1" style={{ fontSize: 36 }}>This link is not valid.</h1><p className="lead">Check that you opened the full link from your enrolment email. If you need it again, reply to that email or ask in the chat.</p></>
+          <><h1 className="h1" style={{ fontSize: 36 }}>This link is not valid.</h1><p className="lead">Check that you opened the full link from your enrollment email. If you need it again, reply to that email or ask in the chat.</p></>
         ) : (
           <>
             <div className="stack g16">
-              <div className="eyebrow">{["admitted", "active"].includes(partner.status) ? "Approved" : "Your enrolment"}</div>
+              <div className="eyebrow">{["admitted", "active"].includes(partner.status) ? "Approved" : "Your enrollment"}</div>
               <h1 className="h1" style={{ fontSize: "clamp(30px,4.4vw,44px)" }}>Welcome, {partner.name.split(" ")[0]}.</h1>
               <p className="lead">{["admitted", "active"].includes(partner.status) ? "You are approved as a DSP Connect Authorized Sales Partner." : "Two steps to approval: sign your agreement and verify with Stripe. Once both are done you are approved automatically."} You earn {SHARE_PCT}% of the qualified ad spend of the clients you bring in, paid daily, for as long as they spend.</p>
             </div>

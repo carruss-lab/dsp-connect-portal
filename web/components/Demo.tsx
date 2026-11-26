@@ -20,7 +20,7 @@ import "material-icons/iconfont/filled.css";
 import "./demo/demo.css";
 
 /* The demo account follows the client platform screen for screen: the same sidebar, top bar, sections, labels,
-   columns and campaign builder. Every figure is sample data, labelled as such on every screen. */
+   columns and campaign builder. Every figure is sample data, labeled as such on every screen. */
 
 type Sec =
   | "Your ad plan" | "Clients" | "Explore" | "Dashboard" | "Campaigns" | "Create new campaign" | "Audience" | "Conversion Tracking" | "Analytics"

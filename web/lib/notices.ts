@@ -330,7 +330,7 @@ async function partnerOnboarding(r: Report, p: Onboarding) {
     const k = p.days_approved >= 6 && p.days_approved <= 8 ? "partner_sign_2" : p.days_approved >= 2 && p.days_approved <= 4 ? "partner_sign_1" : "";
     if (!k) return;
     await deliver(r, p.id, "partner", k, p.email, "Your Sales Partner Agreement is ready to sign",
-      hello + `<p>Your DSP Connect Authorized Sales Partner enrolment${p.company_name ? ` for ${esc(p.company_name)}` : ""} is open. The next step is to read and sign your agreement online. It takes about ten minutes, and you can sign as yourself or for your company. Then verify with Stripe, and you are approved automatically.</p>` +
+      hello + `<p>Your DSP Connect Authorized Sales Partner enrollment${p.company_name ? ` for ${esc(p.company_name)}` : ""} is open. The next step is to read and sign your agreement online. It takes about ten minutes, and you can sign as yourself or for your company. Then verify with Stripe, and you are approved automatically.</p>` +
       btn(`${origin()}/partners/join/${p.invite_token}`, "Sign your agreement") +
       `<p>Once it is signed you get your sales kit, your leave-behind and your own client links straight away. Your links credit you from the moment Stripe verifies you.</p>` + help + foot);
     return;
