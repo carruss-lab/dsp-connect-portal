@@ -46,8 +46,8 @@ export default function Planner() {
       <Header />
       <main>
         <section className="hero" style={{ paddingBottom: 48 }}>
-          <div className="wrap" style={{ display: "flex", flexWrap: "wrap", gap: 48, alignItems: "flex-start" }}>
-            <div className="stack g24" style={{ flex: "1 1 400px", minWidth: 0 }}>
+          <PlannerApp intro={
+            <>
               <div className="eyebrow">Free ad planner</div>
               <h1 className="h1" style={{ maxWidth: 720 }}>Your website in. Your ad plan out.</h1>
               <p className="lead" style={{ maxWidth: 640 }}>
@@ -60,9 +60,8 @@ export default function Planner() {
                 <li>Saved to your email, and it carries into your account.</li>
                 <li>Open it in your demo account and build the campaign.</li>
               </ul>
-            </div>
-            <div style={{ flex: "1 1 420px", minWidth: 0 }}><PlannerApp /></div>
-          </div>
+            </>
+          } />
         </section>
 
         <section className="section band" aria-labelledby="covers-h">
