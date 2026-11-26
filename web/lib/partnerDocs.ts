@@ -1,11 +1,11 @@
 import { createHash } from "crypto";
 import { LEGAL_ENTITY, MIN_BUDGET, SHARE_PCT } from "./site";
 
-// The Authorized Sales Partner documents. Drafted from the earlier partner terms and updated for the
-// sales partner model: a person or a company, approved by application, paid commission only with
-// residuals for life. DRAFT FOR LEGAL REVIEW: change the text here, then raise VERSION, so every
-// signature records exactly which wording was agreed.
-export const VERSION = "2026-11-17.1";
+// The Authorized Sales Partner documents: a person or a company, approved automatically once the agreement
+// is signed and Stripe verifies them, paid commission only with residuals for life. Approved for use by the
+// owner on 2026-11-26. To change the wording, edit the text here and raise VERSION, so every signature
+// records exactly which wording was agreed.
+export const VERSION = "2026-11-26.1";
 
 export const PROGRAM = "Authorized Sales Partner";
 
@@ -30,7 +30,7 @@ export const DOCS: Doc[] = [
         "If you sign for a company, the company is the Authorized Sales Partner and the person signing confirms they are authorized to bind it. The company is responsible for everyone at the company who sells under its partner link, and for making sure they follow the Operating Rules.",
       ] },
       { h: "3. Approval and no sub-agents", p: [
-        "We approve Authorized Sales Partners by application, at our discretion. Your appointment is personal to you (or to your company); you may not transfer it. You may not appoint sub-agents, resellers or referral partners, or let anyone outside your company sell under your partner link, unless we agree in writing.",
+        "You are approved as an Authorized Sales Partner once you have signed this Agreement and Stripe has verified your payout account. We may decline an application, and either of us may end this Agreement under section 6. Your appointment is personal to you (or to your company); you may not transfer it. You may not appoint sub-agents, resellers or referral partners, or let anyone outside your company sell under your partner link, unless we agree in writing.",
       ] },
       { h: "4. Pay", p: [
         `You earn cash commission only, as set out in Exhibit A: ${SHARE_PCT}% of the qualified ad spend of clients credited to you, for as long as those clients keep spending (residuals). There is no salary, draw, equity or guaranteed income of any kind. Any earlier description of equity, ownership or profit share in DSP Connect or ${CO} does not apply to you.`,
