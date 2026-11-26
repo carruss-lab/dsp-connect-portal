@@ -23,7 +23,7 @@ const money = (s: number) => `$${((s * SHARE_PCT) / 100).toLocaleString("en-US")
 export default function Agencies() {
   return (
     <>
-      <JsonLd data={pageGraph({ path: "/agencies", name: "For agencies", description: DESCRIPTION, trail: [["Home", "/"], ["For agencies", "/agencies"]], main: AGENCY_PROGRAM, nodes: [videoNode(VIDEOS.agencies, "/agencies"), videoNode(VIDEOS.plannerAgencies, "/agencies", "planner-video")], image: `${SITE_URL}/agencies/opengraph-image` })} />
+      <JsonLd data={pageGraph({ path: "/agencies", name: "For agencies", description: DESCRIPTION, trail: [["Home", "/"], ["For agencies", "/agencies"]], main: AGENCY_PROGRAM, nodes: [videoNode(VIDEOS.agencies, "/agencies"), videoNode(VIDEOS.plannerAgencies, "/agencies", "planner-video"), videoNode(VIDEOS.teamAgencies, "/agencies", "team-video")], image: `${SITE_URL}/agencies/opengraph-image` })} />
       <Header />
       <main>
         <section className="hero">
@@ -69,6 +69,8 @@ export default function Agencies() {
             ))}
           </div>
         </section>
+        <PlannerVideo v={VIDEOS.teamAgencies} id="team" eyebrow="Your sales team" title="Add your reps in PartnerStack." cta="Sign in to PartnerStack" href="https://dash.partnerstack.com"
+          points={["Click your initials, then Members & Invites.", "Invite by email, and choose Member for each salesperson.", "Each rep gets their own referral link and sees only their own customers and commissions.", "Every customer is credited to your agency, and only the owner and Finance can withdraw."]} />
         <section className="section" aria-labelledby="which-h">
           <div className="wrap narrow stack g16">
             <h2 id="which-h" className="h2">Agency or Sales Partner?</h2>

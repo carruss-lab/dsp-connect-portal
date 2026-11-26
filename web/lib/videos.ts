@@ -20,6 +20,8 @@ export const VIDEOS = {
     description: "How Authorized Sales Partners use their planner link to give a business owner a streaming TV and programmatic ad plan built from their own website, credited to the partner." },
   teamOwners: { id: "5_wFTJKWq9k", seconds: 97, poster: "/video/team-owners.jpg", uploaded: "2026-11-26", title: "Build your sales team",
     description: "For Authorized Sales Partners: add reps in your partner portal. Each gets their own sign-in and links, every client is credited to you, and all commission is paid to you." },
+  teamAgencies: { id: "au5qCF-bXws", seconds: 87, poster: "/video/team-agencies.jpg", uploaded: "2026-11-26", title: "Add your sales team in PartnerStack",
+    description: "For agency partners, step by step in PartnerStack: open Members & Invites, invite each rep by email as a Member, and see what each role can do. Every customer is credited to your agency." },
   teamReps: { id: "hdKgI_vLSpQ", seconds: 90, poster: "/video/team-reps.jpg", uploaded: "2026-11-26", title: "Welcome to the team",
     description: "For reps on a Sales Partner's team: your portal, your own links, the free ad planner, and how credit and pay work." },
 } satisfies Record<string, Video>;
