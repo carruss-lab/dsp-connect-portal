@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { notifyTeam } from "@/lib/email";
 import { stripe } from "@/lib/payments";
 import { isUuid, secretRpc } from "@/lib/server";
 import { LEGAL_ENTITY, siteOrigin } from "@/lib/site";
@@ -11,9 +12,11 @@ export async function POST(req: Request) {
   const client = stripe();
   if (!token || !isUuid(token)) return NextResponse.json({ error: "This invitation link is not valid." }, { status: 400 });
   if (!client) return NextResponse.json({ error: "Payout setup is not connected yet." }, { status: 503 });
+  let who: Partner | undefined;
   try {
     const [partner] = await secretRpc<Partner[]>("partner_by_token", { p_token: token });
     if (!partner || ["ended", "applied", "declined"].includes(partner.status)) return NextResponse.json({ error: "This invitation link is not valid." }, { status: 404 });
+    who = partner;
     let account = partner.stripe_account_id;
     if (!account) {
       // Partners only receive commission, so the account is set up to receive transfers and nothing else.
@@ -38,6 +41,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ url: link.url });
   } catch (err) {
     console.error("partner connect failed", err);
+    // The team hears about it at once, so a partner is never left stuck at payout setup.
+    await notifyTeam("Sales Partner could not start payout setup", {
+      name: who?.name, email: who?.email, code: who?.code, error: err instanceof Error ? err.message.slice(0, 300) : String(err).slice(0, 300),
+    }).catch(() => {});
     return NextResponse.json({ error: "We could not start payout setup. Please try again, or contact us." }, { status: 502 });
   }
 }
