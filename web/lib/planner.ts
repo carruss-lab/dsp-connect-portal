@@ -8,7 +8,9 @@ import { MIN_BUDGET, SETUP_DAYS } from "./site";
 // (signed in with the deployment's own OIDC token, or AI_GATEWAY_API_KEY if one is set). If the model
 // is unavailable the planner still answers, with a plan built from simple rules.
 
-export const MODEL = process.env.PLANNER_MODEL || "anthropic/claude-sonnet-5.5";
+/** Tried in order: the best model first, then lighter ones the account may allow (the free tier limits models). */
+export const MODELS = (process.env.PLANNER_MODEL || "anthropic/claude-sonnet-5.5,anthropic/claude-haiku-5.5,anthropic/claude-haiku-4.5,openai/gpt-5-mini")
+  .split(",").map((m) => m.trim()).filter(Boolean);
 
 const KEYS = Object.keys(CHANNELS) as [ChannelKey, ...ChannelKey[]];
 const schema = z.object({
@@ -141,18 +143,24 @@ export function rulePlan(i: PlanInput, s: Signals | null): Plan {
 }
 
 export async function writePlan(i: PlanInput, s: Signals | null): Promise<{ plan: Plan; model: string }> {
-  try {
-    const { output } = await generateText({
-      model: MODEL,
-      system: SYSTEM,
-      prompt: `Write the ad plan for this business.\n\n${brief(i, s)}`,
-      output: Output.object({ schema }),
-      maxOutputTokens: 4000,
-      abortSignal: AbortSignal.timeout(45_000),
-    });
-    return { plan: clean({ ...(output as Plan), budget: i.budget }), model: MODEL };
-  } catch (err) {
-    console.error("planner model failed", err);
-    return { plan: clean({ ...rulePlan(i, s), budget: i.budget }), model: "rules" };
+  for (const model of MODELS) {
+    try {
+      const { output } = await generateText({
+        model,
+        system: SYSTEM,
+        prompt: `Write the ad plan for this business.\n\n${brief(i, s)}`,
+        output: Output.object({ schema }),
+        maxOutputTokens: 4000,
+        maxRetries: 1,
+        abortSignal: AbortSignal.timeout(40_000),
+      });
+      return { plan: clean({ ...(output as Plan), budget: i.budget }), model };
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error("planner model failed", model, msg.slice(0, 300));
+      // Only a model the account cannot use is worth trying the next one for; a timeout would just double the wait.
+      if (!/free tier|no_providers|not have access|not found|unsupported/i.test(msg)) break;
+    }
   }
+  return { plan: clean({ ...rulePlan(i, s), budget: i.budget }), model: "rules" };
 }

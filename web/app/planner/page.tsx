@@ -9,7 +9,7 @@ const PATH = "/planner";
 const DESCRIPTION =
   "Enter your website and get a free ad plan: streaming TV, video, display, native and retargeting, split for your budget, with targeting and tracking.";
 
-export const metadata: Metadata = pageMeta({ title: "Free Ad Planner: Your Streaming TV and Programmatic Plan", description: DESCRIPTION, path: PATH });
+export const metadata: Metadata = pageMeta({ title: "Free Ad Planner for Streaming TV and Programmatic", description: DESCRIPTION, path: PATH });
 
 const COVERS: [string, string][] = [
   ["What we learned from your website", "What you sell, who buys it, where they are and what they do on your site."],
