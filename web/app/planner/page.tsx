@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Footer, Header } from "@/components/Chrome";
 import PlannerApp from "@/components/PlannerApp";
+import PlannerVideo from "@/components/PlannerVideo";
+import { VIDEOS, videoNode } from "@/lib/videos";
 import { ID, JsonLd, SITE_URL, pageGraph, pageMeta } from "@/lib/seo";
 import { MIN_BUDGET, SETUP_DAYS } from "@/lib/site";
 
@@ -38,6 +40,18 @@ export default function Planner() {
       applicationCategory: "BusinessApplication", operatingSystem: "Any (web browser)", browserRequirements: "Requires JavaScript",
       description: DESCRIPTION, isAccessibleForFree: true, provider: { "@id": ID.org }, offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
       featureList: COVERS.map(([t]) => t),
+    },
+    videoNode(VIDEOS.plannerOwners, PATH),
+    {
+      "@type": "HowTo", "@id": `${SITE_URL}${PATH}#howto`, name: "How to get a free ad plan from your website",
+      description: "Get a streaming TV and programmatic ad plan written from your own website, then build the campaign in the demo account.",
+      totalTime: "PT1M", tool: [{ "@type": "HowToTool", name: "Your business website" }], video: { "@id": `${SITE_URL}${PATH}#video` },
+      step: [
+        ["Enter your details", "Enter your website, business name, email, industry, where your customers are and your starting budget (from $" + MIN_BUDGET + ")."],
+        ["Get your plan", "We read your website and write a plan: what you sell and who buys it, the channel mix and budget split, who to reach, the ads you need and how results are counted."],
+        ["See it in your demo account", "Open the plan in your demo account and press Build this campaign to fill in the campaign builder from the plan."],
+        ["Open your account with the plan", "Open your account with the plan attached. We use it for your setup, and your ads are live within " + SETUP_DAYS + " days."],
+      ].map(([name, text], i) => ({ "@type": "HowToStep", position: i + 1, name, text, url: `${SITE_URL}${PATH}#app` })),
     }],
   });
   return (
@@ -45,7 +59,7 @@ export default function Planner() {
       <JsonLd data={graph} />
       <Header />
       <main>
-        <section className="hero" style={{ paddingBottom: 48 }}>
+        <section id="top" className="hero" style={{ paddingBottom: 48, scrollMarginTop: 80 }}>
           <PlannerApp intro={
             <>
               <div className="eyebrow">Free ad planner</div>
@@ -63,6 +77,9 @@ export default function Planner() {
             </>
           } />
         </section>
+
+        <PlannerVideo v={VIDEOS.plannerOwners} id="watch" eyebrow="Watch" title="See the planner in 60 seconds." cta="Get your free ad plan" href="#top"
+          points={["Enter your website, area and the budget you have in mind.", "Get the channel mix and budget split, in dollars, with the reason for each.", "Open it in your demo account and build the campaign.", "Open your account with the plan attached when you are ready."]} />
 
         <section className="section band" aria-labelledby="covers-h">
           <div className="wrap stack g24">

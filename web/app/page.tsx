@@ -5,6 +5,7 @@ import LeadForm from "@/components/LeadForm";
 import { COMPARISONS } from "@/lib/compare";
 import { EXCHANGES, MIN_BUDGET, SETUP_DAYS, SHARE_PCT } from "@/lib/site";
 import VideoEmbed from "@/components/VideoEmbed";
+import PlannerVideo from "@/components/PlannerVideo";
 import { ADS_SERVICE, JsonLd, pageGraph } from "@/lib/seo";
 import { VIDEOS, videoNode } from "@/lib/videos";
 import { INDUSTRY_PAGES } from "@/lib/industries";
@@ -32,7 +33,7 @@ const TRUST: [string, string, string, string][] = [
 export default function Home() {
   return (
     <>
-      <JsonLd data={pageGraph({ path: "/", name: "DSP Connect | Enterprise programmatic advertising, without the enterprise contract", description: `Streaming TV, apps and websites across ${EXCHANGES} ad exchanges, open to any business from a $${MIN_BUDGET} ad budget. Set up for you, live within ${SETUP_DAYS} days. No contract.`, main: ADS_SERVICE, faq: FAQ, nodes: [videoNode(VIDEOS.owners, "/")] })} />
+      <JsonLd data={pageGraph({ path: "/", name: "DSP Connect | Enterprise programmatic advertising, without the enterprise contract", description: `Streaming TV, apps and websites across ${EXCHANGES} ad exchanges, open to any business from a $${MIN_BUDGET} ad budget. Set up for you, live within ${SETUP_DAYS} days. No contract.`, main: ADS_SERVICE, faq: FAQ, nodes: [videoNode(VIDEOS.owners, "/"), videoNode(VIDEOS.plannerOwners, "/", "planner-video")] })} />
       <Header />
       <main>
         <section className="hero">
@@ -101,6 +102,9 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        <PlannerVideo v={VIDEOS.plannerOwners} id="planner" eyebrow="Free ad planner" title="Get a free ad plan from your website." cta="Get your free ad plan"
+          points={["Enter your website and the budget you have in mind, from $750.", "Get a plan for streaming TV, online video, display, native and retargeting, split in dollars.", "Open it in your demo account and build the campaign.", "Free, in about 30 seconds, and saved to your email."]} />
 
         <section id="who" className="section band" style={{ scrollMarginTop: 70 }}>
           <div className="wrap stack g32">

@@ -4,6 +4,7 @@ import { Footer, Header, TalkBand } from "@/components/Chrome";
 import LeadForm from "@/components/LeadForm";
 import { SETUP_DAYS, SHARE_PCT } from "@/lib/site";
 import VideoEmbed from "@/components/VideoEmbed";
+import PlannerVideo from "@/components/PlannerVideo";
 import { VIDEOS, videoNode } from "@/lib/videos";
 import { AGENCY_PROGRAM, JsonLd, SITE_URL, pageGraph, pageMeta } from "@/lib/seo";
 
@@ -21,7 +22,7 @@ const money = (s: number) => `$${((s * SHARE_PCT) / 100).toLocaleString("en-US")
 export default function Agencies() {
   return (
     <>
-      <JsonLd data={pageGraph({ path: "/agencies", name: "For agencies", description: DESCRIPTION, trail: [["Home", "/"], ["For agencies", "/agencies"]], main: AGENCY_PROGRAM, nodes: [videoNode(VIDEOS.agencies, "/agencies")], image: `${SITE_URL}/agencies/opengraph-image` })} />
+      <JsonLd data={pageGraph({ path: "/agencies", name: "For agencies", description: DESCRIPTION, trail: [["Home", "/"], ["For agencies", "/agencies"]], main: AGENCY_PROGRAM, nodes: [videoNode(VIDEOS.agencies, "/agencies"), videoNode(VIDEOS.plannerAgencies, "/agencies", "planner-video")], image: `${SITE_URL}/agencies/opengraph-image` })} />
       <Header />
       <main>
         <section className="hero">
@@ -55,6 +56,8 @@ export default function Agencies() {
             <VideoEmbed id={VIDEOS.agencies.id} title={VIDEOS.agencies.title} poster={VIDEOS.agencies.poster} />
           </div>
         </section>
+        <PlannerVideo v={VIDEOS.plannerAgencies} id="planner" eyebrow="Free ad planner" title="Walk into every pitch with a plan." cta="Try it on your next prospect"
+          points={["Turn any prospect's website into a streaming TV and programmatic plan in about 30 seconds.", "A channel mix with reasons tied to their site, and the budget split in dollars.", "Open it in the demo and build the campaign live in the meeting.", "Run existing clients' sites to see where streaming TV and native fit next."]} />
         <section className="section band">
           <div className="wrap grid cols-4">
             {POINTS.map(([t, d]) => (

@@ -1,6 +1,7 @@
 import { emailOn, esc, send, wrap } from "./email";
 import { ensureAttributes, syncPerson } from "./intercom";
 import { secretRpc } from "./server";
+import { CHANNELS, planBudget, split, type Plan } from "./plan";
 import { BUSINESS_ADDRESS, LEGAL_ENTITY, LOGIN_URL, MIN_BUDGET, SETUP_DAYS, SHARE_PCT, siteOrigin } from "./site";
 
 // The proactive side: emails to clients at each setup step, a weekly account summary,
@@ -16,7 +17,7 @@ type FeedLead = {
   spent_total: number; spent_7d: number; last_spend_day: string | null;
 };
 type Unpaid = { id: string; email: string; name: string | null; business: string | null; budget: number | null };
-type Demo = { id: string; email: string; name: string | null; business: string | null; industry: string | null; market: string | null; days: number };
+type Demo = { id: string; email: string; name: string | null; business: string | null; industry: string | null; market: string | null; days: number; plan?: { id: string; website: string; plan: Plan } | null };
 type Agency = { id: string; email: string; name: string | null; business: string | null; days: number };
 type Onboarding = {
   id: string; name: string; email: string; status: string; invite_token: string; payouts_ready: boolean; company_name: string | null;
@@ -218,6 +219,9 @@ async function demoFollowUps(r: Report, d: Demo) {
   const hello = `<p>Hello${d.name ? " " + esc(d.name.split(" ")[0]) : ""},</p>`;
   const foot = (last: boolean) => `<p style="color:#5B6577;font-size:12px;margin-top:28px">${last ? "This is the last email we will send about your demo. " : ""}${esc(LEGAL_ENTITY)}, ${esc(BUSINESS_ADDRESS)}. <a href="${origin()}/unsubscribe?id=${d.id}">Unsubscribe</a>.</p>`;
   const where = d.market ? ` in ${esc(d.market)}` : " in your own area";
+  // Made an ad plan: the same three emails (same days, same cap, same kinds, so never more than three)
+  // are about carrying out their plan instead of the demo in general.
+  if (d.plan?.plan) return planFollowUps(r, d, step, hello, foot);
   if (step === 1) {
     await deliver(r, d.id, "lead", "demo_1", d.email, "Your DSP Connect demo is saved",
       hello + `<p>Thanks for opening the DSP Connect demo. It shows what your ads could look like on streaming TV, websites and apps${where}, before you spend anything.</p>` +
@@ -236,6 +240,35 @@ async function demoFollowUps(r: Report, d: Demo) {
       hello + `<p>You looked at the DSP Connect demo a little while ago. If it left you with questions about whether this fits your business, ask them in the chat on our website, any hour, or reply to this email.</p>` +
       `<p>The demo shows the same screens you get: the campaign builder, the SSP endpoints your ads can run on, and reporting by app, site and device.</p>` +
       `<p>If you would rather look again on your own, <a href="${origin()}/demo">the demo is here</a>${d.industry ? ` and there are examples for your industry <a href="${origin()}/industries">here</a>` : ""}.</p>` + foot(true));
+  }
+}
+
+/** The demo follow-ups for someone who made an ad plan: help them act on it, never pressure. */
+async function planFollowUps(r: Report, d: Demo, step: number, hello: string, foot: (last: boolean) => string) {
+  const p = d.plan!.plan, budget = planBudget(p);
+  const where = d.market ? ` in ${esc(d.market)}` : "";
+  const link = `${origin()}/planner?plan=${d.plan!.id}`;
+  const host = esc(d.plan!.website.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, ""));
+  const mix = split(p.channels, budget).map((c) => `<li>${esc(CHANNELS[c.key].name)}: ${c.pct}% ($${c.usd.toLocaleString()}). ${esc(c.role)}</li>`).join("");
+  const formats = [...new Set(p.channels.map((c) => CHANNELS[c.key].format))].join(", ");
+  const open = `${origin()}/open-account?${new URLSearchParams({ plan: d.plan!.id, budget: String(budget), formats, goals: `${p.goal}: ${p.learned.action}`, ...(d.industry ? { industry: d.industry } : {}), ...(d.market ? { market: d.market } : {}) })}`;
+  if (step === 1) {
+    await deliver(r, d.id, "lead", "demo_1", d.email, "Your ad plan, and how to see it run",
+      hello + `<p>Your ad plan for <b>${host}</b> is saved. Here is the channel mix for your $${budget.toLocaleString()} starting budget:</p><ul>${mix}</ul>` +
+      `<p>To see it in action, <a href="${link}">open your plan</a>, choose <b>See it in your demo account</b>, then <b>Build this campaign</b>. The campaign builder fills in from your plan, so you can see exactly what would run.</p>` +
+      `<p>Questions about any part of it? Reply to this email or ask in the chat on our website.</p>` + foot(false));
+  } else if (step === 2) {
+    await deliver(r, d.id, "lead", "demo_2", d.email, "From your ad plan to live ads: what happens next",
+      hello + `<p>If you decide to go ahead with your plan, here is what happens, in order:</p>` +
+      `<ol><li>You open your account with the plan attached and pay your starting budget.</li><li>Your plan becomes the start of your campaign brief, so there is less to fill in.</li><li>We create your account, place tracking on your website, review your ads and build your audience${where}.</li><li>Your ads go live within ${SETUP_DAYS} days, and you get an email as each step is finished.</li></ol>` +
+      `<p>No monthly platform fee. Our fee is included in the price of your ads. No long-term contract; our <a href="${origin()}/refunds">refund policy</a> explains what happens if you change your mind.</p>` +
+      `<p>Want the short version? <a href="https://www.youtube.com/watch?v=TTrcrHDkkVo">This one-minute video</a> walks through a plan from start to finish.</p>` +
+      `<p><a href="${open}">Open your account with this plan</a> when you are ready. There is no rush: your plan stays saved.</p>` + foot(false));
+  } else {
+    const qs = p.questions.length ? `<p>Before anything runs, we would confirm a few things with you:</p><ul>${p.questions.map((q) => `<li>${esc(q)}</li>`).join("")}</ul><p>If you know the answers, just reply to this email with them.</p>` : "";
+    await deliver(r, d.id, "lead", "demo_3", d.email, "Any questions about your ad plan?",
+      hello + `<p>You made an ad plan for <b>${host}</b> a little while ago. A plan is a starting point, and most people have a question or two before acting on it.</p>` + qs +
+      `<p>You can also ask in the chat on our website, any hour. <a href="${link}">Your plan is here</a> whenever you want it.</p>` + foot(true));
   }
 }
 

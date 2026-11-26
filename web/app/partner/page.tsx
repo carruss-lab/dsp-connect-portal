@@ -10,6 +10,7 @@ import { DOCS, VERSION } from "@/lib/partnerDocs";
 import { LEGAL_ENTITY, SETUP_DAYS, SHARE_PCT, SUPPORT_EMAIL, siteOrigin } from "@/lib/site";
 import { LESSONS } from "@/lib/training";
 import VideoEmbed from "@/components/VideoEmbed";
+import { VIDEOS } from "@/lib/videos";
 import { CALL_SCRIPT, EMAILS, OBJECTIONS, fill } from "@/lib/salesKit";
 
 export const metadata: Metadata = { title: "Partner portal", robots: { index: false, follow: false } };
@@ -146,6 +147,13 @@ function Dashboard({ portal }: { portal: Portal }) {
               <CopyLink label="Show the demo" url={`${origin}/demo?p=${p.code}`} />
               <CopyLink label="Home page" url={`${origin}/?p=${p.code}`} />
               {!trained && <p className="note" style={{ background: "#FFF6E5", color: "#7A4B00" }}>Please finish the training below before you introduce clients.</p>}
+            </section>
+
+            <section className="card stack g16" aria-labelledby="planner-h">
+              <h2 id="planner-h" className="h3">Your sales tool: the free ad planner</h2>
+              <p className="p">Type in a business owner&apos;s website and hand them a streaming TV and programmatic ad plan for their business in about 30 seconds. Use your planner link above: plans and sign-ups from it are credited to you, even if the owner finishes later on their own device.</p>
+              <VideoEmbed id={VIDEOS.plannerPartners.id} title={VIDEOS.plannerPartners.title} poster={VIDEOS.plannerPartners.poster} />
+              <p className="small">Never promise results or quote what an ad will produce. The plan doesn&apos;t, and neither should you.</p>
             </section>
 
             <section className="stack g16" aria-labelledby="kit">

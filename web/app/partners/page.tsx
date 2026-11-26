@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Footer, Header } from "@/components/Chrome";
 import ApplyForm from "@/components/partner/ApplyForm";
 import VideoEmbed from "@/components/VideoEmbed";
+import PlannerVideo from "@/components/PlannerVideo";
 import { VIDEOS, videoNode } from "@/lib/videos";
 import { PARTNER_FAQ as FAQ } from "@/lib/faq";
 import { JsonLd, PARTNER_PROGRAM, SITE_URL, pageGraph, pageMeta } from "@/lib/seo";
@@ -34,7 +35,7 @@ export default function Partners() {
         path: "/partners", name: "Become an Authorized Sales Partner", description: DESCRIPTION,
         trail: [["Home", "/"], ["Sales Partners", "/partners"]], main: PARTNER_PROGRAM, faq: FAQ,
         image: `${SITE_URL}/partners/opengraph-image`,
-        nodes: [videoNode(VIDEOS.partners, "/partners"), {
+        nodes: [videoNode(VIDEOS.partners, "/partners"), videoNode(VIDEOS.plannerPartners, "/partners", "planner-video"), {
           "@type": "HowTo", "@id": `${SITE_URL}/partners#how`, name: "How to become a DSP Connect Authorized Sales Partner",
           step: STEPS.map(([name, text], i) => ({ "@type": "HowToStep", position: i + 1, name, text, url: `${SITE_URL}/partners#apply` })),
         }],
@@ -60,6 +61,8 @@ export default function Partners() {
             <VideoEmbed id={VIDEOS.partners.id} title={VIDEOS.partners.title} poster={VIDEOS.partners.poster} />
           </div>
         </section>
+        <PlannerVideo v={VIDEOS.plannerPartners} id="planner" eyebrow="Your sales tool" title="Hand any business owner an ad plan in 30 seconds." cta="See the free ad planner"
+          points={["Type in the owner's website and get a streaming TV and programmatic plan for their business.", "Walk them through it in the demo account and build the campaign together.", "Your planner link credits every plan and sign-up to you, even if they finish later on their own.", "No advertising experience needed, and no promises: the plan never predicts results."]} />
 
         <section className="section band"><div className="wrap stack g32">
           <h2 className="h2">Why sales partners choose DSP Connect.</h2>
