@@ -3,8 +3,8 @@ import Image from "next/image";
 import ConnectButton from "@/components/ConnectButton";
 import IdentifyClient from "@/components/IdentifyClient";
 import { messengerJwt } from "@/lib/chatId";
-import { CopyLink, CopyTemplate, LessonDone, LoginForm, SignDocs } from "@/components/partner/PartnerBits";
-import { loadPortal, type Client, type Portal } from "@/lib/partner";
+import { CopyLink, CopyTemplate, LessonDone, LoginForm, RemoveRep, SignDocs, TeamInvite } from "@/components/partner/PartnerBits";
+import { loadPortal, type Client, type MemberPortal, type Portal } from "@/lib/partner";
 import { refreshPayouts } from "@/lib/partnerStripe";
 import { DOCS, VERSION } from "@/lib/partnerDocs";
 import { LEGAL_ENTITY, SETUP_DAYS, SHARE_PCT, SUPPORT_EMAIL, siteOrigin } from "@/lib/site";
@@ -53,6 +53,7 @@ export default async function PartnerPortal({ searchParams }: { searchParams: Pr
       </>
     );
   }
+  if (portal.role === "member") return <RepDashboard portal={portal} />;
   if (portal.partner.stripe_started && !portal.partner.payouts_ready) {
     portal.partner.payouts_ready = await refreshPayouts({ invite_token: portal.partner.invite_token, stripe_account_id: portal.partner.stripe_account_id, payouts_ready: false });
   }
@@ -60,10 +61,9 @@ export default async function PartnerPortal({ searchParams }: { searchParams: Pr
 }
 
 function Dashboard({ portal }: { portal: Portal }) {
-  const { partner: p, clients, earnings: e, payouts, training, today } = portal;
+  const { partner: p, clients, earnings: e, payouts, training, today, team = [] } = portal;
   const signed = !!p.signed_at;
   const trained = !!p.training_done_at;
-  const origin = siteOrigin();
   const first = p.name.split(" ")[0];
   const steps = [
     { t: "Sign your Sales Partner Agreement", done: signed },
@@ -139,93 +139,32 @@ function Dashboard({ portal }: { portal: Portal }) {
               </section>
             )}
 
-            <section className="card stack g16" aria-labelledby="links">
-              <h2 id="links" className="h3">Your client links</h2>
-              <p className="p">Clients who open their account through these links are credited to you{p.status === "invited" ? " once you are approved (Stripe verified)" : ""}. Your partner code is <b>{p.code}</b>.</p>
-              <CopyLink label="Open an account" url={`${origin}/open-account?p=${p.code}`} />
-              <CopyLink label="Free ad plan from their website" url={`${origin}/planner?p=${p.code}`} />
-              <CopyLink label="Show the demo" url={`${origin}/demo?p=${p.code}`} />
-              <CopyLink label="Home page" url={`${origin}/?p=${p.code}`} />
-              {!trained && <p className="note" style={{ background: "#FFF6E5", color: "#7A4B00" }}>Please finish the training below before you introduce clients.</p>}
-            </section>
+            <Selling code={p.code} me={p.name} company={p.company_name} credited={p.status !== "invited"} clients={clients} training={training} trained={trained} today={today} />
 
-            <section className="card stack g16" aria-labelledby="planner-h">
-              <h2 id="planner-h" className="h3">Your sales tool: the free ad planner</h2>
-              <p className="p">Type in a business owner&apos;s website and hand them a streaming TV and programmatic ad plan for their business in about 30 seconds. Use your planner link above: plans and sign-ups from it are credited to you, even if the owner finishes later on their own device.</p>
-              <VideoEmbed id={VIDEOS.plannerPartners.id} title={VIDEOS.plannerPartners.title} poster={VIDEOS.plannerPartners.poster} />
-              <p className="small">Never promise results or quote what an ad will produce. The plan doesn&apos;t, and neither should you.</p>
-            </section>
-
-            <section className="stack g16" aria-labelledby="kit">
+            <section className="card stack g16" aria-labelledby="team">
               <div className="stack g8">
-                <h2 id="kit" className="h3">Your sales kit</h2>
-                <p className="p">Everything here already has your links in it. Replace the words in [brackets] before you send.</p>
+                <h2 id="team" className="h3">Your team</h2>
+                <p className="p">Add the reps who sell for you. Each one gets their own sign-in and their own links, so you can see which rep brought each client. Every client is credited to you and your commission is paid to you as usual; reps are not paid by DSP Connect. Reps only see their own clients, never yours or each other&apos;s.</p>
               </div>
-              <div className="card stack g12" style={{ background: "var(--ground)" }}>
-                <h3 className="h3" style={{ fontSize: 16 }}>Leave-behind</h3>
-                <p className="p" style={{ fontSize: 15 }}>A one-page sheet for business owners with your name, your demo link and a QR code. Print it or save it as a PDF to attach to emails.</p>
-                <a className="btn btn-blue" href="/partner/leave-behind" target="_blank" rel="noopener" style={{ alignSelf: "flex-start" }}>Open your leave-behind</a>
-              </div>
-              <h3 className="h3" style={{ fontSize: 16 }}>Emails to prospects</h3>
-              {EMAILS.map((t) => {
-                const v = { first: "[first name]", business: "[business name]", me: p.name, company: p.company_name || "Authorized Sales Partner, DSP Connect", demo: `${origin}/demo?p=${p.code}`, open: `${origin}/open-account?p=${p.code}` };
-                return <CopyTemplate key={t.id} title={t.title} when={t.when} subject={fill(t.subject, v)} body={fill(t.body, v)} />;
-              })}
-              <details className="card stack g8">
-                <summary style={{ cursor: "pointer", fontWeight: 600 }}>First-call script <span className="small" style={{ fontWeight: 400 }}>· about 20 minutes</span></summary>
-                <ol className="stack g12" style={{ marginTop: 8 }}>{CALL_SCRIPT.map((c) => (
-                  <li key={c.step} className="stack g4"><b>{c.step}</b><ul className="list">{c.say.map((x) => <li key={x}>{x}</li>)}</ul></li>
-                ))}</ol>
-              </details>
-              <details className="card stack g8">
-                <summary style={{ cursor: "pointer", fontWeight: 600 }}>Answers to common questions</summary>
-                <div className="stack g12" style={{ marginTop: 8 }}>{OBJECTIONS.map((o) => (
-                  <div key={o.q} className="stack g4"><b>&ldquo;{o.q}&rdquo;</b><p className="p" style={{ fontSize: 15 }}>{o.a}</p></div>
-                ))}</div>
-              </details>
-            </section>
-
-            <section className="stack g16" aria-labelledby="cl">
-              <h2 id="cl" className="h3">Your clients</h2>
-              {clients.length === 0 ? (
-                <p className="p">No clients yet. When someone opens an account through your link, they appear here with their setup progress, spend and your commission.</p>
-              ) : (
+              {team.length > 0 && (
                 <div className="tablebox"><table>
-                  <thead><tr><th scope="col">Client</th><th scope="col">Status</th><th scope="col">Budget paid</th><th scope="col">Spend, 7 days</th><th scope="col">Spend, total</th><th scope="col">Your commission</th></tr></thead>
-                  <tbody>{clients.map((c) => {
-                    const st = clientStatus(c, today);
-                    return (
-                      <tr key={c.id}>
-                        <th scope="row"><div>{c.business || c.name || c.email}</div><div className="small">{[c.industry, c.market].filter(Boolean).join(" · ")}</div></th>
-                        <td style={{ color: st.tone }}>{st.text}</td>
-                        <td className="mono">{c.amount_paid ? usd(c.amount_paid) : "—"}</td>
-                        <td className="mono">{usd(c.spent_7d)}</td>
-                        <td className="mono">{usd(c.spent_total)}</td>
-                        <td className="mono">{usd(c.earned)}</td>
-                      </tr>
-                    );
-                  })}</tbody>
+                  <thead><tr><th scope="col">Rep</th><th scope="col">Code</th><th scope="col">Training</th><th scope="col">Clients</th><th scope="col">Spend, 7 days</th><th scope="col">Spend, total</th><th scope="col">Commission</th><th scope="col" aria-label="Actions"></th></tr></thead>
+                  <tbody>{team.map((m) => (
+                    <tr key={m.id} style={m.status === "removed" ? { opacity: 0.6 } : undefined}>
+                      <th scope="row"><div>{m.name}</div><div className="small">{m.email}{m.status === "removed" ? " · removed" : ""}</div></th>
+                      <td className="mono">{m.code}</td>
+                      <td>{m.training_done >= LESSONS.length ? "Done" : `${m.training_done} of ${LESSONS.length}`}</td>
+                      <td>{m.clients}</td>
+                      <td className="mono">{usd(m.spent_7d)}</td>
+                      <td className="mono">{usd(m.spent_total)}</td>
+                      <td className="mono">{usd(m.earned)}</td>
+                      <td>{m.status === "active" ? <RemoveRep id={m.id} name={m.name} /> : null}</td>
+                    </tr>
+                  ))}</tbody>
                 </table></div>
               )}
-              <p className="small">Setup takes {SETUP_DAYS} days from payment. The most common delay is the client&apos;s campaign brief; help them send it early. For billing, refunds or access, send clients to {SUPPORT_EMAIL}.</p>
-            </section>
-
-            <section className="stack g16" aria-labelledby="tr">
-              <div className="stack g8">
-                <h2 id="tr" className="h3">Training {trained ? "(complete)" : `(${LESSONS.filter((l) => training.includes(l.id)).length} of ${LESSONS.length} done)`}</h2>
-                <p className="p">Fourteen short video lessons, about 25 minutes in all: the program, the product, selling, after the sale and the rules. Watch them in order and tick each checklist only when it is true.</p>
-              </div>
-              {LESSONS.map((l, i) => {
-                const done = training.includes(l.id);
-                return (
-                  <details key={l.id} className="card stack g12" open={!trained && !done && LESSONS.slice(0, i).every((x) => training.includes(x.id))}>
-                    <summary style={{ cursor: "pointer", fontWeight: 600 }}>{done ? "✓ " : `${i + 1}. `}{l.title} <span className="small" style={{ fontWeight: 400 }}>· {l.minutes} min</span></summary>
-                    <VideoEmbed id={l.video} title={`Lesson ${i + 1}: ${l.title}`} />
-                    <ul className="list" style={{ marginTop: 12 }}>{l.points.map((t, j) => <li key={j}>{t}</li>)}</ul>
-                    <LessonDone id={l.id} check={l.check} done={done} />
-                  </details>
-                );
-              })}
+              <TeamInvite />
+              <p className="small">You are responsible for your reps following the Operating Rules. Removing a rep stops their sign-in and their links; clients they already brought stay credited to you.</p>
             </section>
 
             <section className="stack g16" aria-labelledby="po">
@@ -246,6 +185,141 @@ function Dashboard({ portal }: { portal: Portal }) {
             </section>
           </>
         )}
+      </main>
+    </>
+  );
+}
+
+/** The client links, planner, sales kit, client list and training: the same for a partner and for each rep, with their own code. */
+function Selling({ code, me, company, credited, clients, training, trained, today, rep }: {
+  code: string; me: string; company: string | null; credited: boolean; clients: Client[]; training: string[]; trained: boolean; today: string; rep?: string;
+}) {
+  const origin = siteOrigin();
+  const showRep = !rep && clients.some((c) => c.member_name);
+  return (
+    <>
+      <section className="card stack g16" aria-labelledby="links">
+        <h2 id="links" className="h3">Your client links</h2>
+        <p className="p">{rep
+          ? <>Business owners who open their account through these links are credited to {rep} and show up under your name. Your code is <b>{code}</b>.</>
+          : <>Clients who open their account through these links are credited to you{credited ? "" : " once you are approved (Stripe verified)"}. Your partner code is <b>{code}</b>.</>}</p>
+        <CopyLink label="Open an account" url={`${origin}/open-account?p=${code}`} />
+        <CopyLink label="Free ad plan from their website" url={`${origin}/planner?p=${code}`} />
+        <CopyLink label="Show the demo" url={`${origin}/demo?p=${code}`} />
+        <CopyLink label="Home page" url={`${origin}/?p=${code}`} />
+        {!trained && <p className="note" style={{ background: "#FFF6E5", color: "#7A4B00" }}>Please finish the training below before you introduce clients.</p>}
+      </section>
+
+      <section className="card stack g16" aria-labelledby="planner-h">
+        <h2 id="planner-h" className="h3">Your sales tool: the free ad planner</h2>
+        <p className="p">Type in a business owner&apos;s website and hand them a streaming TV and programmatic ad plan for their business in about 30 seconds. Use your planner link above: plans and sign-ups from it are credited {rep ? `to ${rep} under your name` : "to you"}, even if the owner finishes later on their own device.</p>
+        <VideoEmbed id={VIDEOS.plannerPartners.id} title={VIDEOS.plannerPartners.title} poster={VIDEOS.plannerPartners.poster} />
+        <p className="small">Never promise results or quote what an ad will produce. The plan doesn&apos;t, and neither should you.</p>
+      </section>
+
+      <section className="stack g16" aria-labelledby="kit">
+        <div className="stack g8">
+          <h2 id="kit" className="h3">Your sales kit</h2>
+          <p className="p">Everything here already has your links in it. Replace the words in [brackets] before you send.</p>
+        </div>
+        <div className="card stack g12" style={{ background: "var(--ground)" }}>
+          <h3 className="h3" style={{ fontSize: 16 }}>Leave-behind</h3>
+          <p className="p" style={{ fontSize: 15 }}>A one-page sheet for business owners with your name, your demo link and a QR code. Print it or save it as a PDF to attach to emails.</p>
+          <a className="btn btn-blue" href="/partner/leave-behind" target="_blank" rel="noopener" style={{ alignSelf: "flex-start" }}>Open your leave-behind</a>
+        </div>
+        <h3 className="h3" style={{ fontSize: 16 }}>Emails to prospects</h3>
+        {EMAILS.map((t) => {
+          const v = { first: "[first name]", business: "[business name]", me, company: company || "Authorized Sales Partner, DSP Connect", demo: `${origin}/demo?p=${code}`, open: `${origin}/open-account?p=${code}` };
+          return <CopyTemplate key={t.id} title={t.title} when={t.when} subject={fill(t.subject, v)} body={fill(t.body, v)} />;
+        })}
+        <details className="card stack g8">
+          <summary style={{ cursor: "pointer", fontWeight: 600 }}>First-call script <span className="small" style={{ fontWeight: 400 }}>· about 20 minutes</span></summary>
+          <ol className="stack g12" style={{ marginTop: 8 }}>{CALL_SCRIPT.map((c) => (
+            <li key={c.step} className="stack g4"><b>{c.step}</b><ul className="list">{c.say.map((x) => <li key={x}>{x}</li>)}</ul></li>
+          ))}</ol>
+        </details>
+        <details className="card stack g8">
+          <summary style={{ cursor: "pointer", fontWeight: 600 }}>Answers to common questions</summary>
+          <div className="stack g12" style={{ marginTop: 8 }}>{OBJECTIONS.map((o) => (
+            <div key={o.q} className="stack g4"><b>&ldquo;{o.q}&rdquo;</b><p className="p" style={{ fontSize: 15 }}>{o.a}</p></div>
+          ))}</div>
+        </details>
+      </section>
+
+      <section className="stack g16" aria-labelledby="cl">
+        <h2 id="cl" className="h3">Your clients</h2>
+        {clients.length === 0 ? (
+          <p className="p">No clients yet. When someone opens an account through {rep ? "your links" : "your link"}, they appear here with their setup progress and spend.</p>
+        ) : (
+          <div className="tablebox"><table>
+            <thead><tr><th scope="col">Client</th>{showRep && <th scope="col">Brought by</th>}<th scope="col">Status</th><th scope="col">Budget paid</th><th scope="col">Spend, 7 days</th><th scope="col">Spend, total</th>{!rep && <th scope="col">Your commission</th>}</tr></thead>
+            <tbody>{clients.map((c) => {
+              const st = clientStatus(c, today);
+              return (
+                <tr key={c.id}>
+                  <th scope="row"><div>{c.business || c.name || c.email}</div><div className="small">{[c.industry, c.market].filter(Boolean).join(" · ")}</div></th>
+                  {showRep && <td>{c.member_name || "You"}</td>}
+                  <td style={{ color: st.tone }}>{st.text}</td>
+                  <td className="mono">{c.amount_paid ? usd(c.amount_paid) : "—"}</td>
+                  <td className="mono">{usd(c.spent_7d)}</td>
+                  <td className="mono">{usd(c.spent_total)}</td>
+                  {!rep && <td className="mono">{usd(c.earned)}</td>}
+                </tr>
+              );
+            })}</tbody>
+          </table></div>
+        )}
+        <p className="small">Setup takes {SETUP_DAYS} days from payment. The most common delay is the client&apos;s campaign brief; help them send it early. For billing, refunds or access, send clients to {SUPPORT_EMAIL}.</p>
+      </section>
+
+      <section className="stack g16" aria-labelledby="tr">
+        <div className="stack g8">
+          <h2 id="tr" className="h3">Training {trained ? "(complete)" : `(${LESSONS.filter((l) => training.includes(l.id)).length} of ${LESSONS.length} done)`}</h2>
+          <p className="p">Fourteen short video lessons, about 25 minutes in all: the program, the product, selling, after the sale and the rules. Watch them in order and tick each checklist only when it is true.</p>
+        </div>
+        {LESSONS.map((l, i) => {
+          const done = training.includes(l.id);
+          return (
+            <details key={l.id} className="card stack g12" open={!trained && !done && LESSONS.slice(0, i).every((x) => training.includes(x.id))}>
+              <summary style={{ cursor: "pointer", fontWeight: 600 }}>{done ? "✓ " : `${i + 1}. `}{l.title} <span className="small" style={{ fontWeight: 400 }}>· {l.minutes} min</span></summary>
+              <VideoEmbed id={l.video} title={`Lesson ${i + 1}: ${l.title}`} />
+              <ul className="list" style={{ marginTop: 12 }}>{l.points.map((t, j) => <li key={j}>{t}</li>)}</ul>
+              <LessonDone id={l.id} check={l.check} done={done} />
+            </details>
+          );
+        })}
+      </section>
+    </>
+  );
+}
+
+/** A rep on a Sales Partner's team: their own links, their own clients and the training. No earnings, agreement or payouts. */
+function RepDashboard({ portal }: { portal: MemberPortal }) {
+  const { member: m, company, clients, training, today } = portal;
+  const trained = LESSONS.every((l) => training.includes(l.id));
+  const live = clients.filter((c) => c.live_at).length;
+  const week = clients.reduce((s, c) => s + Number(c.spent_7d || 0), 0);
+  return (
+    <>
+      <Top name={m.name} />
+      <IdentifyClient email={m.email} name={m.name} jwt={messengerJwt(m.email, m.name)} />
+      <main className="wrap stack g32" style={{ padding: "48px 32px 96px", maxWidth: 1040 }}>
+        <div className="stack g8">
+          <div className="eyebrow">{company.name} · Authorized Sales Partner team</div>
+          <h1 className="h1" style={{ fontSize: "clamp(30px,4vw,42px)" }}>Welcome, {m.name.split(" ")[0]}.</h1>
+          <p className="lead">You sell for {company.name}, an Authorized Sales Partner of DSP Connect. Clients you bring through your links are credited to {company.name} and show up under your name. Commission is paid to {company.name}; your pay is between you and {company.owner}.</p>
+          {!company.credited && <p className="note" style={{ background: "#FFF6E5", color: "#7A4B00" }}>{company.name} is still finishing its approval with DSP Connect. Your links start crediting clients as soon as that is done.</p>}
+        </div>
+        <section className="grid cols-3" aria-label="Your numbers">
+          <div className="card stack g8"><span className="small">Your clients</span><span className="h2">{clients.filter((c) => c.paid_at).length}</span><span className="small">{live} live</span></div>
+          <div className="card stack g8"><span className="small">Client spend, last 7 days</span><span className="h2">{usd(week)}</span></div>
+          <div className="card stack g8"><span className="small">Training</span><span className="h2">{LESSONS.filter((l) => training.includes(l.id)).length} of {LESSONS.length}</span><span className="small">{trained ? "Complete" : "Finish before you introduce clients"}</span></div>
+        </section>
+        <Selling code={m.code} me={m.name} company={company.name} credited={company.credited} clients={clients} training={training} trained={trained} today={today} rep={company.name} />
+        <section className="card stack g8">
+          <h2 className="h3">Help</h2>
+          <p className="p">Use the chat button at the bottom of this page for help with the planner, the demo or a client. For your pay, talk to {company.owner}.</p>
+        </section>
       </main>
     </>
   );

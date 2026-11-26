@@ -160,7 +160,8 @@ function agencyEmail(name: string) {
     `<p><b>What happens next</b></p><ol>` +
     `<li>Apply on PartnerStack (about two minutes).</li>` +
     `<li>We reply within one business day to set up your agency account.</li>` +
-    `<li>Each client gets their own login. You earn ${SHARE_PCT}% of the ad spend you manage, paid through PartnerStack.</li></ol>` +
+    `<li>Each client gets their own login. You earn ${SHARE_PCT}% of the ad spend you manage, paid through PartnerStack.</li>` +
+    `<li>Have a sales team? Invite your reps from your PartnerStack dashboard. Each gets their own link, every client is tracked to the rep who brought it, and all commission comes to your agency.</li></ol>` +
     `<p>Before then, you can click through the <a href="${site}/demo?view=agency">agency demo</a> or make a free ad plan for a prospect with the <a href="${site}/planner">ad planner</a>.</p>` +
     `<p>Questions? Reply to this email or ask in the chat on the site.</p>`,
   );

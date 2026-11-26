@@ -16,6 +16,7 @@ const POINTS = [
   ["All clients in one account", "Each client gets their own login, with the access you choose for them."],
   [`${SHARE_PCT}% of the ad spend you manage`, "Paid through PartnerStack on spend your clients actually run, on top of the fees you already charge."],
   [`Each client set up in ${SETUP_DAYS} days`, "We create the account, place tracking, review ads and build the audience."],
+  ["Your whole sales team, tracked", "Invite your reps from your PartnerStack dashboard. Each gets their own link, every client is tracked to the rep who brought it, and all commission comes to your agency."],
 ];
 const money = (s: number) => `$${((s * SHARE_PCT) / 100).toLocaleString("en-US")}`;
 
@@ -66,6 +67,14 @@ export default function Agencies() {
             {POINTS.map(([t, d]) => (
               <div className="step stack g8" key={t}><h3 className="h3">{t}</h3><p className="p" style={{ fontSize: 14 }}>{d}</p></div>
             ))}
+          </div>
+        </section>
+        <section className="section" aria-labelledby="which-h">
+          <div className="wrap narrow stack g16">
+            <h2 id="which-h" className="h2">Agency or Sales Partner?</h2>
+            <p className="p"><b>Join as an agency</b> if you run your clients&apos; campaigns yourself, in your own agency account with a login for each client. You keep the client relationship and earn {SHARE_PCT}% of the ad spend you manage, paid through PartnerStack.</p>
+            <p className="p"><b>Become a <Link href="/partners">Sales Partner</Link></b> if you introduce business owners and want DSP Connect to set up and run their advertising. You earn {SHARE_PCT}% of each client&apos;s qualified ad spend, paid daily through Stripe, for as long as they spend.</p>
+            <p className="p">Both programs let you add your sales team: agencies invite reps from their PartnerStack dashboard, and Sales Partners add reps in their partner portal. Either way, every client is tracked to the rep who brought it and all commission comes to you.</p>
           </div>
         </section>
         <TalkBand agency />

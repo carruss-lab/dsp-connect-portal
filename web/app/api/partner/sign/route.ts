@@ -23,6 +23,7 @@ export async function POST(req: Request) {
 
   const portal = await loadPortal();
   if (!portal) return NextResponse.json({ error: "Your session has ended. Please sign in again." }, { status: 401 });
+  if (portal.role !== "owner") return NextResponse.json({ error: "Only the partner who owns this account can sign the agreement." }, { status: 403 });
   if (portal.partner.signed_at) return NextResponse.json({ ok: true, already: true });
 
   const ip = clientIp(req), ua = req.headers.get("user-agent") || "", hash = docHash();

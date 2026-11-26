@@ -123,3 +123,48 @@ export function CopyTemplate({ title, when, subject, body }: { title: string; wh
     </details>
   );
 }
+
+/** The partner adds a rep by name and email. The rep is emailed their own sign-in link. */
+export function TeamInvite() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [state, setState] = useState<"idle" | "busy">("idle");
+  const [error, setError] = useState("");
+  const [done, setDone] = useState("");
+  return (
+    <form className="stack g12" onSubmit={async (e) => {
+      e.preventDefault(); setError(""); setDone(""); setState("busy");
+      try { await post("/api/partner/team", { action: "invite", name, email }); setDone(`${name} is on your team. We emailed them a link to their portal.`); setName(""); setEmail(""); setTimeout(() => location.reload(), 1200); }
+      catch (err) { setError(err instanceof Error ? err.message : String(err)); }
+      setState("idle");
+    }}>
+      <div className="grid cols-2" style={{ gap: 12 }}>
+        <div className="field"><label htmlFor="tm-name">Rep&apos;s full name</label>
+          <input id="tm-name" className="input" required minLength={2} value={name} onChange={(e) => setName(e.target.value)} autoComplete="off" /></div>
+        <div className="field"><label htmlFor="tm-email">Rep&apos;s email</label>
+          <input id="tm-email" className="input" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="off" placeholder="rep@yourcompany.com" /></div>
+      </div>
+      {error && <p className="note note-err" role="alert">{error}</p>}
+      {done && <p className="note note-ok" role="status">{done}</p>}
+      <button className="btn btn-blue" style={{ alignSelf: "flex-start" }} disabled={state === "busy"}>{state === "busy" ? "Adding…" : "Add to your team"}</button>
+    </form>
+  );
+}
+
+/** Removes a rep: their sign-in and links stop working. Clients they already brought stay credited to you. */
+export function RemoveRep({ id, name }: { id: string; name: string }) {
+  const [state, setState] = useState<"idle" | "confirm" | "busy">("idle");
+  const [error, setError] = useState("");
+  if (state === "confirm" || state === "busy") return (
+    <span style={{ display: "inline-flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+      <span className="small">Remove {name}?</span>
+      <button className="btn btn-line" style={{ minHeight: 32 }} disabled={state === "busy"} onClick={async () => {
+        setState("busy"); setError("");
+        try { await post("/api/partner/team", { action: "remove", id }); location.reload(); } catch (err) { setError(err instanceof Error ? err.message : String(err)); setState("confirm"); }
+      }}>{state === "busy" ? "Removing…" : "Yes, remove"}</button>
+      <button className="btn btn-line" style={{ minHeight: 32 }} onClick={() => setState("idle")}>Cancel</button>
+      {error && <span className="small" style={{ color: "#8A1C0E" }}>{error}</span>}
+    </span>
+  );
+  return <button className="btn btn-line" style={{ minHeight: 32 }} onClick={() => setState("confirm")}>Remove</button>;
+}

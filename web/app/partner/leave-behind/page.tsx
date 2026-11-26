@@ -15,7 +15,10 @@ export const dynamic = "force-dynamic";
 export default async function LeaveBehind() {
   const portal = await loadPortal();
   if (!portal) redirect("/partner");
-  const p = portal.partner;
+  // A rep's sheet carries their own name and link; the company is shown as the partner they sell for.
+  const p = portal.role === "owner"
+    ? { name: portal.partner.name, company_name: portal.partner.company_name, email: portal.partner.email, phone: portal.partner.phone, code: portal.partner.code }
+    : { name: portal.member.name, company_name: portal.company.name, email: portal.member.email, phone: null as string | null, code: portal.member.code };
   const link = `${siteOrigin()}/demo?p=${p.code}`;
   const short = link.replace(/^https?:\/\//, "");
   const qr = await QRCode.toString(link, { type: "svg", margin: 0, color: { dark: "#0A1220", light: "#FFFFFF" } });
@@ -69,7 +72,7 @@ export default async function LeaveBehind() {
           <p>Authorized Sales Partner, DSP Connect</p>
           <p>{p.email}{p.phone ? ` · ${p.phone}` : ""}</p>
         </div>
-        <p style={{ fontSize: 11, color: "#5B6577", marginTop: "auto" }}>DSP Connect is a service of {LEGAL_ENTITY}. {p.name} is an independent Authorized Sales Partner. Accounts are opened and paid for directly with DSP Connect. Results vary and are not guaranteed.</p>
+        <p style={{ fontSize: 11, color: "#5B6577", marginTop: "auto" }}>DSP Connect is a service of {LEGAL_ENTITY}. {portal.role === "owner" ? p.name : p.company_name} is an independent Authorized Sales Partner. Accounts are opened and paid for directly with DSP Connect. Results vary and are not guaranteed.</p>
       </main>
     </>
   );
