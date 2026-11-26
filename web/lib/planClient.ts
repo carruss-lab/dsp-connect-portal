@@ -33,11 +33,11 @@ export async function loadPlan(id: string): Promise<SavedPlan | null> {
 export type PlanRequest = { email: string; business: string; website: string; industry: string; market: string; budget?: number };
 
 export async function requestPlan(f: PlanRequest): Promise<SavedPlan> {
-  let first = "";
-  try { first = sessionStorage.getItem("first_touch") || ""; } catch {}
+  let first = "", partner_code = "";
+  try { first = sessionStorage.getItem("first_touch") || ""; partner_code = sessionStorage.getItem("partner_code") || ""; } catch {}
   const res = await fetch("/api/strategy", {
     method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ...f, source: [first, location.pathname].filter(Boolean).join(" > ").slice(0, 240) }),
+    body: JSON.stringify({ ...f, partner_code, source: [first, location.pathname].filter(Boolean).join(" > ").slice(0, 240) }),
   });
   const out = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(out.error || "We could not make your plan. Please try again.");

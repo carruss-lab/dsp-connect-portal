@@ -31,6 +31,9 @@ export default function PlannerForm({ onPlan, known, cta = "Build my ad plan", d
   const [pre, setPre] = useState<Record<string, string>>({});
   const form = useRef<HTMLFormElement>(null);
   useEffect(() => {
+    // A Sales Partner's or agency's link (?p=CODE) is remembered, so the plan and the sign-up are credited to them.
+    const code = new URLSearchParams(location.search).get("p");
+    if (code && /^[A-Za-z0-9]{4,20}$/.test(code)) { try { sessionStorage.setItem("partner_code", code.toUpperCase()); } catch {} }
     const p = readProfile() as Record<string, string | undefined>;
     const o: Record<string, string> = {};
     for (const k of ["email", "business", "website", "industry", "market", "budget"]) if (p[k]) o[k] = p[k]!;

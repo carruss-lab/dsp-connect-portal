@@ -28,6 +28,7 @@ export async function POST(req: Request) {
   const industry = INDUSTRIES.includes(clean(body.industry, 60)) ? clean(body.industry, 60) : "Other";
   const market = clean(body.market, 120).replace(/[^\p{L}\p{N} ,.'-]/gu, "");
   const source = clean(body.source, 240);
+  const partnerCode = /^[A-Za-z0-9]{4,20}$/.test(clean(body.partner_code, 20)) ? clean(body.partner_code, 20).toUpperCase() : null;
   const budget = Math.round(Number(body.budget ?? MIN_BUDGET));
   if (!Number.isFinite(budget) || budget < MIN_BUDGET || budget > 5_000_000) return NextResponse.json({ error: `Please enter a starting budget of $${MIN_BUDGET} or more.` }, { status: 400 });
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return NextResponse.json({ error: "Please enter a valid email address." }, { status: 400 });
@@ -56,7 +57,7 @@ export async function POST(req: Request) {
   try {
     id = await secretRpc<string>("strategy_save", {
       p_email: email, p_business: business, p_website: input.website, p_industry: industry, p_market: market, p_ip: ipHash,
-      p_source: source || null, p_plan: plan, p_signals: signals ? { ...signals, text: signals.text.slice(0, 3000) } : null, p_model: model,
+      p_source: source || null, p_plan: plan, p_signals: signals ? { ...signals, text: signals.text.slice(0, 3000) } : null, p_model: model, p_partner: partnerCode,
     });
   } catch (err) {
     console.error("strategy save failed", err);
@@ -66,7 +67,7 @@ export async function POST(req: Request) {
   // The plan also counts as a lead, so the team and the chat know about this person.
   const link = `${siteOrigin()}/planner?plan=${id}`;
   await Promise.all([
-    rest("leads", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ kind: "market_check", email, business, website: input.website, industry, market, source: `planner | ${source}`.slice(0, 240) }) })
+    rest("leads", { method: "POST", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ kind: "market_check", email, business, website: input.website, industry, market, partner_code: partnerCode, source: `planner | ${source}`.slice(0, 240) }) })
       .then(async (r) => { if (!r.ok) console.error("planner lead insert failed", r.status, await r.text()); }).catch((e) => console.error("planner lead insert failed", e)),
     notifyTeam("plan", { email, business, website: input.website, industry, market, budget, plan: planSummary(plan), link, read_website: signals?.reachable ? "yes" : "no", written_by: model }),
     syncPerson({

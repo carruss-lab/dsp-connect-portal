@@ -142,6 +142,7 @@ function Dashboard({ portal }: { portal: Portal }) {
               <h2 id="links" className="h3">Your client links</h2>
               <p className="p">Clients who open their account through these links are credited to you. Your partner code is <b>{p.code}</b>.</p>
               <CopyLink label="Open an account" url={`${origin}/open-account?p=${p.code}`} />
+              <CopyLink label="Free ad plan from their website" url={`${origin}/planner?p=${p.code}`} />
               <CopyLink label="Show the demo" url={`${origin}/demo?p=${p.code}`} />
               <CopyLink label="Home page" url={`${origin}/?p=${p.code}`} />
               {!trained && <p className="note" style={{ background: "#FFF6E5", color: "#7A4B00" }}>Please finish the training below before you introduce clients.</p>}
