@@ -38,7 +38,7 @@ h1,h2,h3,p{margin:0}
 .nav a{padding:12px 10px}
 @media (max-width:1320px){.nav a{padding:12px 8px;font-size:13.5px}}
 .hero{padding:72px 0 64px}
-.hero .wrap{display:flex;flex-wrap:wrap;gap:56px;align-items:center}
+.hero .wrap{display:flex;flex-wrap:wrap;gap:56px;align-items:flex-start}
 .hero-copy{flex:999 1 480px;min-width:0}
 .card{border:1px solid var(--line);border-radius:10px;padding:28px;background:#fff}
 .card-strong{border-color:var(--ink)}
