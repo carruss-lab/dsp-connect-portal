@@ -6,7 +6,7 @@ import { MIN_BUDGET, SETUP_DAYS, PARTNER_PCT } from "./site";
 export type Lesson = { id: string; title: string; minutes: number; video: string; points: string[]; check: string };
 
 export const LESSONS: Lesson[] = [
-  { id: "v1-welcome", title: "Welcome and how this program works", minutes: 2, video: "mxyXzdl8fOM",
+  { id: "v1-welcome", title: "Welcome and how this program works", minutes: 2, video: "vaBohuRLAXQ",
     points: ["Your role: introduce DSP Connect to owners you know, show the demo, help them open an account through your link.", "You never set prices, take money, run campaigns or promise results.", "Five steps to your first commission: training, payouts, first demo, first account, their ads run."],
     check: "I know the five steps to my first commission." },
   { id: "v2-agreement", title: "Your agreement in plain English", minutes: 2, video: "1Bv5awl2cB8",
@@ -15,7 +15,7 @@ export const LESSONS: Lesson[] = [
   { id: "v3-pay", title: "How you get paid", minutes: 2, video: "XiKSNtEgijI",
     points: [`${PARTNER_PCT}% of qualified ad spend: paid in full by the client and actually spent on their ads.`, "Held 7 days, then paid daily through Stripe. Your first payout is checked by a person.", "Refunds and chargebacks reverse commission. Residuals for life, unless ended for cause. No salary or guarantee."],
     check: "I can explain when and how I am paid, and what reverses commission." },
-  { id: "v4-product", title: "What DSP Connect is, and who it fits", minutes: 2, video: "rCTGFHhhxuQ",
+  { id: "v4-product", title: "What DSP Connect is, and who it fits", minutes: 2, video: "eBMUX37h7UE",
     points: [`From a $${MIN_BUDGET} ad budget. No monthly platform fee. Our fee is included in the price of your ads. Live within ${SETUP_DAYS} days, no long-term contract.`, "We set up account, tracking, ad review and audience; the client runs it with support.", "Poor fits: anyone needing guaranteed results, a tight budget, or someone to run it for them."],
     check: "I can explain DSP Connect in two sentences and spot a poor fit." },
   { id: "v5-screens", title: "The account, screen by screen", minutes: 2, video: "tEY0PWG7sR4",
