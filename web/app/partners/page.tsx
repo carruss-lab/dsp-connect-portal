@@ -46,6 +46,7 @@ export default function Partners() {
           <div className="hero-copy stack g24">
             <div className="eyebrow">Authorized Sales Partner program</div>
             <h1 className="h1">Sell DSP Connect to the businesses you already call on. Earn {PARTNER_PCT}% of what they spend, for life.</h1>
+            <p className="lead" style={{ maxWidth: 600, fontWeight: 600, color: "var(--ink)" }}>You make the introduction. We set up and run the ads.</p>
             <p className="lead" style={{ maxWidth: 600 }}>Built for ISOs, merchant-services agents and local sales pros. You bring the relationships. We provide the product, the demo, the setup and the support, and pay you residuals for as long as your clients spend.</p>
             <div className="ticks"><span>{PARTNER_PCT}% of qualified ad spend</span><span>Residuals for life</span><span>Paid daily</span><span>Individual or company</span></div>
           </div>

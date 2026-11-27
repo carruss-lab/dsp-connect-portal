@@ -41,6 +41,7 @@ export default function Home() {
             <div className="hero-copy stack g24">
               <div className="eyebrow">Programmatic advertising for every business</div>
               <h1 className="h1">Enterprise programmatic advertising. Without the enterprise contract.</h1>
+              <p className="lead" style={{ maxWidth: 600, fontWeight: 600, color: "var(--ink)" }}>Your streaming TV and online ads on autopilot: we set them up, and Autopilot rules keep tuning them for you.</p>
               <p className="lead" style={{ maxWidth: 600 }}>
                 The same kind of buying big brands do through The Trade Desk and Amazon DSP: streaming TV, apps and websites
                 across {EXCHANGES} ad exchanges. Open to any business from a ${MIN_BUDGET} ad budget, set up for you and live within {SETUP_DAYS} days.
