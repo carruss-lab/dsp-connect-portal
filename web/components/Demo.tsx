@@ -237,7 +237,7 @@ export default function Demo({ industry, market, agency = false }: { industry: s
           ) : (
             item.hot ? (agency ? null : (
               <button key={item.label} type="button" className="dm-nav dm-hot" data-on={sec === item.sec || undefined} aria-current={sec === item.sec ? "page" : undefined} onClick={() => go(item.sec!)}>
-                <Mi i={item.icon} /><span>{item.label}</span>{!mini && <span className="dm-hot-badge">{planBusy ? "Writing" : plan ? "Ready" : "Free"}</span>}
+                <Mi i={item.icon} /><span>{es ? "Su plan de anuncios" : item.label}</span>{!mini && <span className="dm-hot-badge">{planBusy ? t("Writing", "Escribiendo") : plan ? t("Ready", "Listo") : t("Free", "Gratis")}</span>}
               </button>
             )) :
             <button key={item.label} type="button" className="dm-nav" data-on={sec === item.sec || (item.sec === "Campaigns" && sec === "Create new campaign") || undefined} aria-current={sec === item.sec ? "page" : undefined} onClick={() => go(item.sec!)}><Mi i={item.icon} /><span>{item.label}</span></button>
