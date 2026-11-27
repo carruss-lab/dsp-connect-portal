@@ -193,7 +193,7 @@ export default function Builder({ industry, market, audiences, onCancel, preset 
         </nav>
 
         <div className={`dm-b-scroll${step === 4 ? " wide" : ""}`}>
-          {preset && step === 0 && <div className="dm-info" style={{ marginBottom: 12, background: "#EAF1FF", borderColor: "#0A4FD6" }}><span className="mi" aria-hidden="true">auto_awesome</span><span>Filled in from your ad plan: the first campaign, its goal, format, location and devices. Add a CPA and price, then step through.</span></div>}
+          {preset && step === 0 && <div className="dm-info" style={{ marginBottom: 12, background: "#EAF1FF", borderColor: "#0A4FD6" }}><span className="mi" aria-hidden="true">auto_awesome</span><span>{lang === "es" ? "Completado con su plan de anuncios: la primera campaña, su objetivo, formato, ubicación y dispositivos. Agregue un CPA y un precio, y luego avance por los pasos." : "Filled in from your ad plan: the first campaign, its goal, format, location and devices. Add a CPA and price, then step through."}</span></div>}
           {step === 0 && (
             <>
               <div className="dm-card dm-stack">
