@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { esc, send, wrap } from "@/lib/email";
 import { syncPerson } from "@/lib/intercom";
 import { isUuid, rest } from "@/lib/server";
-import { SHARE_PCT, siteOrigin } from "@/lib/site";
+import { PARTNER_PCT, siteOrigin } from "@/lib/site";
 
 // Staff only. Approves an Authorized Sales Partner (if they applied) and emails them their welcome link.
 // Pressing it again re-sends the same link.
@@ -23,7 +23,7 @@ export async function POST(req: Request) {
   const link = `${siteOrigin()}/partners/join/${p.invite_token}`;
   const out = await send(p.email, "You're approved as a DSP Connect Authorized Sales Partner",
     wrap(`<p>Hello ${esc(p.name.split(" ")[0])},</p>` +
-      `<p>Good news: ${p.company_name ? esc(p.company_name) + " is" : "you are"} approved as a DSP Connect Authorized Sales Partner. You introduce local businesses to DSP Connect and earn ${SHARE_PCT}% of their qualified ad spend, paid daily, for as long as they keep spending.</p>` +
+      `<p>Good news: ${p.company_name ? esc(p.company_name) + " is" : "you are"} approved as a DSP Connect Authorized Sales Partner. You introduce local businesses to DSP Connect and earn ${PARTNER_PCT}% of their qualified ad spend, paid daily, for as long as they keep spending.</p>` +
       `<p><a href="${link}" style="display:inline-block;background:#1A14D4;color:#fff;padding:12px 18px;border-radius:6px;text-decoration:none;font-weight:600">Get started</a></p>` +
       `<p>From there you sign your Sales Partner Agreement, set up your payouts and complete a short training. This link is personal to you; please do not forward it.</p>`));
   if (out.ok) await syncPerson({ email: p.email, name: p.name, role: "sales_partner", extra: { partner_stage: "approved_needs_to_sign", ...(p.company_name ? { business_name: p.company_name } : {}) } }).catch(() => {});

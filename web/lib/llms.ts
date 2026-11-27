@@ -6,7 +6,7 @@ import { FACTS } from "./facts";
 import { HOME_FAQ, PARTNER_FAQ } from "./faq";
 import { INDUSTRY_PAGES } from "./industries";
 import { PROFILES, SITE_URL, SLOGAN } from "./seo";
-import { EXCHANGES, HELP_URL, LEGAL_ENTITY, MIN_BUDGET, SETUP_DAYS, SHARE_PCT, SITE_UPDATED, SUPPORT_EMAIL } from "./site";
+import { EXCHANGES, HELP_URL, LEGAL_ENTITY, MIN_BUDGET, SETUP_DAYS, SHARE_PCT, PARTNER_PCT, SITE_UPDATED, SUPPORT_EMAIL } from "./site";
 import LIBRARY from "./video-library.json";
 import { VIDEO_FAQ } from "./videoFaq";
 import { SECTIONS, type LibraryVideo } from "./videoLibrary";
@@ -32,7 +32,7 @@ ${link("Home", "/", "what DSP Connect is, how it works, the explainer video and 
 ${link("About", "/about", "the company and DSP Connect at a glance")}
 ${link("Open your account", "/open-account", `start online from a $${MIN_BUDGET} ad budget`)}
 ${link("For agencies", "/agencies", `run client campaigns and earn ${SHARE_PCT}% of the ad spend you manage`)}
-${link("Sales Partners", "/partners", `commission-only partner program for ISOs and independent sales reps: ${SHARE_PCT}% of client ad spend, paid daily`)}
+${link("Sales Partners", "/partners", `commission-only partner program for ISOs and independent sales reps: ${PARTNER_PCT}% of client ad spend, paid daily`)}
 ${link("Industries", "/industries", "how advertising is set up for each industry, and the rules that apply")}
 ${link("How we compare", "/compare", "DSP Connect side by side with other advertising platforms")}
 ${link("Free ad planner", "/planner", `enter a website and get a free ad plan for streaming TV, online video, display, native and retargeting, split for the budget you choose (from $${MIN_BUDGET})`)}

@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
-import { SHARE_PCT } from "@/lib/site";
+import { PARTNER_PCT } from "@/lib/site";
 
-export const alt = `DSP Connect Authorized Sales Partner program. Earn ${SHARE_PCT}% of client ad spend, for life.`;
+export const alt = `DSP Connect Authorized Sales Partner program. Earn ${PARTNER_PCT}% of client ad spend, for life.`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -13,7 +13,7 @@ export default function Image() {
         <div style={{ display: "flex", fontSize: 30, fontWeight: 700, letterSpacing: -0.5, color: "#9DB4E8" }}>DSP Connect · Authorized Sales Partner program</div>
         <div style={{ display: "flex", flexDirection: "column" }}>
           <div style={{ display: "flex", fontSize: 72, fontWeight: 700, lineHeight: 1.05, letterSpacing: -2, maxWidth: 1040 }}>Sell to the businesses you already call on.</div>
-          <div style={{ display: "flex", fontSize: 34, color: "#9DB4E8", marginTop: 28 }}>Earn {SHARE_PCT}% of what they spend, for life. Paid daily.</div>
+          <div style={{ display: "flex", fontSize: 34, color: "#9DB4E8", marginTop: 28 }}>Earn {PARTNER_PCT}% of what they spend, for life. Paid daily.</div>
         </div>
         <div style={{ display: "flex", height: 10, width: 220, background: "#0A4FD6" }} />
       </div>

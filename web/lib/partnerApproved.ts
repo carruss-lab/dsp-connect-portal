@@ -1,7 +1,7 @@
 import { esc, notifyTeam, send, wrap } from "./email";
 import { syncPerson } from "./intercom";
 import { secretRpc } from "./server";
-import { SHARE_PCT, siteOrigin } from "./site";
+import { PARTNER_PCT, siteOrigin } from "./site";
 
 type P = { id: string; name: string; email: string; status: string; code: string; company_name: string | null };
 
@@ -19,7 +19,7 @@ export async function welcomeApproved(token: string) {
     const portal = `${siteOrigin()}/partner`;
     const out = await send(p.email, title, wrap(
       `<p>Hello ${esc(p.name.split(" ")[0])},</p>` +
-      `<p>Stripe has verified your payout account and your agreement is signed, so ${p.company_name ? esc(p.company_name) + " is" : "you are"} now an approved DSP Connect Authorized Sales Partner. From today, clients who open their account through your links are credited to you, and you earn ${SHARE_PCT}% of their qualified ad spend, paid daily, for as long as they spend.</p>` +
+      `<p>Stripe has verified your payout account and your agreement is signed, so ${p.company_name ? esc(p.company_name) + " is" : "you are"} now an approved DSP Connect Authorized Sales Partner. From today, clients who open their account through your links are credited to you, and you earn ${PARTNER_PCT}% of their qualified ad spend, paid daily, for as long as they spend.</p>` +
       `<p><b>One step before your first client:</b> finish the short training in your portal. Then use your links, your sales kit and the free ad planner.</p>` +
       `<p><a href="${portal}" style="display:inline-block;background:#1A14D4;color:#fff;padding:12px 18px;border-radius:6px;text-decoration:none;font-weight:600">Open your portal</a></p>` +
       `<p>Your partner code is <b>${esc(p.code)}</b>. Questions? Use the chat in your portal or reply to this email.</p>`));

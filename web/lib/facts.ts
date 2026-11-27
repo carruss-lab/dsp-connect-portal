@@ -1,7 +1,7 @@
 // The facts about DSP Connect, stated once. Shown on the About page and in llms.txt, so every place that
 // describes the company (to visitors, search engines and AI assistants) says the same thing.
 // Only what is true and on the site: no results, ratings or client names.
-import { EXCHANGES, MIN_BUDGET, SETUP_DAYS, SHARE_PCT } from "./site";
+import { EXCHANGES, MIN_BUDGET, SETUP_DAYS, SHARE_PCT, PARTNER_PCT } from "./site";
 
 export const FACTS: [string, string][] = [
   ["What it is", "Programmatic advertising (a demand-side platform service) with done-for-you setup"],
@@ -13,6 +13,6 @@ export const FACTS: [string, string][] = [
   ["Contract", "No long-term contract. Cancel any time; unspent ad budget is refunded, less the payment processing fee."],
   ["Reporting", "Your own login with views, clicks and spend, plus tracking on your website that counts leads and sales"],
   ["Agency program", `Agencies earn ${SHARE_PCT}% of the ad spend they manage and keep their client relationships. Paid through PartnerStack`],
-  ["Sales partner program", `Free to join; partners earn ${SHARE_PCT}% of their clients' qualified ad spend. Paid daily through Stripe`],
+  ["Sales partner program", `Free to join; partners earn ${PARTNER_PCT}% of their clients' qualified ad spend. Paid daily through Stripe`],
   ["Who it is for", "Business owners, advertising agencies and independent sales partners"],
 ];

@@ -10,7 +10,7 @@ export const VIDEOS = {
   agencies: { id: "NXtGfd19rnw", seconds: 94, poster: "/video/vsl-agencies.jpg", title: "Keep your clients. Earn 10% of what they spend.",
     description: "How agencies run their clients' streaming TV and programmatic advertising on DSP Connect and earn 10% of the ad spend they manage." },
   partners: { id: "R7fH73uYp6o", seconds: 104, poster: "/video/vsl-partners.jpg", title: "Become a DSP Connect Authorized Sales Partner",
-    description: "How ISOs and local sales pros introduce DSP Connect to the business owners they already call on, and earn 10% of their clients' ad spend for life." },
+    description: "How ISOs and local sales pros introduce DSP Connect to the business owners they already call on, and earn 7% of their clients' ad spend for life." },
   // How to use the free ad planner (/planner), for each audience.
   plannerOwners: { id: "xgLxVnZ55c0", seconds: 80, poster: "/video/plan-owners.jpg", uploaded: "2026-11-25", title: "Get a free streaming TV ad plan for your business in 30 seconds",
     description: "Enter your website and get a free ad plan for streaming TV, online video, display, native and retargeting ads, split for the budget you choose, then build the campaign in your demo account." },

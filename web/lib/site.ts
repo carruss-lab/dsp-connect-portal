@@ -3,7 +3,8 @@
 export const LEGAL_ENTITY = "Influence Crafters LLC";
 export const MIN_BUDGET = 750;
 export const SETUP_DAYS = 14;
-export const SHARE_PCT = 10;
+export const SHARE_PCT = 10; // agencies (PartnerStack)
+export const PARTNER_PCT = 7; // Authorized Sales Partners (Stripe), changed from 10 on 2026-11-26
 // Number of ad exchanges reached (owner confirmed 50+, 2026-11-17).
 export const EXCHANGES = "50+";
 // Countries DSP Connect serves: English-speaking markets (owner confirmed 2026-11-24).

@@ -356,7 +356,7 @@ export default function Admin() {
 
       <section className="stack g16">
         <h2 className="h3" style={{ fontSize: 18 }}>Ad spend and partner commission</h2>
-        <p className="small">Enter each client&apos;s ad spend for a day. If a Sales Partner brought that client, 10% is added to their commission and becomes payable 7 days after the spend date. Saving the same client and date again replaces the amount.</p>
+        <p className="small">Enter each client&apos;s ad spend for a day. If a Sales Partner brought that client, 7% is added to their commission and becomes payable 7 days after the spend date. Saving the same client and date again replaces the amount.</p>
         <form onSubmit={addSpend} className="card" style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "flex-end", background: "var(--ground)" }}>
           <div className="field" style={{ flex: "2 1 240px" }}><label htmlFor="sp-lead">Client</label>
             <select id="sp-lead" name="lead_id" className="input" required defaultValue="">

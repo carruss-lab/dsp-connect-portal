@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { esc, notifyTeam, send, wrap } from "@/lib/email";
 import { syncPerson } from "@/lib/intercom";
 import { secretRpc } from "@/lib/server";
-import { INDUSTRIES, SHARE_PCT, siteOrigin } from "@/lib/site";
+import { INDUSTRIES, PARTNER_PCT, siteOrigin } from "@/lib/site";
 
 const t = (v: unknown, n: number) => String(v ?? "").trim().replace(/\s+/g, " ").slice(0, n);
 const long = (v: unknown, n: number) => String(v ?? "").trim().slice(0, n);
@@ -44,7 +44,7 @@ export async function POST(req: Request) {
       wrap(`<p>Hello ${esc(name.split(" ")[0])},</p>` +
         `<p>Thank you for applying to become a DSP Connect Authorized Sales Partner${company ? ` with ${esc(company)}` : ""}. You can start your enrollment now:</p>` +
         `<ol><li><b>Sign your Sales Partner Agreement</b> online, as yourself or for your company.</li><li><b>Verify with Stripe</b> and set up your payouts. Stripe checks your identity and bank details; we never see them.</li></ol>` +
-        `<p>As soon as Stripe verifies you and your agreement is signed, you are approved automatically and your client links start crediting you. Then a short training, and you earn ${SHARE_PCT}% of the qualified ad spend of every client you bring, paid daily, for as long as they keep spending.</p>` +
+        `<p>As soon as Stripe verifies you and your agreement is signed, you are approved automatically and your client links start crediting you. Then a short training, and you earn ${PARTNER_PCT}% of the qualified ad spend of every client you bring, paid daily, for as long as they keep spending.</p>` +
         `<p><a href="${link}" style="display:inline-block;background:#1A14D4;color:#fff;padding:12px 18px;border-radius:6px;text-decoration:none;font-weight:600">Start your enrollment</a></p>` +
         `<p>This link is personal to you; please do not forward it. Questions? Just reply to this email.</p>`)),
     syncPerson({ email, name, role: "sales_partner", industry: vertical, market: row.p_location || null, extra: { partner_stage: "approved_needs_to_sign", ...(company ? { business_name: company } : {}) } }),

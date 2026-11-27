@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Footer, Header, TalkBand } from "@/components/Chrome";
 import LeadForm from "@/components/LeadForm";
-import { PARTNERSTACK_AGENCY_URL, SETUP_DAYS, SHARE_PCT } from "@/lib/site";
+import { PARTNERSTACK_AGENCY_URL, SETUP_DAYS, SHARE_PCT, PARTNER_PCT } from "@/lib/site";
 import VideoEmbed from "@/components/VideoEmbed";
 import PlannerVideo from "@/components/PlannerVideo";
 import { VIDEOS, videoNode } from "@/lib/videos";
@@ -75,7 +75,7 @@ export default function Agencies() {
           <div className="wrap narrow stack g16">
             <h2 id="which-h" className="h2">Agency or Sales Partner?</h2>
             <p className="p"><b>Join as an agency</b> if you run your clients&apos; campaigns yourself, in your own agency account with a login for each client. You keep the client relationship and earn {SHARE_PCT}% of the ad spend you manage, paid through PartnerStack.</p>
-            <p className="p"><b>Become a <Link href="/partners">Sales Partner</Link></b> if you introduce business owners and want DSP Connect to set up and run their advertising. You earn {SHARE_PCT}% of each client&apos;s qualified ad spend, paid daily through Stripe, for as long as they spend.</p>
+            <p className="p"><b>Become a <Link href="/partners">Sales Partner</Link></b> if you introduce business owners and want DSP Connect to set up and run their advertising. You earn {PARTNER_PCT}% of each client&apos;s qualified ad spend, paid daily through Stripe, for as long as they spend.</p>
             <p className="p">Both programs let you add your sales team: agencies invite reps from their PartnerStack dashboard, and Sales Partners add reps in their partner portal. Either way, every client is tracked to the rep who brought it and all commission comes to you.</p>
           </div>
         </section>

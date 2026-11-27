@@ -1,11 +1,11 @@
 import { createHash } from "crypto";
-import { LEGAL_ENTITY, MIN_BUDGET, SHARE_PCT } from "./site";
+import { LEGAL_ENTITY, MIN_BUDGET, PARTNER_PCT } from "./site";
 
 // The Authorized Sales Partner documents: a person or a company, approved automatically once the agreement
 // is signed and Stripe verifies them, paid commission only with residuals for life. Approved for use by the
 // owner on 2026-11-26. To change the wording, edit the text here and raise VERSION, so every signature
 // records exactly which wording was agreed.
-export const VERSION = "2026-11-26.1";
+export const VERSION = "2026-11-26.2";
 
 export const PROGRAM = "Authorized Sales Partner";
 
@@ -33,7 +33,7 @@ export const DOCS: Doc[] = [
         "You are approved as an Authorized Sales Partner once you have signed this Agreement and Stripe has verified your payout account. We may decline an application, and either of us may end this Agreement under section 6. Your appointment is personal to you (or to your company); you may not transfer it. You may not appoint sub-agents, resellers or referral partners, or let anyone outside your company sell under your partner link, unless we agree in writing.",
       ] },
       { h: "4. Pay", p: [
-        `You earn cash commission only, as set out in Exhibit A: ${SHARE_PCT}% of the qualified ad spend of clients credited to you, for as long as those clients keep spending (residuals). There is no salary, draw, equity or guaranteed income of any kind. Any earlier description of equity, ownership or profit share in DSP Connect or ${CO} does not apply to you.`,
+        `You earn cash commission only, as set out in Exhibit A: ${PARTNER_PCT}% of the qualified ad spend of clients credited to you, for as long as those clients keep spending (residuals). There is no salary, draw, equity or guaranteed income of any kind. Any earlier description of equity, ownership or profit share in DSP Connect or ${CO} does not apply to you.`,
       ] },
       { h: "5. Clients belong to DSP Connect", p: [
         "Every client account, contract, login, campaign and record belongs to DSP Connect. Clients contract and pay DSP Connect directly. You may not take payment from a client, hold a client's money, or set a client's price.",
@@ -65,7 +65,7 @@ export const DOCS: Doc[] = [
     tag: "Exhibit A",
     title: "Compensation Policy",
     sections: [
-      { h: "1. Rate", p: [`You earn ${SHARE_PCT}% of the qualified ad spend of each client credited to you.`] },
+      { h: "1. Rate", p: [`You earn ${PARTNER_PCT}% of the qualified ad spend of each client credited to you.`] },
       { h: "2. Which clients are credited to you", p: [
         "A client is credited to you when it opens its DSP Connect account through your partner link or with your partner code, after you have signed this Agreement. A client cannot be credited to more than one partner. If a client was already in contact with DSP Connect before your introduction, we decide in good faith who it is credited to, and our decision is final.",
       ] },

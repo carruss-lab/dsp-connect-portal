@@ -1,4 +1,4 @@
-import { MIN_BUDGET, SETUP_DAYS, SHARE_PCT } from "./site";
+import { MIN_BUDGET, SETUP_DAYS, SHARE_PCT, PARTNER_PCT } from "./site";
 
 // Questions the videos answer. Each answer says only what the named video says, and links to it.
 // [question, answer, video key in lib/video-library.json]
@@ -43,7 +43,7 @@ export const VIDEO_FAQ: [string, string, string][] = [
     `Yes. Agencies run their clients' streaming TV and programmatic advertising on DSP Connect, keep the client relationship, and earn ${SHARE_PCT}% of the ad spend they manage.`,
     "vsl-agencies"],
   ["Who can become a DSP Connect Authorized Sales Partner?",
-    `People who already sit across from business owners, such as merchant services, point of sale and marketing reps. You do not need advertising experience, and partners earn ${SHARE_PCT}% of their clients' qualified ad spend.`,
+    `People who already sit across from business owners, such as merchant services, point of sale and marketing reps. You do not need advertising experience, and partners earn ${PARTNER_PCT}% of their clients' qualified ad spend.`,
     "vsl-partners"],
   ["How can I get an ad plan for my business?",
     `Use the free DSP Connect ad planner at getdspconnect.com/planner. Enter your website and the budget you have in mind, from $${MIN_BUDGET}, and get a plan for streaming TV, online video, display, native and retargeting ads, split in dollars, with who to reach, the ads you need and how results are counted.`,

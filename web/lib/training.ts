@@ -1,4 +1,4 @@
-import { MIN_BUDGET, SETUP_DAYS, SHARE_PCT } from "./site";
+import { MIN_BUDGET, SETUP_DAYS, PARTNER_PCT } from "./site";
 
 // The Authorized Sales Partner course: 14 video lessons (YouTube, unlisted), each with key points and a
 // checklist line the partner ticks. Finishing all 14 marks the partner trained. Scripts and videos are
@@ -13,7 +13,7 @@ export const LESSONS: Lesson[] = [
     points: ["You are an independent contractor, not staff and not a reseller. Company partners are responsible for their staff.", "No sub-agents. Clients contract with and pay DSP Connect. Confidentiality and 12 months of no soliciting.", "Either side can end it with 30 days' notice; residuals continue unless it ends for cause."],
     check: "I have read my signed agreement and Exhibits A and B." },
   { id: "v3-pay", title: "How you get paid", minutes: 2, video: "XiKSNtEgijI",
-    points: [`${SHARE_PCT}% of qualified ad spend: paid in full by the client and actually spent on their ads.`, "Held 7 days, then paid daily through Stripe. Your first payout is checked by a person.", "Refunds and chargebacks reverse commission. Residuals for life, unless ended for cause. No salary or guarantee."],
+    points: [`${PARTNER_PCT}% of qualified ad spend: paid in full by the client and actually spent on their ads.`, "Held 7 days, then paid daily through Stripe. Your first payout is checked by a person.", "Refunds and chargebacks reverse commission. Residuals for life, unless ended for cause. No salary or guarantee."],
     check: "I can explain when and how I am paid, and what reverses commission." },
   { id: "v4-product", title: "What DSP Connect is, and who it fits", minutes: 2, video: "rCTGFHhhxuQ",
     points: [`From a $${MIN_BUDGET} ad budget. No monthly platform fee. Our fee is included in the price of your ads. Live within ${SETUP_DAYS} days, no long-term contract.`, "We set up account, tracking, ad review and audience; the client runs it with support.", "Poor fits: anyone needing guaranteed results, a tight budget, or someone to run it for them."],

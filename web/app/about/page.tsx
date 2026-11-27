@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Footer, Header } from "@/components/Chrome";
 import { FACTS } from "@/lib/facts";
 import { ID, JsonLd, PROFILES, SLOGAN, pageGraph, pageMeta } from "@/lib/seo";
-import { HELP_URL, LEGAL_ENTITY, MIN_BUDGET, SETUP_DAYS, SHARE_PCT, SUPPORT_EMAIL } from "@/lib/site";
+import { HELP_URL, LEGAL_ENTITY, MIN_BUDGET, SETUP_DAYS, SHARE_PCT, PARTNER_PCT, SUPPORT_EMAIL } from "@/lib/site";
 
 const DESCRIPTION = `About DSP Connect: programmatic advertising on streaming TV, apps and websites for any business from a $${MIN_BUDGET} ad budget, set up for you.`;
 export const metadata: Metadata = pageMeta({ title: "About DSP Connect", description: DESCRIPTION, path: "/about" });
@@ -11,7 +11,7 @@ export const metadata: Metadata = pageMeta({ title: "About DSP Connect", descrip
 const WHO: [string, string, string][] = [
   ["Business owners", `Advertise on streaming TV, apps and websites from a $${MIN_BUDGET} ad budget. We set up the account, tracking, ads and audience, and ads are live within ${SETUP_DAYS} days.`, "/open-account"],
   ["Agencies", `Run your clients' programmatic advertising on DSP Connect, keep the client relationship, and earn ${SHARE_PCT}% of the ad spend you manage.`, "/agencies"],
-  ["Sales partners", `ISOs, merchant-services agents and independent reps introduce DSP Connect to the businesses they already call on and earn ${SHARE_PCT}% of their clients' qualified ad spend.`, "/partners"],
+  ["Sales partners", `ISOs, merchant-services agents and independent reps introduce DSP Connect to the businesses they already call on and earn ${PARTNER_PCT}% of their clients' qualified ad spend.`, "/partners"],
 ];
 
 const PROFILE_NAMES: Record<string, string> = {

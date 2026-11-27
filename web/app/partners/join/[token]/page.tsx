@@ -3,7 +3,7 @@ import Image from "next/image";
 import ConnectButton from "@/components/ConnectButton";
 import { refreshPayouts } from "@/lib/partnerStripe";
 import { isUuid, secretRpc } from "@/lib/server";
-import { LEGAL_ENTITY, SHARE_PCT } from "@/lib/site";
+import { LEGAL_ENTITY, PARTNER_PCT } from "@/lib/site";
 
 export const metadata: Metadata = { title: "Welcome, Authorized Sales Partner", robots: { index: false, follow: false } };
 type Partner = { id: string; name: string; email: string; status: string; code: string; stripe_account_id: string | null; payouts_ready: boolean; entity_type: string | null; company_name: string | null };
@@ -28,7 +28,7 @@ export default async function Join({ params }: PageProps<"/partners/join/[token]
             <div className="stack g16">
               <div className="eyebrow">{["admitted", "active"].includes(partner.status) ? "Approved" : "Your enrollment"}</div>
               <h1 className="h1" style={{ fontSize: "clamp(30px,4.4vw,44px)" }}>Welcome, {partner.name.split(" ")[0]}.</h1>
-              <p className="lead">{["admitted", "active"].includes(partner.status) ? "You are approved as a DSP Connect Authorized Sales Partner." : "Two steps to approval: sign your agreement and verify with Stripe. Once both are done you are approved automatically."} You earn {SHARE_PCT}% of the qualified ad spend of the clients you bring in, paid daily, for as long as they spend.</p>
+              <p className="lead">{["admitted", "active"].includes(partner.status) ? "You are approved as a DSP Connect Authorized Sales Partner." : "Two steps to approval: sign your agreement and verify with Stripe. Once both are done you are approved automatically."} You earn {PARTNER_PCT}% of the qualified ad spend of the clients you bring in, paid daily, for as long as they spend.</p>
             </div>
             <ol className="stack g16" style={{ listStyle: "none", padding: 0, margin: 0 }}>
               <li className="card stack g8">

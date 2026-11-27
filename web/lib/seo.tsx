@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { COUNTRIES, COUNTRY_CODES, EXCHANGES, HELP_URL, LEGAL_ENTITY, MIN_BUDGET, SETUP_DAYS, SHARE_PCT, SITE_UPDATED, SUPPORT_EMAIL } from "./site";
+import { COUNTRIES, COUNTRY_CODES, EXCHANGES, HELP_URL, LEGAL_ENTITY, MIN_BUDGET, SETUP_DAYS, SHARE_PCT, PARTNER_PCT, SITE_UPDATED, SUPPORT_EMAIL } from "./site";
 
 /** The countries DSP Connect serves, as structured data. */
 export const AREA_SERVED = COUNTRIES.map((name) => ({ "@type": "Country", name }));
@@ -92,11 +92,11 @@ export const PARTNER_PROGRAM: Node = {
   serviceType: "Independent sales partner program", provider: ref(ID.org), url: `${SITE_URL}/partners`,
   areaServed: AREA_SERVED,
   audience: { "@type": "BusinessAudience", name: "ISOs, merchant-services agents and independent sales representatives who call on local businesses" },
-  description: `Independent individuals and companies refer local businesses to DSP Connect and earn ${SHARE_PCT}% of their clients' qualified ad spend, with residuals for as long as the client's account is open. Commission only; no fee to join.`,
+  description: `Independent individuals and companies refer local businesses to DSP Connect and earn ${PARTNER_PCT}% of their clients' qualified ad spend, with residuals for as long as the client's account is open. Commission only; no fee to join.`,
   isRelatedTo: ref(ID.ads),
   offers: {
     "@type": "Offer", url: `${SITE_URL}/partners#apply`, price: 0, priceCurrency: "USD", availability: "https://schema.org/InStock", seller: ref(ID.org),
-    description: `Free to apply and join. Commission of ${SHARE_PCT}% of qualified client ad spend.`,
+    description: `Free to apply and join. Commission of ${PARTNER_PCT}% of qualified client ad spend.`,
   },
 };
 

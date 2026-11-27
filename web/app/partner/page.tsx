@@ -7,7 +7,7 @@ import { CopyLink, CopyTemplate, LessonDone, LoginForm, RemoveRep, SignDocs, Tea
 import { loadPortal, type Client, type MemberPortal, type Portal } from "@/lib/partner";
 import { refreshPayouts } from "@/lib/partnerStripe";
 import { DOCS, VERSION } from "@/lib/partnerDocs";
-import { LEGAL_ENTITY, SETUP_DAYS, SHARE_PCT, SUPPORT_EMAIL, siteOrigin } from "@/lib/site";
+import { LEGAL_ENTITY, SETUP_DAYS, PARTNER_PCT, SUPPORT_EMAIL, siteOrigin } from "@/lib/site";
 import { LESSONS } from "@/lib/training";
 import VideoEmbed from "@/components/VideoEmbed";
 import { VIDEOS } from "@/lib/videos";
@@ -185,7 +185,7 @@ function Dashboard({ portal }: { portal: Portal }) {
             <section className="card stack g8">
               <h2 className="h3">Help</h2>
               <p className="p">Use the chat button at the bottom of this page. Fin can help you prepare advice for a client, and anything about payouts, commission or your clients goes to our Sales Partner Support team.</p>
-              <p className="small">You signed your Sales Partner Agreement on {day(p.signed_at)} as {p.legal_name}{p.entity_type === "company" && p.company_name ? `, ${p.signer_title || "authorized signer"} of ${p.company_name}` : ""}. You earn {SHARE_PCT}% of qualified ad spend, with residuals for as long as your clients spend. Need another copy? Ask in the chat.</p>
+              <p className="small">You signed your Sales Partner Agreement on {day(p.signed_at)} as {p.legal_name}{p.entity_type === "company" && p.company_name ? `, ${p.signer_title || "authorized signer"} of ${p.company_name}` : ""}. You earn {PARTNER_PCT}% of qualified ad spend, with residuals for as long as your clients spend. Need another copy? Ask in the chat.</p>
             </section>
           </>
         )}
