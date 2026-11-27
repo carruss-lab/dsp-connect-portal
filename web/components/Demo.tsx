@@ -8,6 +8,8 @@ import PlannerForm, { PlanProgress } from "./PlannerForm";
 import { builderPreset, type BuilderPreset, type SavedPlan } from "@/lib/plan";
 import { accountHref, askAboutPlan, loadPlan, requestPlan, storedPlan, type PlanRequest } from "@/lib/planClient";
 import { readProfile } from "@/lib/profile";
+import { useLang } from "@/lib/useLang";
+import { industryName, tr } from "@/lib/i18n";
 import { PARTNERSTACK_AGENCY_URL, SHARE_PCT } from "@/lib/site";
 import Builder from "./demo/Builder";
 import Chart from "./demo/Chart";
@@ -71,6 +73,13 @@ const TOUR: [Sec, string, string][] = [
   ["Create new campaign", "How a campaign is built", "Goal, ad format, audience, price, budget and the SSP endpoints that send it traffic."],
   ["Billing", "What it cost", "Every deposit and what has been spent, with your balance."],
 ];
+// The tour in Spanish. The platform's own screens keep their English names, as in the real account.
+const TOUR_ES: [string, string][] = [
+  ["Sus resultados (Dashboard)", "Gasto, impresiones, clics y conversiones de cada campaña, por día."],
+  ["Dónde se mostraron sus anuncios (Analytics)", "Agrupe los resultados por SSP, app, sitio, dispositivo, país y más, con la reproducción completa de los anuncios en video."],
+  ["Cómo se crea una campaña (Create new campaign)", "Objetivo, formato de anuncio, audiencia, precio, presupuesto y los endpoints de SSP que le envían tráfico."],
+  ["Lo que costó (Billing)", "Cada depósito y lo que se ha gastado, con su saldo."],
+];
 
 function Mi({ i, s, label }: { i: string; s?: 16 | 18 | 24; label?: string }) {
   return <span className={`mi${s ? ` s${s}` : ""}`} aria-hidden={label ? undefined : true} aria-label={label} role={label ? "img" : undefined}>{i}</span>;
@@ -119,6 +128,8 @@ export default function Demo({ industry, market, agency = false }: { industry: s
   const [planErr, setPlanErr] = useState("");
   const [planPreset, setPlanPreset] = useState<BuilderPreset | null>(null);
   const [known, setKnown] = useState<{ email?: string; industry?: string; market?: string }>({});
+  const lang = useLang(); const t = tr(lang); const es = lang === "es";
+  const tourText = (i: number) => (es ? TOUR_ES[i] : [TOUR[i][1], TOUR[i][2]]);
 
   useEffect(() => {
     let ok = false;
@@ -137,7 +148,7 @@ export default function Demo({ industry, market, agency = false }: { industry: s
       else if (req?.website && req.email) {
         // They gave their website at the demo sign-in: write the plan while they look around.
         setSec("Your ad plan"); setPlanBusy(true);
-        requestPlan(req).then(setPlan).catch((e) => setPlanErr(e instanceof Error ? e.message : "We could not make your plan.")).finally(() => setPlanBusy(false));
+        requestPlan(req).then(setPlan).catch((e) => setPlanErr(e instanceof Error ? e.message : t("We could not make your plan.", "No pudimos crear su plan."))).finally(() => setPlanBusy(false));
       } else if (mine) { setPlan(mine); }
     }
     if (window.innerWidth < 760) setMini(true); // on phones the menu opens from the button
@@ -159,15 +170,15 @@ export default function Demo({ industry, market, agency = false }: { industry: s
     return (
       <main className="wrap" style={{ padding: "72px 32px", maxWidth: 560 }}>
         <div className="card stack g16" style={{ background: "var(--ground)" }}>
-          <h1 className="h2" style={{ fontSize: 26 }}>See the demo</h1>
-          <p className="p">Tell us your industry and area and we will open a sample account set up for a business like yours.</p>
-          <LeadForm kind="market_check" cta="Open the demo" />
+          <h1 className="h2" style={{ fontSize: 26 }}>{t("See the demo", "Vea la demostración")}</h1>
+          <p className="p">{t("Tell us your industry and area and we will open a sample account set up for a business like yours.", "Díganos su industria y su zona y le abriremos una cuenta de ejemplo configurada para un negocio como el suyo.")}</p>
+          <LeadForm kind="market_check" cta={t("Open the demo", "Abrir la demostración")} />
         </div>
       </main>
     );
   }
 
-  const locked = (what = "This") => setToast(`${what} is not available in the demo account, so nothing is saved.`);
+  const locked = (what = "This") => setToast(es ? `“${what}” no está disponible en la cuenta de demostración, así que no se guarda nada.` : `${what} is not available in the demo account, so nothing is saved.`);
   const go = (s: Sec) => { setSec(s); setMenu(""); setSearch(""); if (window.innerWidth < 760) setMini(true); window.scrollTo({ top: 0 }); };
   const stop = (i: number) => { setTour(i); go(TOUR[i][0]); if (TOUR[i][0] === "Analytics") { setOpen((o) => ({ ...o, Analytics: true })); setGroup("SSP Endpoint"); } };
   const parentOf = (s: Sec) => NAV.find((x) => x.children?.some((c) => c.sec === s))?.label;
@@ -262,19 +273,21 @@ export default function Demo({ industry, market, agency = false }: { industry: s
               )}
             </div>
             {agency
-              ? <a className="dm-cta" href={PARTNERSTACK_AGENCY_URL} target="_blank" rel="noopener noreferrer">Join the agency program</a>
-              : <Link className="dm-cta" href="/open-account">Open your account</Link>}
+              ? <a className="dm-cta" href={PARTNERSTACK_AGENCY_URL} target="_blank" rel="noopener noreferrer">{t("Join the agency program", "Únase al programa para agencias")}</a>
+              : <Link className="dm-cta" href="/open-account">{t("Open your account", "Abra su cuenta")}</Link>}
           </div>
         </header>
-        <div className="dm-note">{agency ? "Demo agency account with sample clients and sample data. Not real results." : `Demo account with sample data for a ${industry.toLowerCase()} business in ${market}. Not real results.`}</div>
+        <div className="dm-note">{es
+          ? (agency ? "Cuenta de agencia de demostración con clientes y datos de ejemplo. No son resultados reales." : `Cuenta de demostración con datos de ejemplo para un negocio de ${industryName(industry, "es").toLowerCase()} en ${market === "your area" ? "su zona" : market}. No son resultados reales.`) + " La plataforma de anuncios está en inglés; el chat le ayuda en español."
+          : agency ? "Demo agency account with sample clients and sample data. Not real results." : `Demo account with sample data for a ${industry.toLowerCase()} business in ${market}. Not real results.`}</div>
 
         <div className="dm-body">
           {!agency && sec !== "Your ad plan" && (
             <button type="button" className="dm-planbar" onClick={() => go("Your ad plan")}>
               <Mi i="auto_awesome" />
-              <span><b>{plan ? "Your ad plan is ready." : planBusy ? "We are writing your ad plan from your website." : "Get your free ad plan."}</b>{" "}
-                {plan ? "Streaming TV, video, display, native and retargeting, split for your budget." : planBusy ? "It takes about 30 seconds. Keep looking around." : "Enter your website and we plan your streaming TV, video, display, native and retargeting ads."}</span>
-              <span className="dm-planbar-go">{plan ? "View your plan" : planBusy ? "Open" : "Build my plan"}<Mi i="arrow_forward" s={18} /></span>
+              <span><b>{plan ? t("Your ad plan is ready.", "Su plan de anuncios está listo.") : planBusy ? t("We are writing your ad plan from your website.", "Estamos escribiendo su plan de anuncios a partir de su sitio web.") : t("Get your free ad plan.", "Obtenga su plan de anuncios gratis.")}</b>{" "}
+                {plan ? t("Streaming TV, video, display, native and retargeting, split for your budget.", "TV por streaming, video, display, nativos y retargeting, repartidos según su presupuesto.") : planBusy ? t("It takes about 30 seconds. Keep looking around.", "Toma unos 30 segundos. Siga explorando.") : t("Enter your website and we plan your streaming TV, video, display, native and retargeting ads.", "Escriba su sitio web y planeamos sus anuncios en TV por streaming, video, display, nativos y retargeting.")}</span>
+              <span className="dm-planbar-go">{plan ? t("View your plan", "Ver su plan") : planBusy ? t("Open", "Abrir") : t("Build my plan", "Crear mi plan")}<Mi i="arrow_forward" s={18} /></span>
             </button>
           )}
 
@@ -282,15 +295,15 @@ export default function Demo({ industry, market, agency = false }: { industry: s
             <div className="dm-plan">
               {plan ? (
                 <PlanView saved={plan} actions={<>
-                  <button type="button" className="btn btn-white" onClick={() => { setPlanPreset(builderPreset(plan.plan, market)); go("Create new campaign"); }}>Build this campaign</button>
-                  <Link className="btn btn-line" style={{ borderColor: "#fff", color: "#fff" }} href={accountHref(plan)}>Open your account with this plan</Link>
-                  <button type="button" className="btn btn-line" style={{ borderColor: "#A9C1F5", color: "#A9C1F5" }} onClick={() => askAboutPlan(plan)}>Ask about this plan</button>
+                  <button type="button" className="btn btn-white" onClick={() => { setPlanPreset(builderPreset(plan.plan, market)); go("Create new campaign"); }}>{t("Build this campaign", "Crear esta campaña")}</button>
+                  <Link className="btn btn-line" style={{ borderColor: "#fff", color: "#fff" }} href={accountHref(plan)}>{t("Open your account with this plan", "Abra su cuenta con este plan")}</Link>
+                  <button type="button" className="btn btn-line" style={{ borderColor: "#A9C1F5", color: "#A9C1F5" }} onClick={() => askAboutPlan(plan)}>{t("Ask about this plan", "Preguntar sobre este plan")}</button>
                 </>} />
               ) : (
                 <div className="dm-plan-start">
                   <div className="dm-plan-art"><Mi i="auto_awesome" /></div>
-                  <h1>{planBusy ? "Writing your ad plan" : "Your free ad plan"}</h1>
-                  <p>{planBusy ? "We are reading your website and planning your channels, audience, ads and tracking." : "Enter your website. We read it the way a media planner would and write a plan for streaming TV, online video, display, native and retargeting ads, split for your budget. Then build the campaign right here."}</p>
+                  <h1>{planBusy ? t("Writing your ad plan", "Escribiendo su plan de anuncios") : t("Your free ad plan", "Su plan de anuncios gratis")}</h1>
+                  <p>{planBusy ? t("We are reading your website and planning your channels, audience, ads and tracking.", "Estamos leyendo su sitio web y planeando sus canales, audiencia, anuncios y seguimiento.") : t("Enter your website. We read it the way a media planner would and write a plan for streaming TV, online video, display, native and retargeting ads, split for your budget. Then build the campaign right here.", "Escriba su sitio web. Lo leemos como lo haría un planificador de medios y escribimos un plan de anuncios en TV por streaming, video en línea, display, nativos y retargeting, repartido según su presupuesto. Después cree la campaña aquí mismo.")}</p>
                   {planErr && <p className="note note-err" role="alert">{planErr}</p>}
                   <div className="dm-plan-form">{planBusy ? <PlanProgress /> : <PlannerForm known={known} dark onPlan={(p) => { setPlan(p); setPlanErr(""); }} />}</div>
                 </div>
@@ -299,16 +312,16 @@ export default function Demo({ industry, market, agency = false }: { industry: s
           )}
 
           {tour !== null && !agency && sec !== "Create new campaign" && sec !== "Your ad plan" && (
-            <div className="dm-tour" role="region" aria-label="Guided tour">
+            <div className="dm-tour" role="region" aria-label={t("Guided tour", "Recorrido guiado")}>
               {tour === -1 ? (
-                <><div><strong>New here?</strong> Take the one-minute tour of the platform.</div>
-                  <div className="dm-row"><button type="button" className="dm-btn" onClick={() => setTour(null)}>No thanks</button><button type="button" className="dm-btn dm-btn-blue" onClick={() => stop(0)}>Start the tour</button></div></>
+                <><div><strong>{t("New here?", "¿Es nuevo?")}</strong> {t("Take the one-minute tour of the platform.", "Haga el recorrido de un minuto por la plataforma.")}</div>
+                  <div className="dm-row"><button type="button" className="dm-btn" onClick={() => setTour(null)}>{t("No thanks", "No, gracias")}</button><button type="button" className="dm-btn dm-btn-blue" onClick={() => stop(0)}>{t("Start the tour", "Empezar el recorrido")}</button></div></>
               ) : (
-                <><div><span className="dm-k">Stop {tour + 1} of {TOUR.length}</span><br /><strong>{TOUR[tour][1]}.</strong> {TOUR[tour][2]}</div>
+                <><div><span className="dm-k">{t("Stop", "Parada")} {tour + 1} {t("of", "de")} {TOUR.length}</span><br /><strong>{tourText(tour)[0]}.</strong> {tourText(tour)[1]}</div>
                   <div className="dm-row">
-                    {tour > 0 && <button type="button" className="dm-btn" onClick={() => stop(tour - 1)}>Back</button>}
-                    {tour < TOUR.length - 1 ? <button type="button" className="dm-btn dm-btn-blue" onClick={() => stop(tour + 1)}>Next</button>
-                      : <button type="button" className="dm-btn dm-btn-blue" onClick={() => setTour(null)}>Finish the tour</button>}
+                    {tour > 0 && <button type="button" className="dm-btn" onClick={() => stop(tour - 1)}>{t("Back", "Atrás")}</button>}
+                    {tour < TOUR.length - 1 ? <button type="button" className="dm-btn dm-btn-blue" onClick={() => stop(tour + 1)}>{t("Next", "Siguiente")}</button>
+                      : <button type="button" className="dm-btn dm-btn-blue" onClick={() => setTour(null)}>{t("Finish the tour", "Terminar el recorrido")}</button>}
                   </div></>
               )}
             </div>
@@ -316,7 +329,7 @@ export default function Demo({ industry, market, agency = false }: { industry: s
 
           {sec === "Create new campaign" && (
             <>
-              {tour === 2 && <div className="dm-tour" role="region" aria-label="Guided tour" style={{ margin: "-16px -16px 16px" }}><div><span className="dm-k">Stop 3 of {TOUR.length}</span><br /><strong>{TOUR[2][1]}.</strong> {TOUR[2][2]} The Traffic source step lists the SSP endpoints.</div><div className="dm-row"><button type="button" className="dm-btn" onClick={() => stop(1)}>Back</button><button type="button" className="dm-btn dm-btn-blue" onClick={() => stop(3)}>Next</button></div></div>}
+              {tour === 2 && <div className="dm-tour" role="region" aria-label={t("Guided tour", "Recorrido guiado")} style={{ margin: "-16px -16px 16px" }}><div><span className="dm-k">{t("Stop", "Parada")} 3 {t("of", "de")} {TOUR.length}</span><br /><strong>{tourText(2)[0]}.</strong> {tourText(2)[1]} {t("The Traffic source step lists the SSP endpoints.", "El paso Traffic source muestra los endpoints de SSP.")}</div><div className="dm-row"><button type="button" className="dm-btn" onClick={() => stop(1)}>{t("Back", "Atrás")}</button><button type="button" className="dm-btn dm-btn-blue" onClick={() => stop(3)}>{t("Next", "Siguiente")}</button></div></div>}
               <Builder key={planPreset ? "plan" : "blank"} industry={acc.short} market={market} audiences={audiences.map((x) => x[0])} onCancel={() => go("Campaigns")} preset={planPreset || undefined} />
             </>
           )}
@@ -743,8 +756,8 @@ export default function Demo({ industry, market, agency = false }: { industry: s
 
       {toast && (
         <div className="dm-toast" role="status">
-          <Mi i={toast.includes("demo") ? "warning" : "check_circle"} />
-          <span>{toast} {toast.includes("demo") && (agency ? <a href={PARTNERSTACK_AGENCY_URL} target="_blank" rel="noopener noreferrer">Join the agency program</a> : <Link href="/open-account">Open your account</Link>)}</span>
+          <Mi i={/demo|demostración/.test(toast) ? "warning" : "check_circle"} />
+          <span>{toast} {/demo|demostración/.test(toast) && (agency ? <a href={PARTNERSTACK_AGENCY_URL} target="_blank" rel="noopener noreferrer">{t("Join the agency program", "Únase al programa para agencias")}</a> : <Link href="/open-account">{t("Open your account", "Abra su cuenta")}</Link>)}</span>
           <button type="button" className="dm-iconbtn" aria-label="Close" onClick={() => setToast(null)}><Mi i="close" s={18} /></button>
         </div>
       )}

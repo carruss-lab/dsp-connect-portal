@@ -106,3 +106,105 @@ export const OBJECTIONS: { q: string; a: string }[] = [
 export function fill(text: string, v: Record<string, string>) {
   return text.replace(/\{(\w+)\}/g, (m, k) => (k in v && v[k] ? v[k] : m));
 }
+
+// ─── Spanish ─────────────────────────────────────────────────────────────────────────────────────
+// The same kit in neutral US Spanish ("usted"), for partners selling to Spanish-speaking owners.
+// Same rules: no promised results, the fee line exactly as written, never advise spending more.
+
+export const FEE_LINE_ES = "Sin cuota mensual de plataforma. Nuestra tarifa está incluida en el precio de sus anuncios.";
+
+export const EMAILS_ES: Template[] = [
+  {
+    id: "intro",
+    title: "Primer correo",
+    when: "Para un dueño de negocio que ya conoce o que acaba de conocer.",
+    subject: "Anuncios en TV por streaming y apps para {business}",
+    body: `Hola, {first}:
+
+Trabajo con DSP Connect, que pone los anuncios de negocios locales en TV por streaming, sitios web y apps, dirigidos a las personas de la zona que usted atiende.
+
+La forma más fácil de verlo es la demostración: abre una cuenta de ejemplo configurada para un negocio como el suyo, para que vea dónde aparecen los anuncios y a quién llegan antes de gastar nada.
+
+{demo}
+
+Las cuentas empiezan con un presupuesto publicitario de $${MIN_BUDGET}. ${FEE_LINE_ES} DSP Connect hace la configuración y sus anuncios están activos en ${SETUP_DAYS} días.
+
+¿Le funcionan 20 minutos esta semana para verlo juntos?
+
+{me}
+{company}`,
+  },
+  {
+    id: "after-demo",
+    title: "Después de la demostración",
+    when: "El mismo día en que le muestra la demostración a un prospecto.",
+    subject: "Su demostración de DSP Connect",
+    body: `Hola, {first}:
+
+Gracias por ver la demostración hoy. Como hablamos, aquí está el enlace para abrir su cuenta cuando esté listo:
+
+{open}
+
+Lo que sigue: paga su presupuesto publicitario inicial en línea, DSP Connect configura su cuenta, el seguimiento, los anuncios y la audiencia, y sus anuncios están activos en ${SETUP_DAYS} días. Recibirá un breve resumen de campaña para llenar, que toma unos diez minutos.
+
+Si algo no está claro, responda a este correo y con gusto le ayudo.
+
+{me}`,
+  },
+  {
+    id: "follow-up",
+    title: "Seguimiento amable",
+    when: "Más o menos una semana después del primer correo si no ha recibido respuesta. Envíelo una sola vez.",
+    subject: "Seguimiento sobre DSP Connect",
+    body: `Hola, {first}:
+
+Le escribo por si mi mensaje anterior se perdió. Si llegar a más personas en su zona está entre sus planes esta temporada, la demostración le muestra en un par de minutos cómo se vería para {business}:
+
+{demo}
+
+Si ahora no es buen momento, no hay ningún problema. Solo avíseme y no le volveré a escribir.
+
+{me}`,
+  },
+];
+
+export const CALL_SCRIPT_ES: { step: string; say: string[] }[] = [
+  { step: "Apertura (1 minuto)", say: [
+    "Agradezca su tiempo y diga para qué es la llamada: ver si la publicidad en TV por streaming, sitios web y apps tiene sentido para su negocio.",
+    "Pida 20 minutos y prometa decirle con honestidad si no es para su negocio.",
+  ] },
+  { step: "Pregunte antes de explicar (5 minutos)", say: [
+    "¿Cómo es un buen cliente para usted?",
+    "¿De dónde vienen hoy la mayoría de sus clientes?",
+    "¿Qué zona atiende?",
+    "¿Qué ha probado en publicidad, y qué funcionó o qué no?",
+    "¿Qué consideraría un buen resultado: llamadas, formularios, citas, visitas a la tienda, ventas en línea o que lo conozcan más?",
+  ] },
+  { step: "Muestre la demostración (8 minutos)", say: [
+    "Abra la demostración con su industria y su zona. Muestre dónde aparecen los anuncios, a quién llegan en esa zona y qué le mostrará la página de resultados.",
+    "Arme con él una campaña de práctica corta. Deje que él elija; no lleve el control.",
+  ] },
+  { step: "Explique cómo funciona (3 minutos)", say: [
+    `Las cuentas empiezan con un presupuesto publicitario de $${MIN_BUDGET}, pagado en línea a DSP Connect. ${FEE_LINE_ES}`,
+    `DSP Connect hace la configuración (cuenta, seguimiento, revisión de anuncios y audiencia) y está activo en ${SETUP_DAYS} días. Después, él maneja la cuenta con apoyo.`,
+    "No hay contrato a largo plazo.",
+  ] },
+  { step: "Un siguiente paso (2 minutos)", say: [
+    "Acuerden un siguiente paso antes de colgar: abrir la cuenta ahora, o ver la demostración otra vez con sus preguntas respondidas por Fin en el chat.",
+    "Envíe el correo correspondiente de su kit ese mismo día.",
+  ] },
+];
+
+export const OBJECTIONS_ES: { q: string; a: string }[] = [
+  { q: "¿Cuántos clientes o ventas voy a conseguir?", a: "Nadie puede prometer eso con honestidad, y DSP Connect no lo hace. La demostración le muestra dónde aparecen sus anuncios y a quién llegan en su zona, y su cuenta le muestra cada resultado que su seguimiento registre una vez que esté activo." },
+  { q: "¿Cuánto cuesta?", a: `Las cuentas empiezan con un presupuesto publicitario de $${MIN_BUDGET}. ${FEE_LINE_ES} No hay contrato a largo plazo.` },
+  { q: `¿Alcanzan $${MIN_BUDGET}?`, a: "Es el presupuesto inicial, y usted decide cuánto invertir. No le voy a decir que gaste más; el equipo de configuración le ayudará a aprovechar al máximo el presupuesto que elija." },
+  { q: "Ya tengo anuncios en Google o Facebook.", a: "Esto llega a las personas en otros lugares: TV por streaming, apps y sitios web. Muchos negocios lo usan junto con lo que ya tienen." },
+  { q: "¿Quién maneja los anuncios después de la configuración?", a: "Usted, con apoyo. DSP Connect hace la configuración y le ayuda en el camino, y su cuenta le muestra todo." },
+  { q: "¿Le pago a usted?", a: "No. Usted le paga directamente a DSP Connect en su sitio web. Yo nunca manejo su dinero ni los datos de su tarjeta." },
+  { q: "¿Qué usan para manejar los anuncios?", a: "La plataforma propia de DSP Connect. No puedo entrar en detalles de la tecnología, pero la demostración le muestra exactamente lo que recibe." },
+];
+
+export const emailsFor = (lang: "en" | "es") => (lang === "es" ? EMAILS_ES : EMAILS);
+export const callScriptFor = (lang: "en" | "es") => (lang === "es" ? CALL_SCRIPT_ES : CALL_SCRIPT);
+export const objectionsFor = (lang: "en" | "es") => (lang === "es" ? OBJECTIONS_ES : OBJECTIONS);

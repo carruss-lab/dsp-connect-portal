@@ -102,8 +102,20 @@ export async function librarySnapshot() {
 export const clock = (s: number) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`;
 export const isoDuration = (s: number) => `PT${Math.floor(s / 60)}M${Math.round(s % 60)}S`;
 export const isLive = (v: LibraryVideo, now = Date.now()) => +new Date(v.published) <= now;
-export const premiereLabel = (v: LibraryVideo) =>
-  new Date(v.published).toLocaleString("en-US", { timeZone: "America/Phoenix", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + " Arizona time";
+export const premiereLabel = (v: LibraryVideo, lang: "en" | "es" = "en") =>
+  new Date(v.published).toLocaleString(lang === "es" ? "es-US" : "en-US", { timeZone: "America/Phoenix", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + (lang === "es" ? ", hora de Arizona" : " Arizona time");
+
+/** Section titles and intros in Spanish (the videos themselves are in English until the Spanish versions are out). */
+export const SECTIONS_ES: Record<SectionId, { title: string; intro: string }> = {
+  new: { title: "Videos más recientes", intro: "Lo último que subimos al canal." },
+  start: { title: "Empiece aquí", intro: "Vea estos primero, en este orden: qué es DSP Connect y para quién es." },
+  howto: { title: "Cómo usar DSP Connect", intro: "Un recorrido por la cuenta y luego cómo se planea, se crea, se mide y se mejora una campaña. Véalos en orden." },
+  music: { title: "Marketing musical para artistas independientes", intro: "Promueva lanzamientos, conciertos, reproducciones y mercancía ante oyentes reales en TV por streaming, apps y sitios web." },
+  books: { title: "Marketing de libros para autores", intro: "Llegue a lectores por género e interés, más allá de la búsqueda de Amazon y las redes sociales." },
+  ecommerce: { title: "Anuncios para Shopify y tiendas en línea", intro: "Venda más allá de Meta y TikTok: TV por streaming, apps, sitios web y retargeting, con las ventas medidas por fuente." },
+  creators: { title: "Crecimiento para creadores y UGC", intro: "Haga crecer un canal o una audiencia propia, y ayude a las marcas a mostrar UGC donde llega a la gente." },
+  events: { title: "Eventos y podcasts", intro: "Llene salones y gane oyentes en los lugares donde realmente está su audiencia." },
+};
 export const watchUrl = (id: string, t = 0) => `https://www.youtube.com/watch?v=${id}${t ? `&t=${t}s` : ""}`;
 export const anchor = (v: LibraryVideo) => `v-${v.key}`;
 

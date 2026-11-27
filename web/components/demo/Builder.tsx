@@ -2,6 +2,7 @@
 import Link from "@/components/Link";
 import { useMemo, useState } from "react";
 import { MIN_BUDGET } from "@/lib/site";
+import { useLang } from "@/lib/useLang";
 import { TAXONOMIES, type BuilderPreset } from "@/lib/plan";
 import { SSP_ENDPOINTS, SSP_LABELS, usd } from "./data";
 
@@ -77,6 +78,7 @@ function Multi({ label, items, value, onChange, incExc }: { label: string; items
 }
 
 export default function Builder({ industry, market, audiences, onCancel, preset }: { industry: string; market: string; audiences: string[]; onCancel: () => void; preset?: BuilderPreset }) {
+  const lang = useLang();
   const [step, setStep] = useState(0);
   const [done, setDone] = useState(false);
   const [f, setF] = useState({
@@ -112,7 +114,20 @@ export default function Builder({ industry, market, audiences, onCancel, preset 
   });
 
   if (done) {
-    return (
+    const sel = linked.filter(([, v]) => v === "inc").length;
+    return lang === "es" ? (
+      <div className="dm-card" style={{ padding: 40, maxWidth: 680 }}>
+        <h1>Campaña guardada en la demostración</h1>
+        <p style={{ marginTop: 12 }}>
+          En la demostración no se envía nada a los intercambios. Abra su cuenta y la configuramos de verdad: anuncios {(f.format || "Banner")} con objetivo {(f.goal || "Conversions")}
+          {f.geo ? ` en ${f.geo}` : ""}, {linked.length ? `en ${sel || "todos los"} endpoints de SSP seleccionados` : "en todos los endpoints de SSP"}.
+        </p>
+        <div className="dm-row" style={{ marginTop: 24 }}>
+          <Link className="dm-cta" style={{ height: 40 }} href={`/open-account?${qs}`}>Abra su cuenta con esta configuración</Link>
+          <button type="button" className="dm-btn" onClick={onCancel}>Volver a las campañas</button>
+        </div>
+      </div>
+    ) : (
       <div className="dm-card" style={{ padding: 40, maxWidth: 680 }}>
         <h1>Campaign saved in the demo</h1>
         <p style={{ marginTop: 12 }}>

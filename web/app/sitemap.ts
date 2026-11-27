@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { COMPARISONS } from "@/lib/compare";
 import { INDUSTRY_PAGES } from "@/lib/industries";
 import { SITE_URL } from "@/lib/seo";
+import { localePath } from "@/lib/i18n";
 import { LEGAL_UPDATED, SITE_UPDATED as UPDATED } from "@/lib/site";
 import { VIDEOS, type Video } from "@/lib/videos";
 import { SECTIONS, getLibrary, isLive } from "@/lib/videoLibrary";
@@ -22,9 +23,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const lib = await getLibrary();
   const live = SECTIONS.flatMap((s) => lib[s.id]).filter((v) => isLive(v));
   const newest = new Date(Math.max(...live.map((v) => +new Date(v.published))));
-  const page = (path: string, priority: number, extra: Partial<MetadataRoute.Sitemap[number]> = {}) =>
-    ({ url: SITE_URL + path, lastModified: SITE_UPDATED, changeFrequency: "monthly" as const, priority, ...extra });
-  return [
+  // Every public page in English and in Spanish, each naming the other, so search engines show the right one.
+  const page = (path: string, priority: number, extra: Partial<MetadataRoute.Sitemap[number]> = {}) => {
+    const languages = { en: SITE_URL + localePath(path, "en"), es: SITE_URL + localePath(path, "es") };
+    const base = { lastModified: SITE_UPDATED, changeFrequency: "monthly" as const, priority, alternates: { languages }, ...extra };
+    // The Spanish page carries the same videos only once they have Spanish versions; until then only the English page lists them.
+    const { videos, ...rest } = base as typeof base & { videos?: unknown };
+    void videos;
+    return [{ url: languages.en, ...base }, { url: languages.es, ...rest }];
+  };
+  return ([
     page("/", 1, { videos: [video(VIDEOS.owners)] }),
     page("/open-account", 0.9),
     page("/planner", 0.8),
@@ -37,10 +45,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       player_loc: `https://www.youtube-nocookie.com/embed/${v.id}`, ...(v.seconds ? { duration: v.seconds } : {}), publication_date: v.published,
     })) }),
     page("/industries", 0.8),
-    ...INDUSTRY_PAGES.map((i) => page("/industries/" + i.slug, 0.8)),
-    ...COMPARISONS.map((c) => page("/" + c.slug, 0.7)),
+    ...INDUSTRY_PAGES.flatMap((i) => page("/industries/" + i.slug, 0.8)),
+    ...COMPARISONS.flatMap((c) => page("/" + c.slug, 0.7)),
     page("/terms", 0.3, { lastModified: LEGAL }),
     page("/refunds", 0.3, { lastModified: LEGAL }),
     page("/privacy", 0.3, { lastModified: LEGAL }),
-  ];
+  ] as MetadataRoute.Sitemap[]).flat();
 }

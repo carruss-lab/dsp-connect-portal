@@ -1,9 +1,18 @@
 import type { Metadata } from "next";
 import { pageMeta } from "@/lib/seo";
+import { getLang } from "@/lib/lang";
+import { REFUNDS_ES } from "@/lib/legal.es";
 import Legal, { type Part } from "@/components/Legal";
 import { SETUP_DAYS } from "@/lib/site";
 
-export const metadata: Metadata = pageMeta({ title: "Refund policy", description: "What happens to your ad budget if you cancel your DSP Connect account.", path: "/refunds" });
+const META = {
+  en: { title: "Refund policy", description: "What happens to your ad budget if you cancel your DSP Connect account." },
+  es: { title: "Política de reembolsos", description: "Qué pasa con su presupuesto publicitario si cancela su cuenta de DSP Connect." },
+};
+export async function generateMetadata(): Promise<Metadata> {
+  const lang = await getLang();
+  return pageMeta({ ...META[lang], path: "/refunds", lang });
+}
 
 const PARTS: Part[] = [
   ["The short version", [
@@ -24,6 +33,9 @@ const PARTS: Part[] = [
   ]],
 ];
 
-export default function Refunds() {
-  return <Legal path="/refunds" title="Refund policy" intro="What happens to your money if you change your mind." parts={PARTS} />;
+export default async function Refunds() {
+  const lang = await getLang();
+  return lang === "es"
+    ? <Legal lang="es" path="/refunds" title={META.es.title} intro="Qué pasa con su dinero si cambia de opinión." parts={REFUNDS_ES} />
+    : <Legal path="/refunds" title={META.en.title} intro="What happens to your money if you change your mind." parts={PARTS} />;
 }

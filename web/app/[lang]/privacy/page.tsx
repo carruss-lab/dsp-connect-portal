@@ -1,9 +1,18 @@
 import type { Metadata } from "next";
 import { pageMeta } from "@/lib/seo";
+import { getLang } from "@/lib/lang";
+import { PRIVACY_ES } from "@/lib/legal.es";
 import Legal, { type Part } from "@/components/Legal";
 import { LEGAL_ENTITY } from "@/lib/site";
 
-export const metadata: Metadata = pageMeta({ title: "Privacy policy", description: "What information DSP Connect collects from visitors, clients and partners, why we collect it, and the choices you have.", path: "/privacy" });
+const META = {
+  en: { title: "Privacy policy", description: "What information DSP Connect collects from visitors, clients and partners, why we collect it, and the choices you have." },
+  es: { title: "Política de privacidad", description: "Qué información recopila DSP Connect de visitantes, clientes y socios, por qué la recopilamos y qué opciones tiene usted." },
+};
+export async function generateMetadata(): Promise<Metadata> {
+  const lang = await getLang();
+  return pageMeta({ ...META[lang], path: "/privacy", lang });
+}
 
 const PARTS: Part[] = [
   ["Who we are", [`DSP Connect is a service of ${LEGAL_ENTITY}. This policy covers this website and the DSP Connect service.`]],
@@ -38,6 +47,9 @@ const PARTS: Part[] = [
   ["Changes", ["If we change this policy in a way that matters, we will post the new version here and email clients before it applies."]],
 ];
 
-export default function Privacy() {
-  return <Legal path="/privacy" title="Privacy policy" intro="What we collect, why we collect it, who sees it, and what you can ask us to do." parts={PARTS} />;
+export default async function Privacy() {
+  const lang = await getLang();
+  return lang === "es"
+    ? <Legal lang="es" path="/privacy" title={META.es.title} intro="Qué recopilamos, por qué lo recopilamos, quién lo ve y qué nos puede pedir." parts={PRIVACY_ES} />
+    : <Legal path="/privacy" title={META.en.title} intro="What we collect, why we collect it, who sees it, and what you can ask us to do." parts={PARTS} />;
 }

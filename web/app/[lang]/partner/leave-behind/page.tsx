@@ -4,22 +4,27 @@ import { redirect } from "next/navigation";
 import QRCode from "qrcode";
 import PrintButton from "@/components/partner/PrintButton";
 import { loadPortal } from "@/lib/partner";
-import { FEE_LINE } from "@/lib/salesKit";
+import { FEE_LINE, FEE_LINE_ES } from "@/lib/salesKit";
+import { getLang } from "@/lib/lang";
+import { localePath, tr } from "@/lib/i18n";
 import { LEGAL_ENTITY, MIN_BUDGET, SETUP_DAYS, siteOrigin } from "@/lib/site";
 
-export const metadata: Metadata = { title: "Your leave-behind", robots: { index: false, follow: false } };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: tr(await getLang())("Your leave-behind", "Su hoja informativa"), robots: { index: false, follow: false } };
+}
 export const dynamic = "force-dynamic";
 
 // A one-page sheet a Sales Partner prints or saves as a PDF for business owners. It carries the
 // partner's own demo link and QR code, so anyone who opens an account from it is credited to them.
 export default async function LeaveBehind() {
+  const lang = await getLang(); const t = tr(lang);
   const portal = await loadPortal();
-  if (!portal) redirect("/partner");
+  if (!portal) redirect(localePath("/partner", lang));
   // A rep's sheet carries their own name and link; the company is shown as the partner they sell for.
   const p = portal.role === "owner"
     ? { name: portal.partner.name, company_name: portal.partner.company_name, email: portal.partner.email, phone: portal.partner.phone, code: portal.partner.code }
     : { name: portal.member.name, company_name: portal.company.name, email: portal.member.email, phone: null as string | null, code: portal.member.code };
-  const link = `${siteOrigin()}/demo?p=${p.code}`;
+  const link = `${siteOrigin()}${localePath("/demo", lang)}?p=${p.code}`;
   const short = link.replace(/^https?:\/\//, "");
   const qr = await QRCode.toString(link, { type: "svg", margin: 0, color: { dark: "#0A1220", light: "#FFFFFF" } });
 
@@ -40,7 +45,7 @@ export default async function LeaveBehind() {
         @media (max-width: 720px) { .cols { grid-template-columns: 1fr; } .sheet { padding: 24px; } .sheet h1 { font-size: 26px; } }
       `}</style>
       <div className="noprint">
-        <a href="/partner" className="small">← Back to your portal</a>
+        <a href={localePath("/partner", lang)} className="small">← {t("Back to your portal", "Volver a su portal")}</a>
         <PrintButton />
       </div>
       <main className="sheet" style={{ display: "flex", flexDirection: "column", gap: 28 }}>
@@ -49,30 +54,32 @@ export default async function LeaveBehind() {
           <b style={{ fontSize: 20 }}>DSP Connect</b>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <h1>Put your business on streaming TV, websites and apps, in front of people in your area.</h1>
-          <p style={{ fontSize: 17 }}>DSP Connect sets up your advertising account for you, and you see exactly where your ads run and who they reach.</p>
+          <h1>{t("Put your business on streaming TV, websites and apps, in front of people in your area.", "Ponga su negocio en TV por streaming, sitios web y apps, frente a las personas de su zona.")}</h1>
+          <p style={{ fontSize: 17 }}>{t("DSP Connect sets up your advertising account for you, and you see exactly where your ads run and who they reach.", "DSP Connect le configura su cuenta de publicidad, y usted ve exactamente dónde aparecen sus anuncios y a quién llegan.")}</p>
         </div>
         <div className="cols">
-          <div className="box"><h2>1. See it first</h2><p>Open a sample account set up for a business like yours, before you spend anything.</p></div>
-          <div className="box"><h2>2. Start small</h2><p>Accounts start from a ${MIN_BUDGET} ad budget. {FEE_LINE} No long-term contract.</p></div>
-          <div className="box"><h2>3. We set it up</h2><p>Account, tracking, ad review and audience, done for you. Live within {SETUP_DAYS} days.</p></div>
+          <div className="box"><h2>{t("1. See it first", "1. Véalo primero")}</h2><p>{t("Open a sample account set up for a business like yours, before you spend anything.", "Abra una cuenta de ejemplo configurada para un negocio como el suyo, antes de gastar nada.")}</p></div>
+          <div className="box"><h2>{t("2. Start small", "2. Empiece en pequeño")}</h2><p>{lang === "es" ? `Las cuentas empiezan con un presupuesto publicitario de $${MIN_BUDGET}. ${FEE_LINE_ES} Sin contrato a largo plazo.` : `Accounts start from a $${MIN_BUDGET} ad budget. ${FEE_LINE} No long-term contract.`}</p></div>
+          <div className="box"><h2>{t("3. We set it up", "3. Nosotros lo configuramos")}</h2><p>{lang === "es" ? `Cuenta, seguimiento, revisión de anuncios y audiencia, todo hecho por nosotros. Activo en ${SETUP_DAYS} días.` : `Account, tracking, ad review and audience, done for you. Live within ${SETUP_DAYS} days.`}</p></div>
         </div>
         <div style={{ display: "flex", gap: 28, alignItems: "center", flexWrap: "wrap", border: "2px solid #1A14D4", borderRadius: 12, padding: 20 }}>
-          <div className="qr" dangerouslySetInnerHTML={{ __html: qr }} aria-label="QR code for your demo" role="img" />
+          <div className="qr" dangerouslySetInnerHTML={{ __html: qr }} aria-label={t("QR code for your demo", "Código QR para su demostración")} role="img" />
           <div style={{ display: "flex", flexDirection: "column", gap: 8, flex: "1 1 260px" }}>
-            <h2 style={{ margin: 0 }}>Open your demo</h2>
-            <p>Scan the code or visit</p>
+            <h2 style={{ margin: 0 }}>{t("Open your demo", "Abra su demostración")}</h2>
+            <p>{t("Scan the code or visit", "Escanee el código o visite")}</p>
             <p style={{ fontSize: 18, fontWeight: 700, wordBreak: "break-all" }}>{short}</p>
           </div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-          <h2>Your contact</h2>
+          <h2>{t("Your contact", "Su contacto")}</h2>
           <p style={{ fontSize: 17, fontWeight: 700 }}>{p.name}</p>
           {p.company_name && <p>{p.company_name}</p>}
-          <p>Authorized Sales Partner, DSP Connect</p>
+          <p>{t("Authorized Sales Partner, DSP Connect", "Socio de Ventas Autorizado, DSP Connect")}</p>
           <p>{p.email}{p.phone ? ` · ${p.phone}` : ""}</p>
         </div>
-        <p style={{ fontSize: 11, color: "#5B6577", marginTop: "auto" }}>DSP Connect is a service of {LEGAL_ENTITY}. {portal.role === "owner" ? p.name : p.company_name} is an independent Authorized Sales Partner. Accounts are opened and paid for directly with DSP Connect. Results vary and are not guaranteed.</p>
+        <p style={{ fontSize: 11, color: "#5B6577", marginTop: "auto" }}>{lang === "es"
+          ? `DSP Connect es un servicio de ${LEGAL_ENTITY}. ${portal.role === "owner" ? p.name : p.company_name} es un Socio de Ventas Autorizado independiente. Las cuentas se abren y se pagan directamente con DSP Connect. Los resultados varían y no están garantizados.`
+          : `DSP Connect is a service of ${LEGAL_ENTITY}. ${portal.role === "owner" ? p.name : p.company_name} is an independent Authorized Sales Partner. Accounts are opened and paid for directly with DSP Connect. Results vary and are not guaranteed.`}</p>
       </main>
     </>
   );

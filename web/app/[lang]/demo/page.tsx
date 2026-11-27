@@ -3,7 +3,9 @@ import Demo from "@/components/Demo";
 import { Remember } from "@/components/Personal";
 import { INDUSTRIES } from "@/lib/site";
 
-export const metadata: Metadata = { title: "Demo account", robots: { index: false } };
+export async function generateMetadata({ params }: PageProps<"/[lang]/demo">): Promise<Metadata> {
+  return { title: (await params).lang === "es" ? "Cuenta de demostración" : "Demo account", robots: { index: false } };
+}
 
 export default async function DemoPage({ searchParams }: PageProps<"/[lang]/demo">) {
   const q = await searchParams;

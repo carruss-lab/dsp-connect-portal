@@ -1,5 +1,6 @@
 import { createHash } from "crypto";
 import { LEGAL_ENTITY, MIN_BUDGET, PARTNER_PCT } from "./site";
+import { DOCS_ES } from "./partnerDocs.es";
 
 // The Authorized Sales Partner documents: a person or a company, approved automatically once the agreement
 // is signed and Stripe verifies them, paid commission only with residuals for life. Approved for use by the
@@ -119,8 +120,12 @@ export const DOCS: Doc[] = [
   },
 ];
 
+/** The documents in the partner's language. The English documents control; the Spanish ones say so. */
+export const docsFor = (lang: "en" | "es") => (lang === "es" ? DOCS_ES : DOCS);
+
 /** The exact text of every document, so a signature can prove which wording was agreed. */
-export function docText(): string {
-  return DOCS.map((d) => [`${d.tag}: ${d.title}`, ...d.sections.flatMap((s) => [s.h || "", ...s.p])].filter(Boolean).join("\n")).join("\n\n");
+export function docText(lang: "en" | "es" = "en"): string {
+  return docsFor(lang).map((d) => [`${d.tag}: ${d.title}`, ...d.sections.flatMap((s) => [s.h || "", ...s.p])].filter(Boolean).join("\n")).join("\n\n");
 }
-export const docHash = () => createHash("sha256").update(VERSION + "\n" + docText()).digest("hex");
+/** Hash of the English (controlling) text; with lang "es", of the Spanish translation the partner was shown. */
+export const docHash = (lang: "en" | "es" = "en") => createHash("sha256").update(VERSION + "\n" + docText(lang)).digest("hex");

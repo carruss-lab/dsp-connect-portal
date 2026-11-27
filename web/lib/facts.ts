@@ -16,3 +16,19 @@ export const FACTS: [string, string][] = [
   ["Sales partner program", `Free to join; partners earn ${PARTNER_PCT}% of their clients' qualified ad spend. Paid daily through Stripe`],
   ["Who it is for", "Business owners, advertising agencies and independent sales partners"],
 ];
+
+/** The same facts in Spanish, for the Spanish About page. */
+export const FACTS_ES: [string, string][] = [
+  ["Qué es", "Publicidad programática (un servicio de plataforma del lado de la demanda, DSP) con configuración hecha por nosotros"],
+  ["Dónde se muestran los anuncios", `TV por streaming (TV conectada), apps y sitios web, en ${EXCHANGES} intercambios publicitarios`],
+  ["Formatos de anuncio", "Anuncios en video, banner y nativos"],
+  ["Presupuesto publicitario mínimo", `$${MIN_BUDGET} para empezar`],
+  ["Tiempo para estar activo", `En ${SETUP_DAYS} días desde el pago: cuenta, seguimiento, revisión de anuncios y audiencia configurados por nosotros`],
+  ["Precios", "Sin cuota mensual de plataforma. Nuestra tarifa está incluida en el precio de sus anuncios."],
+  ["Contrato", "Sin contrato a largo plazo. Cancele cuando quiera; el presupuesto no invertido se reembolsa, menos la comisión de procesamiento del pago."],
+  ["Reportes", "Su propio acceso con vistas, clics y gasto, más seguimiento en su sitio web que cuenta clientes potenciales y ventas"],
+  ["Programa para agencias", `Las agencias ganan el ${SHARE_PCT}% del gasto publicitario que administran y conservan la relación con sus clientes. Pagado a través de PartnerStack`],
+  ["Programa de socios de ventas", `Unirse es gratis; los socios ganan el ${PARTNER_PCT}% del gasto publicitario calificado de sus clientes. Pagado a diario a través de Stripe`],
+  ["Para quién es", "Dueños de negocio, agencias de publicidad y socios de ventas independientes"],
+  ["Idiomas", "Sitio, chat y soporte en inglés y en español"],
+];

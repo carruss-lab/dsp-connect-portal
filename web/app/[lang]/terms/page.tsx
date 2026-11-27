@@ -1,9 +1,18 @@
 import type { Metadata } from "next";
 import { pageMeta } from "@/lib/seo";
+import { getLang } from "@/lib/lang";
+import { TERMS_ES } from "@/lib/legal.es";
 import Legal, { type Part } from "@/components/Legal";
 import { LEGAL_ENTITY, MIN_BUDGET, SETUP_DAYS } from "@/lib/site";
 
-export const metadata: Metadata = pageMeta({ title: "Client terms", description: "The client terms that apply when you open a DSP Connect account: setup, your ad budget, our fee, canceling and refunds.", path: "/terms" });
+const META = {
+  en: { title: "Client terms", description: "The client terms that apply when you open a DSP Connect account: setup, your ad budget, our fee, canceling and refunds." },
+  es: { title: "Términos para clientes", description: "Los términos que se aplican cuando abre una cuenta de DSP Connect: configuración, su presupuesto publicitario, nuestra tarifa, cancelación y reembolsos." },
+};
+export async function generateMetadata(): Promise<Metadata> {
+  const lang = await getLang();
+  return pageMeta({ ...META[lang], path: "/terms", lang });
+}
 
 const PARTS: Part[] = [
   ["Who these terms are between", [
@@ -43,6 +52,9 @@ const PARTS: Part[] = [
   ]],
 ];
 
-export default function Terms() {
-  return <Legal path="/terms" title="Client terms" intro="Plain terms for opening and using a DSP Connect account. Please read them before you pay." parts={PARTS} />;
+export default async function Terms() {
+  const lang = await getLang();
+  return lang === "es"
+    ? <Legal lang="es" path="/terms" title={META.es.title} intro="Términos claros para abrir y usar una cuenta de DSP Connect. Léalos antes de pagar." parts={TERMS_ES} />
+    : <Legal path="/terms" title={META.en.title} intro="Plain terms for opening and using a DSP Connect account. Please read them before you pay." parts={PARTS} />;
 }
