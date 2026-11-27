@@ -11,6 +11,10 @@ export const CHANNELS = {
   retargeting: { name: "Retargeting", icon: "sync", format: "Banner", devices: ["Mobile", "Desktop", "Tablet"] },
 } as const;
 export type ChannelKey = keyof typeof CHANNELS;
+/** Spanish names for the channels and goals (the stored values stay in English). */
+export const CHANNEL_ES: Record<ChannelKey, string> = { ctv: "TV por streaming (CTV)", video: "Video en línea", display: "Display", native: "Native", retargeting: "Retargeting" };
+export const GOAL_ES: Record<string, string> = { Awareness: "Reconocimiento", "Website visits": "Visitas al sitio web", Conversions: "Conversiones" };
+export const channelName = (k: ChannelKey, lang: "en" | "es") => (lang === "es" ? CHANNEL_ES[k] : CHANNELS[k].name);
 export const GOAL_OPTIONS = ["Awareness", "Website visits", "Conversions"] as const;
 export const TAXONOMIES = ["IAB1 Arts & Entertainment", "IAB3 Business", "IAB5 Education", "IAB7 Health & Fitness", "IAB8 Food & Drink", "IAB10 Home & Garden", "IAB12 News", "IAB13 Personal Finance", "IAB17 Sports", "IAB19 Technology & Computing", "IAB20 Travel", "IAB21 Real Estate"];
 

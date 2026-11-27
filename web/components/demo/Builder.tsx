@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import Link from "@/components/Link";
 import { useMemo, useState } from "react";
 import { MIN_BUDGET } from "@/lib/site";
 import { TAXONOMIES, type BuilderPreset } from "@/lib/plan";

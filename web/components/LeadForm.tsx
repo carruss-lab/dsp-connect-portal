@@ -5,15 +5,20 @@ import { readProfile, saveProfile } from "@/lib/profile";
 import { useEffect, useState } from "react";
 import { INDUSTRIES, MIN_BUDGET, PARTNERSTACK_AGENCY_URL, SETUP_DAYS } from "@/lib/site";
 import { trackLead } from "@/lib/analytics";
+import { useLang } from "@/lib/useLang";
+import { industryName, localePath, tr } from "@/lib/i18n";
 
 type Kind = "market_check" | "account" | "agency";
-const DONE: Record<Kind, string> = {
-  market_check: "Thank you. Opening the demo.",
-  account: `Thank you. We have your details and will be in touch to take payment. Your ${SETUP_DAYS}-day setup starts when payment is received.`,
-  agency: "Thank you. We will be in touch about an agency agreement within one business day. Agencies join the program and set up payouts through PartnerStack.",
+const DONE: Record<Kind, { en: string; es: string }> = {
+  market_check: { en: "Thank you. Opening the demo.", es: "Gracias. Abriendo la demo." },
+  account: { en: `Thank you. We have your details and will be in touch to take payment. Your ${SETUP_DAYS}-day setup starts when payment is received.`, es: `Gracias. Tenemos sus datos y le contactaremos para tomar el pago. Su configuración de ${SETUP_DAYS} días empieza cuando recibimos el pago.` },
+  agency: { en: "Thank you. We will be in touch about an agency agreement within one business day. Agencies join the program and set up payouts through PartnerStack.", es: "Gracias. Le contactaremos sobre un acuerdo de agencia en un día hábil. Las agencias se unen al programa y configuran sus pagos en PartnerStack." },
 };
+const SPEND: [string, string][] = [["Under $10,000", "Menos de $10,000"], ["$10,000 to $50,000", "$10,000 a $50,000"], ["$50,000 to $150,000", "$50,000 a $150,000"], ["$150,000 to $500,000", "$150,000 a $500,000"], ["Over $500,000", "Más de $500,000"]];
 
 export default function LeadForm({ kind, cta }: { kind: Kind; cta: string }) {
+  const lang = useLang();
+  const t = tr(lang);
   const [state, setState] = useState<"idle" | "busy" | "done">("idle");
   const [error, setError] = useState("");
   const [pre, setPre] = useState<Record<string, string>>({});
@@ -56,10 +61,10 @@ export default function LeadForm({ kind, cta }: { kind: Kind; cta: string }) {
       const res = await fetch("/api/lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, formats, terms: data.terms === "on", kind, source: [first, location.pathname].filter(Boolean).join(" > ").slice(0, 240), partner_code }),
+        body: JSON.stringify({ ...data, formats, terms: data.terms === "on", kind, lang, source: [first, location.pathname].filter(Boolean).join(" > ").slice(0, 240), partner_code }),
       });
       const out = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(out.error || "Something went wrong. Please try again.");
+      if (!res.ok) throw new Error(out.error || t("Something went wrong. Please try again.", "Algo salió mal. Inténtelo de nuevo."));
       identify(String(data.email || ""), data.name ? String(data.name) : null);
       // PartnerStack: a sign-up from a partner's link is credited to that partner. The customer key is the
       // email, the same key the Stripe customer carries, so later payments are matched to this sign-up.
@@ -94,17 +99,16 @@ export default function LeadForm({ kind, cta }: { kind: Kind; cta: string }) {
           try { sessionStorage.setItem("plan_req", JSON.stringify({ email: String(data.email || ""), business: String(data.business || "").trim() || host, website: site, industry: String(data.industry || ""), market: String(data.market || ""), budget: Math.max(MIN_BUDGET, Number(data.budget) || MIN_BUDGET) })); } catch {}
         }
         const q = new URLSearchParams({ industry: String(data.industry || ""), market: String(data.market || "") });
-        if (location.pathname === "/demo") {
+        if (location.pathname === localePath("/demo", lang)) {
           const cur = new URLSearchParams(location.search);
           if (cur.get("view")) q.set("view", cur.get("view")!);
-          location.assign(`/demo?${q}`);
         }
-        else location.assign(`/demo?${q}`);
+        location.assign(`${localePath("/demo", lang)}?${q}`);
         return;
       }
       setState("done");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      setError(err instanceof Error ? err.message : t("Something went wrong. Please try again.", "Algo salió mal. Inténtelo de nuevo."));
       setState("idle");
     }
   }
@@ -112,12 +116,12 @@ export default function LeadForm({ kind, cta }: { kind: Kind; cta: string }) {
   if (state === "done" && kind === "agency" && PARTNERSTACK_AGENCY_URL) {
     return (
       <div className="note note-ok stack g8" role="status">
-        <span><b>Thank you. One more step:</b> join the agency program on PartnerStack. That is where you sign up and set up your payouts. We also emailed you this link, and we will be in touch within one business day.</span>
-        <a className="btn btn-blue" style={{ alignSelf: "flex-start" }} href={PARTNERSTACK_AGENCY_URL} target="_blank" rel="noopener noreferrer">Join the agency program</a>
+        <span><b>{t("Thank you. One more step:", "Gracias. Falta un paso:")}</b> {t("join the agency program on PartnerStack. That is where you sign up and set up your payouts. We also emailed you this link, and we will be in touch within one business day.", "únase al programa de agencias en PartnerStack. Ahí se registra y configura sus pagos. También le enviamos este enlace por correo, y le contactaremos en un día hábil.")}</span>
+        <a className="btn btn-blue" style={{ alignSelf: "flex-start" }} href={PARTNERSTACK_AGENCY_URL} target="_blank" rel="noopener noreferrer">{t("Join the agency program", "Unirse al programa de agencias")}</a>
       </div>
     );
   }
-  if (state === "done") return <p className="note note-ok" role="status">{DONE[kind]}</p>;
+  if (state === "done") return <p className="note note-ok" role="status">{DONE[kind][lang]}</p>;
 
   const full = kind !== "market_check";
   return (
@@ -125,102 +129,102 @@ export default function LeadForm({ kind, cta }: { kind: Kind; cta: string }) {
       {full && (
         <>
           <div className="field">
-            <label htmlFor={`${kind}-name`}>Your name</label>
+            <label htmlFor={`${kind}-name`}>{t("Your name", "Su nombre")}</label>
             <input className="input" id={`${kind}-name`} name="name" required autoComplete="name" defaultValue={pre.name || ""} />
           </div>
           <div className="field">
-            <label htmlFor={`${kind}-business`}>{kind === "agency" ? "Agency name" : "Business name"}</label>
+            <label htmlFor={`${kind}-business`}>{kind === "agency" ? t("Agency name", "Nombre de la agencia") : t("Business name", "Nombre del negocio")}</label>
             <input className="input" id={`${kind}-business`} name="business" required autoComplete="organization" defaultValue={pre.business || ""} />
           </div>
         </>
       )}
       <div className="field">
-        <label htmlFor={`${kind}-email`}>Work email</label>
-        <input className="input" id={`${kind}-email`} name="email" type="email" required autoComplete="email" placeholder="you@yourbusiness.com" defaultValue={pre.email || ""} />
+        <label htmlFor={`${kind}-email`}>{t("Work email", "Correo de trabajo")}</label>
+        <input className="input" id={`${kind}-email`} name="email" type="email" required autoComplete="email" placeholder={t("you@yourbusiness.com", "usted@sunegocio.com")} defaultValue={pre.email || ""} />
       </div>
       {full && (
         <div className="field">
-          <label htmlFor={`${kind}-phone`}>Phone</label>
+          <label htmlFor={`${kind}-phone`}>{t("Phone", "Teléfono")}</label>
           <input className="input" id={`${kind}-phone`} name="phone" type="tel" autoComplete="tel" defaultValue={pre.phone || ""} />
         </div>
       )}
       {kind !== "agency" && (
         <>
           <div className="field">
-            <label htmlFor={`${kind}-industry`}>Your industry</label>
+            <label htmlFor={`${kind}-industry`}>{t("Your industry", "Su industria")}</label>
             <select className="input" id={`${kind}-industry`} name="industry" defaultValue={INDUSTRIES.includes(pre.industry) ? pre.industry : INDUSTRIES[0]}>
-              {INDUSTRIES.map((i) => <option key={i}>{i}</option>)}
+              {INDUSTRIES.map((i) => <option key={i} value={i}>{industryName(i, lang)}</option>)}
             </select>
           </div>
           <div className="field">
-            <label htmlFor={`${kind}-market`}>Where your customers are</label>
-            <input className="input" id={`${kind}-market`} name="market" required placeholder="City or state" defaultValue={pre.market || ""} />
+            <label htmlFor={`${kind}-market`}>{t("Where your customers are", "Dónde están sus clientes")}</label>
+            <input className="input" id={`${kind}-market`} name="market" required placeholder={t("City or state", "Ciudad o estado")} defaultValue={pre.market || ""} />
           </div>
         </>
       )}
       {kind === "market_check" && (
         <fieldset className="plan-offer">
-          <legend><span className="mi-star" aria-hidden="true">★</span> Get your free ad plan with the demo</legend>
-          <p>Add your website and we write a plan for streaming TV, video, display, native and retargeting ads while the demo opens.</p>
+          <legend><span className="mi-star" aria-hidden="true">★</span> {t("Get your free ad plan with the demo", "Reciba su plan de anuncios gratis con la demo")}</legend>
+          <p>{t("Add your website and we write a plan for streaming TV, video, display, native and retargeting ads while the demo opens.", "Agregue su sitio web y le escribimos un plan de anuncios para TV por streaming, video, display, native y retargeting mientras se abre la demo.")}</p>
           <div className="field">
-            <label htmlFor="mc-website">Your website <span className="small">(optional)</span></label>
-            <input className="input" id="mc-website" name="website" inputMode="url" autoComplete="url" placeholder="yourbusiness.com" defaultValue={pre.website || ""} />
+            <label htmlFor="mc-website">{t("Your website", "Su sitio web")} <span className="small">{t("(optional)", "(opcional)")}</span></label>
+            <input className="input" id="mc-website" name="website" inputMode="url" autoComplete="url" placeholder={t("yourbusiness.com", "sunegocio.com")} defaultValue={pre.website || ""} />
           </div>
           <div className="field">
-            <label htmlFor="mc-business">Business name <span className="small">(optional)</span></label>
+            <label htmlFor="mc-business">{t("Business name", "Nombre del negocio")} <span className="small">{t("(optional)", "(opcional)")}</span></label>
             <input className="input" id="mc-business" name="business" autoComplete="organization" defaultValue={pre.business || ""} />
           </div>
           <div className="field">
-            <label htmlFor="mc-budget">Starting ad budget, US dollars <span className="small">(from ${MIN_BUDGET})</span></label>
+            <label htmlFor="mc-budget">{t("Starting ad budget, US dollars", "Presupuesto inicial de anuncios, en dólares")} <span className="small">({t("from", "desde")} ${MIN_BUDGET})</span></label>
             <input className="input mono" id="mc-budget" name="budget" type="number" min={MIN_BUDGET} step={50} inputMode="numeric" defaultValue={Number(pre.budget) >= MIN_BUDGET ? Number(pre.budget) : MIN_BUDGET} />
           </div>
         </fieldset>
       )}
       {kind === "account" && pre.plan && (
-        <p className="note note-ok" style={{ margin: 0 }}><input type="hidden" name="plan" value={pre.plan} />Your ad plan is attached. We use it for your setup and your campaign brief.</p>
+        <p className="note note-ok" style={{ margin: 0 }}><input type="hidden" name="plan" value={pre.plan} />{t("Your ad plan is attached. We use it for your setup and your campaign brief.", "Su plan de anuncios va adjunto. Lo usamos para su configuración y el resumen de su campaña.")}</p>
       )}
       {kind === "account" && (
         <>
           <div className="field">
-            <label htmlFor="account-website">Website</label>
-            <input className="input" id="account-website" name="website" placeholder="yourbusiness.com" defaultValue={pre.website || ""} />
+            <label htmlFor="account-website">{t("Website", "Sitio web")}</label>
+            <input className="input" id="account-website" name="website" placeholder={t("yourbusiness.com", "sunegocio.com")} defaultValue={pre.website || ""} />
           </div>
           <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
-            <legend className="label" style={{ marginBottom: 8 }}>Ad formats you want to run</legend>
+            <legend className="label" style={{ marginBottom: 8 }}>{t("Ad formats you want to run", "Formatos de anuncio que quiere usar")}</legend>
             <div className="ticks">
               {["Video", "Banner", "Native"].map((f) => (
                 <label key={f} style={{ display: "flex", alignItems: "center", gap: 8, minHeight: 44 }}>
-                  <input type="checkbox" name="formats" value={f} defaultChecked={(pre.formats || "").split(", ").includes(f)} style={{ width: 20, height: 20 }} /> {f}
+                  <input type="checkbox" name="formats" value={f} defaultChecked={(pre.formats || "").split(", ").includes(f)} style={{ width: 20, height: 20 }} /> {lang === "es" && f === "Video" ? "Video" : f}
                 </label>
               ))}
             </div>
           </fieldset>
           <div className="field">
-            <label htmlFor="account-budget">Starting ad budget (US dollars)</label>
+            <label htmlFor="account-budget">{t("Starting ad budget (US dollars)", "Presupuesto inicial de anuncios (en dólares)")}</label>
             <input className="input mono" id="account-budget" name="budget" type="number" min={MIN_BUDGET} step={50} defaultValue={Number(pre.budget) >= MIN_BUDGET ? Number(pre.budget) : MIN_BUDGET} required />
-            <span className="small">Minimum ${MIN_BUDGET}. Paid by card or bank transfer.</span>
+            <span className="small">{t(`Minimum $${MIN_BUDGET}. Paid by card or bank transfer.`, `Mínimo $${MIN_BUDGET}. Se paga con tarjeta o transferencia bancaria.`)}</span>
           </div>
           <div className="field">
-            <label htmlFor="account-goals">What do you want the ads to do?</label>
-            <textarea className="input" id="account-goals" name="goals" defaultValue={pre.goals || ""} placeholder="More calls, bookings, store visits, online sales" />
+            <label htmlFor="account-goals">{t("What do you want the ads to do?", "¿Qué quiere que logren los anuncios?")}</label>
+            <textarea className="input" id="account-goals" name="goals" defaultValue={pre.goals || ""} placeholder={t("More calls, bookings, store visits, online sales", "Más llamadas, citas, visitas a la tienda, ventas en línea")} />
           </div>
           <label style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 14, color: "var(--body)", lineHeight: 1.5 }}>
             <input type="checkbox" name="terms" required style={{ width: 20, height: 20, marginTop: 2, flexShrink: 0 }} />
-            <span>I agree to the DSP Connect <a href="/terms" target="_blank">client terms</a> and <a href="/refunds" target="_blank">refund policy</a>.</span>
+            <span>{t("I agree to the DSP Connect", "Acepto los")} <a href={localePath("/terms", lang)} target="_blank">{t("client terms", "términos para clientes")}</a> {t("and", "y la")} <a href={localePath("/refunds", lang)} target="_blank">{t("refund policy", "política de reembolsos")}</a>{t(".", " de DSP Connect.")}</span>
           </label>
         </>
       )}
       {kind === "agency" && (
         <div className="field">
-          <label htmlFor="agency-spend">Ad spend you manage each month</label>
+          <label htmlFor="agency-spend">{t("Ad spend you manage each month", "Gasto publicitario que administra al mes")}</label>
           <select className="input" id="agency-spend" name="monthly_spend" defaultValue="Under $10,000">
-            {["Under $10,000", "$10,000 to $50,000", "$50,000 to $150,000", "$150,000 to $500,000", "Over $500,000"].map((o) => <option key={o}>{o}</option>)}
+            {SPEND.map(([v, es]) => <option key={v} value={v}>{lang === "es" ? es : v}</option>)}
           </select>
         </div>
       )}
       {error && <p className="note note-err" role="alert">{error}</p>}
       <button className="btn btn-ink" type="submit" disabled={state === "busy"}>
-        {state === "busy" ? "Sending…" : cta}
+        {state === "busy" ? t("Sending…", "Enviando…") : cta}
       </button>
     </form>
   );

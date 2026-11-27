@@ -2,7 +2,9 @@ import { ID, SITE_URL } from "./seo";
 
 // The explainer videos on YouTube (channel @getdspconnect). Each appears on its page and in that page's
 // structured data, so search engines can show it as a video result.
-export type Video = { id: string; title: string; description: string; seconds: number; poster: string; uploaded?: string };
+export type Video = { id: string; title: string; description: string; seconds: number; poster: string; uploaded?: string; es?: Partial<Omit<Video, "es">> };
+/** The version of a video for a language: the Spanish recording once there is one, otherwise the English. */
+export const forLang = (v: Video, lang: "en" | "es"): Video => (lang === "es" && v.es ? { ...v, ...v.es } : v);
 
 export const VIDEOS = {
   owners: { id: "YxMDlMvTWf4", seconds: 125, poster: "/video/vsl-owners.jpg", title: "Enterprise programmatic advertising, without the enterprise contract",
@@ -27,10 +29,14 @@ export const VIDEOS = {
 } satisfies Record<string, Video>;
 
 /** schema.org VideoObject for a page's structured data. */
-export const videoNode = (v: Video, page: string, anchor = "video") => ({
-  "@type": "VideoObject", "@id": `${SITE_URL}${page}#${anchor}`, name: v.title, description: v.description,
-  thumbnailUrl: [`${SITE_URL}${v.poster}`, `https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`], uploadDate: v.uploaded || "2026-11-17",
-  duration: `PT${Math.floor(v.seconds / 60)}M${v.seconds % 60}S`, contentUrl: `https://www.youtube.com/watch?v=${v.id}`,
-  embedUrl: `https://www.youtube-nocookie.com/embed/${v.id}`, publisher: { "@id": ID.org }, inLanguage: "en-US",
-  isPartOf: { "@id": `${SITE_URL}${page}#webpage` }, isFamilyFriendly: true, potentialAction: { "@type": "WatchAction", target: `https://www.youtube.com/watch?v=${v.id}` },
-});
+export const videoNode = (video: Video, page: string, anchor = "video", lang: "en" | "es" = "en") => {
+  const v = forLang(video, lang);
+  const url = SITE_URL + (lang === "es" ? (page === "/" ? "/es" : `/es${page}`) : page);
+  return {
+    "@type": "VideoObject", "@id": `${url}#${anchor}`, name: v.title, description: v.description,
+    thumbnailUrl: [`${SITE_URL}${v.poster}`, `https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`], uploadDate: v.uploaded || "2026-11-17",
+    duration: `PT${Math.floor(v.seconds / 60)}M${v.seconds % 60}S`, contentUrl: `https://www.youtube.com/watch?v=${v.id}`,
+    embedUrl: `https://www.youtube-nocookie.com/embed/${v.id}`, publisher: { "@id": ID.org }, inLanguage: lang === "es" && video.es ? "es-US" : "en-US",
+    isPartOf: { "@id": `${url}#webpage` }, isFamilyFriendly: true, potentialAction: { "@type": "WatchAction", target: `https://www.youtube.com/watch?v=${v.id}` },
+  };
+};

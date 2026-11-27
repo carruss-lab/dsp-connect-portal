@@ -1,0 +1,24 @@
+import { ImageResponse } from "next/og";
+import { PARTNER_PCT } from "@/lib/site";
+
+export const alt = `DSP Connect Authorized Sales Partner program. Earn ${PARTNER_PCT}% of client ad spend, for life.`;
+export const size = { width: 1200, height: 630 };
+export const contentType = "image/png";
+
+// The picture shown when the partner page is shared in a message, on LinkedIn or in search.
+export default async function Image({ params }: { params: Promise<{ lang: string }> }) {
+  const es = (await params).lang === "es";
+  return new ImageResponse(
+    (
+      <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", background: "#0B1220", color: "#fff", padding: 72 }}>
+        <div style={{ display: "flex", fontSize: 30, fontWeight: 700, letterSpacing: -0.5, color: "#9DB4E8" }}>{es ? "DSP Connect · Programa de Socios de Ventas" : "DSP Connect · Authorized Sales Partner program"}</div>
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <div style={{ display: "flex", fontSize: 72, fontWeight: 700, lineHeight: 1.05, letterSpacing: -2, maxWidth: 1040 }}>{es ? "Venda a los negocios que ya visita." : "Sell to the businesses you already call on."}</div>
+          <div style={{ display: "flex", fontSize: 34, color: "#9DB4E8", marginTop: 28 }}>{es ? `Gane el ${PARTNER_PCT}% de lo que gastan, de por vida. Pagos diarios.` : `Earn ${PARTNER_PCT}% of what they spend, for life. Paid daily.`}</div>
+        </div>
+        <div style={{ display: "flex", height: 10, width: 220, background: "#0A4FD6" }} />
+      </div>
+    ),
+    size,
+  );
+}

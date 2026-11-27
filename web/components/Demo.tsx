@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/Link";
 import { useEffect, useMemo, useState } from "react";
 import LeadForm from "./LeadForm";
 import PlanView from "./PlanView";

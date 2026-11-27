@@ -1,3 +1,4 @@
+import { localePath, type Lang } from "./i18n";
 import type { Metadata } from "next";
 import { COUNTRIES, COUNTRY_CODES, EXCHANGES, HELP_URL, LEGAL_ENTITY, MIN_BUDGET, SETUP_DAYS, SHARE_PCT, PARTNER_PCT, SITE_UPDATED, SUPPORT_EMAIL } from "./site";
 
@@ -110,15 +111,20 @@ type PageType = "WebPage" | "CollectionPage" | "AboutPage" | "ContactPage" | "It
 export function pageGraph(o: {
   path: string; name: string; description: string; trail?: [string, string][]; type?: PageType;
   main?: Node | string; about?: (Node | string)[]; faq?: readonly (readonly string[])[];
-  items?: { name: string; path: string }[]; nodes?: Node[]; image?: string; modified?: Date;
+  items?: { name: string; path: string }[]; nodes?: Node[]; image?: string; modified?: Date; lang?: Lang;
 }) {
-  const url = SITE_URL + (o.path === "/" ? "/" : o.path);
+  // Pages pass their English path; a Spanish page's addresses get the /es prefix here.
+  const lang = o.lang || "en";
+  const L = (p: string) => (lang === "es" ? localePath(p, "es") : p);
+  const inLanguage = lang === "es" ? "es-US" : "en-US";
+  const path = L(o.path);
+  const url = SITE_URL + (path === "/" ? "/" : path);
   const pageId = `${url}#webpage`;
   const asRef = (x: Node | string) => (typeof x === "string" ? ref(x) : x["@id"] ? ref(String(x["@id"])) : x);
   const graph: Node[] = [ORG, WEBSITE];
 
   const page: Node = {
-    "@type": o.type || "WebPage", "@id": pageId, url, name: o.name, description: o.description, inLanguage: "en-US",
+    "@type": o.type || "WebPage", "@id": pageId, url, name: o.name, description: o.description, inLanguage,
     isPartOf: ref(ID.site), publisher: ref(ID.org),
     primaryImageOfPage: { "@type": "ImageObject", url: o.image || `${SITE_URL}/og` },
   };
@@ -133,13 +139,13 @@ export function pageGraph(o: {
     page.breadcrumb = ref(`${url}#breadcrumb`);
     graph.push({
       "@type": "BreadcrumbList", "@id": `${url}#breadcrumb`,
-      itemListElement: o.trail.map(([name, p], i) => ({ "@type": "ListItem", position: i + 1, name, item: SITE_URL + p })),
+      itemListElement: o.trail.map(([name, p], i) => ({ "@type": "ListItem", position: i + 1, name, item: SITE_URL + L(p) })),
     });
   }
   if (o.faq?.length) {
     page.hasPart = [...((page.hasPart as Node[]) || []), ref(`${url}#faq`)];
     graph.push({
-      "@type": "FAQPage", "@id": `${url}#faq`, url, isPartOf: ref(pageId), inLanguage: "en-US",
+      "@type": "FAQPage", "@id": `${url}#faq`, url, isPartOf: ref(pageId), inLanguage,
       mainEntity: o.faq.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })),
     });
   }
@@ -148,7 +154,7 @@ export function pageGraph(o: {
     page.mainEntity = page.mainEntity || ref(list);
     graph.push({
       "@type": "ItemList", "@id": list, numberOfItems: o.items.length,
-      itemListElement: o.items.map((it, i) => ({ "@type": "ListItem", position: i + 1, name: it.name, url: SITE_URL + it.path })),
+      itemListElement: o.items.map((it, i) => ({ "@type": "ListItem", position: i + 1, name: it.name, url: SITE_URL + L(it.path) })),
     });
   }
   // Nodes defined elsewhere (the services) are included in full on the page that is about them.
@@ -162,14 +168,17 @@ export function pageGraph(o: {
 // ─── Page metadata ───────────────────────────────────────────────────────────────────────────────
 
 /** Title, description, canonical address and sharing cards for a public page, kept in step. */
-export function pageMeta(o: { title: string; description: string; path: string; ogTitle?: string; type?: "website" | "article"; image?: string }): Metadata {
+export function pageMeta(o: { title: string; description: string; path: string; ogTitle?: string; type?: "website" | "article"; image?: string; lang?: Lang }): Metadata {
+  const lang = o.lang || "en";
   const ogTitle = o.ogTitle || `${o.title} | DSP Connect`;
   const image = o.image || `${SITE_URL}/og`;
+  const url = localePath(o.path, lang);
   return {
     title: o.title, description: o.description,
-    alternates: { canonical: o.path },
+    // Each page names its English and Spanish versions, so search engines show people the right one.
+    alternates: { canonical: url, languages: { en: localePath(o.path, "en"), es: localePath(o.path, "es"), "x-default": localePath(o.path, "en") } },
     // The sharing picture: the page's own if it has one, otherwise the default at /og.
-    openGraph: { type: o.type || "website", siteName: "DSP Connect", locale: "en_US", url: o.path, title: ogTitle, description: o.description, images: [{ url: image, width: 1200, height: 630, alt: ogTitle }] },
+    openGraph: { type: o.type || "website", siteName: "DSP Connect", locale: lang === "es" ? "es_US" : "en_US", alternateLocale: lang === "es" ? ["en_US"] : ["es_US"], url, title: ogTitle, description: o.description, images: [{ url: image, width: 1200, height: 630, alt: ogTitle }] },
     twitter: { card: "summary_large_image", title: ogTitle, description: o.description, images: [image] },
   };
 }
