@@ -65,9 +65,14 @@ Rules you must follow:
 - Speak to the owner as "you" and call the business "your business"; do not use the business name or any person's name.
 - Write for a business owner: plain English, short sentences, no jargon (say "streaming TV" alongside CTV once), no exclamation marks, no emojis.`;
 
+// For Spanish speakers the same plan, written in Spanish. The fixed values the app reads stay as they are.
+const SPANISH = `
+
+Language: write every sentence of the plan in neutral US Spanish, addressing the owner as "usted" ("su negocio"). Use common Spanish ad words: "TV por streaming", "anuncios de display (banners)", "anuncios nativos", "retargeting", "seguimiento". Keep these values exactly as listed, in English, because the app reads them: "goal", each channel "key", and each "interests" value. The website may be in English; still write in Spanish. "No prometer resultados" applies in Spanish too: never use "garantizar" or estimate results.`;
+
 const TRIM = (s: string, n = 400) => s.replace(/\s+/g, " ").trim().slice(0, n);
 /** Last line of defense: nothing that names our provider, talks about margins, or promises results. */
-const BANNED = /\b(epom|mark-?up|margin|take rate|guarantee[ds]?)\b/i;
+const BANNED = /\b(epom|mark-?up|margin|take rate|guarantee[ds]?|garantiza\w*|garantía\w*|margen)\b/i;
 function clean(p: Plan): Plan {
   const fix = (s: string) => (BANNED.test(s) ? "" : TRIM(s));
   const list = (a: string[], n = 6) => a.map(fix).filter(Boolean).slice(0, n);
@@ -85,7 +90,7 @@ function clean(p: Plan): Plan {
   };
 }
 
-export type PlanInput = { business: string; website: string; industry: string; market: string; budget: number };
+export type PlanInput = { business: string; website: string; industry: string; market: string; budget: number; lang?: "en" | "es" };
 
 function brief(i: PlanInput, s: Signals | null) {
   const lines = [
@@ -142,12 +147,44 @@ export function rulePlan(i: PlanInput, s: Signals | null): Plan {
   };
 }
 
+/** The rule-based plan in Spanish, for when the model is unavailable. */
+export function rulePlanEs(i: PlanInput, s: Signals | null): Plan {
+  const store = !!s?.ecommerce;
+  const action = store ? "Comprar en línea" : s?.booking ? "Reservar una cita" : s?.phone ? "Llamar o enviar una consulta" : "Enviar una consulta";
+  const channels: Plan["channels"] = store
+    ? [
+        { key: "native", share: 40, role: "Llevar compradores a sus productos", why: "Los anuncios nativos se ven como el contenido que los rodea y llevan a las personas directo a las páginas de producto.", ads: "Una imagen del producto, un título corto y una línea de texto." },
+        { key: "display", share: 35, role: "Llegar a compradores en apps y sitios", why: "Los anuncios de display llegan a personas que navegan en apps y sitios web y que se parecen a su cliente.", ads: "Banners en los tamaños comunes, cada uno con un producto y la oferta." },
+        { key: "retargeting", share: 25, role: "Recuperar visitantes que no compraron", why: "Quienes vieron un producto son los más propensos a volver y comprar.", ads: "Banners con los productos que vieron o una razón para volver." },
+      ]
+    : [
+        { key: "ctv", share: 40, role: "Aparecer en la pantalla grande localmente", why: `La TV por streaming pone su negocio en los televisores de los hogares de ${i.market}, donde la gente se relaja y presta atención.`, ads: "Un video de 15 o 30 segundos con su nombre, su oferta y su sitio web al final." },
+        { key: "display", share: 35, role: "Mantenerse frente a clientes locales", why: "Los anuncios de display dan seguimiento en las apps y sitios que esas mismas personas usan a diario.", ads: "Banners en los tamaños comunes con una oferta clara." },
+        { key: "native", share: 25, role: "Convertir interés en consultas", why: "Los anuncios nativos se leen como contenido y llevan a su sitio web a quienes quieren saber más.", ads: "Una imagen, un título y una descripción corta." },
+      ];
+  return {
+    headline: `Un plan inicial para su negocio en ${i.market}, enfocado en ${store ? "ventas en línea" : "clientes locales"}.`,
+    learned: {
+      offer: s?.title ? TRIM(s.title.split(/[|–-]/)[0], 60) : i.industry, customer: `Personas en ${i.market} que necesitan lo que usted ofrece.`, area: s?.locations[0] || i.market, action,
+      notes: s?.reachable ? [s.platform ? `Sitio web hecho en ${s.platform}.` : "", s.phone ? "Los visitantes pueden llamar desde el sitio web." : "", s.booking ? "El sitio web acepta reservaciones en línea." : "", store ? "El sitio web vende en línea." : ""].filter(Boolean) : ["No pudimos leer el sitio web, así que este plan usa los datos que nos dio."],
+    },
+    goal: store || s?.forms || s?.booking ? "Conversions" : "Website visits",
+    goalWhy: `La mayoría de los negocios como el suyo quieren que la gente pueda ${action.toLowerCase()}, así que contamos eso como el resultado.`,
+    channels,
+    targeting: { locations: [i.market], ages: "Adultos de 25 a 64 años", interests: [], audiences: [`Adultos en ${i.market}`, "Personas interesadas en lo que usted ofrece"], exclude: [] },
+    tracking: { action, steps: ["Colocamos una etiqueta de seguimiento en su sitio web durante la configuración.", `Contamos cada acción de "${action.toLowerCase()}" como un resultado.`] },
+    creative: [{ format: "Banner", spec: "300x250, 320x50, 728x90, 160x600", message: "Una oferta clara y su sitio web." }],
+    launch: ["Abra su cuenta y pague su presupuesto inicial.", "Llene el resumen de su campaña.", "Colocamos el seguimiento y armamos su audiencia.", `Sus anuncios se activan en ${SETUP_DAYS} días.`, "Revisamos dónde se mostraron sus anuncios y movemos el presupuesto a lo que funciona."],
+    questions: ["¿Cuál es el resultado que más quiere de sus anuncios?", "¿Qué zonas atiende?"],
+  };
+}
+
 export async function writePlan(i: PlanInput, s: Signals | null): Promise<{ plan: Plan; model: string }> {
   for (const model of MODELS) {
     try {
       const { output } = await generateText({
         model,
-        system: SYSTEM,
+        system: i.lang === "es" ? SYSTEM + SPANISH : SYSTEM,
         prompt: `Write the ad plan for this business.\n\n${brief(i, s)}`,
         output: Output.object({ schema }),
         maxOutputTokens: 4000,
@@ -162,5 +199,5 @@ export async function writePlan(i: PlanInput, s: Signals | null): Promise<{ plan
       if (!/free tier|no_providers|not have access|not found|unsupported/i.test(msg)) break;
     }
   }
-  return { plan: clean({ ...rulePlan(i, s), budget: i.budget, siteRead: !!s?.reachable }), model: "rules" };
+  return { plan: clean({ ...(i.lang === "es" ? rulePlanEs(i, s) : rulePlan(i, s)), budget: i.budget, siteRead: !!s?.reachable }), model: "rules" };
 }

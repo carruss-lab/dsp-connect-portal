@@ -1,9 +1,10 @@
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { DOCS, VERSION } from "./partnerDocs";
+import { DOCS_ES, ES_NOTICE } from "./partnerDocs.es";
 import { LEGAL_ENTITY } from "./site";
 
 // A signed copy of the Authorized Sales Partner documents, as a PDF the partner keeps.
-export async function signedPdf(s: { legalName: string; email: string; signedAt: string; ip: string; hash: string; company?: string; title?: string }): Promise<string> {
+export async function signedPdf(s: { legalName: string; email: string; signedAt: string; ip: string; hash: string; company?: string; title?: string; lang?: "en" | "es"; translationHash?: string }): Promise<string> {
   const pdf = await PDFDocument.create();
   pdf.setTitle("DSP Connect Authorized Sales Partner Agreement");
   pdf.setAuthor(LEGAL_ENTITY);
@@ -12,8 +13,9 @@ export async function signedPdf(s: { legalName: string; email: string; signedAt:
   const W = 612, H = 792, M = 56, maxW = W - M * 2;
   let page = pdf.addPage([W, H]);
   let y = H - M;
-  // The standard PDF fonts only cover basic Latin, so typographic quotes and dashes are simplified.
-  const clean = (t: string) => t.replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/[–—]/g, "-").replace(/[^\x20-\x7E]/g, "");
+  // The standard PDF fonts cover Western European letters (so Spanish accents, ñ, ¿ and ¡ print), but not typographic
+  // quotes and dashes, which are simplified.
+  const clean = (t: string) => t.replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/[–—]/g, "-").replace(/[^\x20-\x7E\xA0-\xFF]/g, "");
 
   const line = (text: string, f = font, size = 10, gap = 4, color = rgb(0.04, 0.07, 0.13)) => {
     const words = clean(text).split(/\s+/);
@@ -51,5 +53,24 @@ export async function signedPdf(s: { legalName: string; email: string; signedAt:
   line(`IP address: ${s.ip || "not recorded"}`);
   line(`Document fingerprint (SHA-256): ${s.hash}`, font, 8);
   line("The signer read each document above, ticked to accept each one, and typed their full legal name to sign. Where a company is named, the signer confirmed they are authorized to bind it.", font, 9, 4, rgb(0.36, 0.4, 0.47));
+  if (s.lang === "es") {
+    // The partner read the documents in Spanish. The English text above is what was signed and controls; the
+    // Spanish translation follows for reference, with its own fingerprint.
+    line("The signer read these documents in the Spanish translation that follows, and confirmed that the English version controls.", font, 9, 4, rgb(0.36, 0.4, 0.47));
+    page = pdf.addPage([W, H]); y = H - M;
+    line("Traducción al español (solo para referencia)", bold, 15, 6);
+    line(ES_NOTICE, font, 9, 10, rgb(0.36, 0.4, 0.47));
+    for (const d of DOCS_ES) {
+      space(8);
+      line(`${d.tag}: ${d.title}`, bold, 12, 8);
+      for (const sec of d.sections) {
+        if (sec.h) { space(4); line(sec.h, bold, 10, 4); }
+        for (const p of sec.p) { if (p === ES_NOTICE) continue; line(p); space(4); }
+      }
+    }
+    space(12);
+    line(`Firmado electrónicamente por: ${s.legalName}${s.company ? `, ${s.title || "firmante autorizado"}, en nombre de ${s.company}` : ""}, el ${s.signedAt} (UTC).`);
+    if (s.translationHash) line(`Huella de esta traducción (SHA-256): ${s.translationHash}`, font, 8);
+  }
   return Buffer.from(await pdf.save()).toString("base64");
 }

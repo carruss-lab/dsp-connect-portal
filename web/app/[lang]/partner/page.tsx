@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getLang } from "@/lib/lang";
+import { setLang } from "@/lib/reqLang";
 import { tr, localePath, type Lang } from "@/lib/i18n";
 import Image from "next/image";
 import ConnectButton from "@/components/ConnectButton";
@@ -7,7 +8,7 @@ import LangSwitch from "@/components/LangSwitch";
 import IdentifyClient from "@/components/IdentifyClient";
 import { messengerJwt } from "@/lib/chatId";
 import { CopyLink, CopyTemplate, LessonDone, LoginForm, RemoveRep, SignDocs, TeamInvite } from "@/components/partner/PartnerBits";
-import { loadPortal, type Client, type MemberPortal, type Portal } from "@/lib/partner";
+import { loadPortal, session, type Client, type MemberPortal, type Portal } from "@/lib/partner";
 import { refreshPayouts } from "@/lib/partnerStripe";
 import { docsFor, VERSION } from "@/lib/partnerDocs";
 import { LEGAL_ENTITY, SETUP_DAYS, PARTNER_PCT, SUPPORT_EMAIL, siteOrigin } from "@/lib/site";
@@ -50,6 +51,8 @@ export default async function PartnerPortal({ searchParams }: { searchParams: Pr
   const sp = await searchParams;
   const lang = await getLang(); const t = tr(lang);
   const portal = await loadPortal();
+  // The language they use the portal in is the language we email them in.
+  if (portal && (portal.role === "owner" ? portal.partner.lang : portal.member.lang) !== lang) await setLang("session", await session(), lang);
   if (!portal) {
     return (
       <>

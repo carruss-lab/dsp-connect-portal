@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { esc, notifyTeam, send, wrap } from "@/lib/email";
+import { button, esc, notifyTeam, send, wrap } from "@/lib/email";
 import { syncPerson } from "@/lib/intercom";
 import { chatCookie } from "@/lib/chatId";
 import { stripe } from "@/lib/payments";
 import { LEGAL_ENTITY, MIN_BUDGET, PARTNERSTACK_AGENCY_URL, SHARE_PCT, siteOrigin } from "@/lib/site";
 import { isUuid, secretRpc } from "@/lib/server";
+import { bodyLang } from "@/lib/reqLang";
 
 const KINDS = ["market_check", "account", "agency"] as const;
 const clean = (v: unknown, max = 500) => (typeof v === "string" ? v.trim().slice(0, max) : "");
@@ -16,14 +17,16 @@ export async function POST(req: Request) {
   } catch {
     return NextResponse.json({ error: "We could not read that. Please try again." }, { status: 400 });
   }
+  const lang = bodyLang(body); const es = lang === "es";
+  const t = (en: string, sp: string) => (es ? sp : en);
 
   const kind = clean(body.kind, 20);
   if (!KINDS.includes(kind as (typeof KINDS)[number])) {
-    return NextResponse.json({ error: "Unknown form." }, { status: 400 });
+    return NextResponse.json({ error: t("Unknown form.", "Formulario desconocido.") }, { status: 400 });
   }
   const email = clean(body.email, 200).toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return NextResponse.json({ error: "Please enter a valid email address." }, { status: 400 });
+    return NextResponse.json({ error: t("Please enter a valid email address.", "Escriba un correo electrónico válido.") }, { status: 400 });
   }
 
   let budget: number | null = null;
@@ -31,15 +34,15 @@ export async function POST(req: Request) {
     budget = Number(body.budget);
     if (!Number.isFinite(budget) || budget < MIN_BUDGET) {
       return NextResponse.json(
-        { error: `The smallest budget to start with is $${MIN_BUDGET}.` },
+        { error: t(`The smallest budget to start with is $${MIN_BUDGET}.`, `El presupuesto mínimo para empezar es de $${MIN_BUDGET}.`) },
         { status: 400 },
       );
     }
     if (!clean(body.business) || !clean(body.name)) {
-      return NextResponse.json({ error: "Please add your name and business name." }, { status: 400 });
+      return NextResponse.json({ error: t("Please add your name and business name.", "Escriba su nombre y el nombre de su negocio.") }, { status: 400 });
     }
     if (body.terms !== true) {
-      return NextResponse.json({ error: "Please agree to the terms to continue." }, { status: 400 });
+      return NextResponse.json({ error: t("Please agree to the terms to continue.", "Acepte los términos para continuar.") }, { status: 400 });
     }
   }
 
@@ -60,15 +63,16 @@ export async function POST(req: Request) {
     monthly_spend: clean(body.monthly_spend, 60),
     source: clean(body.source, 240),
     partner_code: clean(body.partner_code, 20).toUpperCase() || null,
+    lang,
   };
 
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_PUBLISHABLE_KEY;
   if (!url || !key) {
-    return NextResponse.json({ error: "This form is not connected yet. Please try again shortly." }, { status: 503 });
+    return NextResponse.json({ error: t("This form is not connected yet. Please try again shortly.", "Este formulario aún no está conectado. Inténtelo de nuevo en un momento.") }, { status: 503 });
   }
 
-  const fail = NextResponse.json({ error: "Something went wrong saving your details. Please try again." }, { status: 502 });
+  const fail = NextResponse.json({ error: t("Something went wrong saving your details. Please try again.", "Algo salió mal al guardar sus datos. Inténtelo de nuevo.") }, { status: 502 });
   try {
     const res = await fetch(`${url}/rest/v1/leads`, {
       method: "POST",
@@ -92,10 +96,10 @@ export async function POST(req: Request) {
   }
 
   await Promise.all([
-    kind === "agency" ? send(email, "Next step: join the DSP Connect agency program", agencyEmail(row.name || "")).catch((e) => console.error("agency email failed", e)) : null,
-    notifyTeam(kind, { ...row, id: undefined, ...(planLinked ? { ad_plan: `${siteOrigin()}/planner?plan=${planId}` } : {}) }),
+    kind === "agency" ? send(email, es ? "Siguiente paso: únase al programa para agencias de DSP Connect" : "Next step: join the DSP Connect agency program", agencyEmail(row.name || "", lang)).catch((e) => console.error("agency email failed", e)) : null,
+    notifyTeam(kind, { ...row, id: undefined, lang: undefined, ...(es ? { language: "Spanish" } : {}), ...(planLinked ? { ad_plan: `${siteOrigin()}/planner?plan=${planId}` } : {}) }),
     syncPerson({
-      email, name: row.name, role: kind === "agency" ? "agency" : "prospect", status: "lead", industry: row.industry, market: row.market,
+      email, name: row.name, role: kind === "agency" ? "agency" : "prospect", status: "lead", ...(es ? { lang } : {}), industry: row.industry, market: row.market,
       extra: {
         lead_stage: kind === "agency" ? "agency_enquiry" : kind === "account" ? "started_signup" : "opened_demo",
         ...(row.business ? { business_name: row.business } : {}),
@@ -124,23 +128,27 @@ export async function POST(req: Request) {
         // A real Stripe customer (not a guest) with this email: PartnerStack's Stripe app matches
         // customers by email, so the payment is credited to the partner who referred them.
         customer_creation: "always",
+        // Stripe's payment page in the buyer's language.
+        locale: es ? "es" : "auto",
         line_items: [{
           quantity: 1,
           price_data: {
             currency: "usd",
             unit_amount: Math.round(budget! * 100),
-            product_data: { name: "DSP Connect ad budget", description: `Starting ad budget for ${row.business}. Sold by ${LEGAL_ENTITY}.` },
+            product_data: es
+              ? { name: "Presupuesto publicitario de DSP Connect", description: `Presupuesto publicitario inicial para ${row.business}. Vendido por ${LEGAL_ENTITY}.` }
+              : { name: "DSP Connect ad budget", description: `Starting ad budget for ${row.business}. Sold by ${LEGAL_ENTITY}.` },
           },
         }],
         metadata: { lead_id: id, ...(planLinked ? { strategy_id: planId } : {}) },
-        success_url: `${origin}/open-account/thanks?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${origin}/open-account`,
+        success_url: `${origin}${es ? "/es" : ""}/open-account/thanks?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${origin}${es ? "/es" : ""}/open-account`,
       } as unknown as Parameters<typeof client.checkout.sessions.create>[0];
       const session = await client.checkout.sessions.create(params);
       if (session.url) { const r = NextResponse.json({ ok: true, pay: session.url }); r.cookies.set(chatCookie(email)); return r; }
     } catch (err) {
       console.error("checkout session failed", err);
-      return NextResponse.json({ error: "We saved your details but could not open the payment page. Please try again." }, { status: 502 });
+      return NextResponse.json({ error: t("We saved your details but could not open the payment page. Please try again.", "Guardamos sus datos, pero no pudimos abrir la página de pago. Inténtelo de nuevo.") }, { status: 502 });
     }
   }
   // This browser has now proved who it is, so the chat can recognize them (see lib/chatId.ts).
@@ -150,9 +158,20 @@ export async function POST(req: Request) {
 }
 
 /** Sent once when an agency asks about the program: the one step left is applying on PartnerStack. */
-function agencyEmail(name: string) {
+function agencyEmail(name: string, lang: "en" | "es" = "en") {
   const first = name.trim().split(/\s+/)[0];
   const site = siteOrigin();
+  if (lang === "es") return wrap(
+    `<p>${first ? `Hola, ${esc(first)}:` : "Hola:"}</p>` +
+    `<p>Gracias por preguntar por el programa para agencias de DSP Connect. Queda un paso: unirse al programa en PartnerStack. Ahí se registra, acepta los términos del programa y configura sus pagos. PartnerStack está en inglés; si tiene dudas, le ayudamos en español.</p>` +
+    button(PARTNERSTACK_AGENCY_URL, "Unirse al programa para agencias", "#0A4FD6") +
+    `<p><b>Lo que sigue</b></p><ol>` +
+    `<li>Regístrese en PartnerStack (unos dos minutos).</li>` +
+    `<li>Le respondemos en un día hábil para configurar la cuenta de su agencia.</li>` +
+    `<li>Cada cliente tiene su propio acceso. Usted gana el ${SHARE_PCT}% del gasto publicitario que administra, pagado a través de PartnerStack.</li>` +
+    `<li>¿Tiene un equipo de ventas? Invite a sus representantes desde su panel de PartnerStack. Cada uno tiene su propio enlace, cada cliente se registra a nombre del representante que lo trajo, y toda la comisión llega a su agencia. <a href="https://youtu.be/au5qCF-bXws">Vea cómo, paso a paso</a> (1.5 minutos, en inglés).</li></ol>` +
+    `<p>Mientras tanto, puede recorrer la <a href="${site}/es/demo?view=agency">demostración para agencias</a> o crear un plan de anuncios gratis para un prospecto con el <a href="${site}/es/planner">planificador de anuncios</a>.</p>` +
+    `<p>¿Preguntas? Responda a este correo o escríbanos en el chat del sitio.</p>`, "es");
   return wrap(
     `<p>${first ? `Hi ${esc(first)},` : "Hi,"}</p>` +
     `<p>Thanks for asking about the DSP Connect agency program. There is one step left: join the program on PartnerStack. That is where you sign up, accept the program terms and set up your payouts.</p>` +

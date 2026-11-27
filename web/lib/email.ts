@@ -53,9 +53,20 @@ export async function notifyTeam(kind: string, lead: Lead) {
 }
 
 /** Confirms a payment to the client and tells them what happens next. */
-export async function confirmPayment(email: string, amount: number, lead?: string) {
+export async function confirmPayment(email: string, amount: number, lead?: string, lang: "en" | "es" = "en") {
   const usd = "$" + amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const page = lead ? `${siteOrigin()}/welcome?id=${lead}` : "";
+  const page = lead ? `${siteOrigin()}${lang === "es" ? "/es" : ""}/welcome?id=${lead}` : "";
+  if (lang === "es") {
+    await send(email, "Pago recibido. Su configuración de DSP Connect ya empezó", wrap(
+      `<p>Gracias. Recibimos su presupuesto publicitario de <b>${usd}</b>.</p>` +
+      `<p>Sus anuncios estarán activos en ${SETUP_DAYS} días. Esto es lo que hacemos ahora:</p>` +
+      `<ol><li>Crear su cuenta y cargar su presupuesto.</li><li>Colocar el seguimiento en su sitio web.</li><li>Revisar sus anuncios.</li><li>Armar su audiencia.</li></ol>` +
+      `<p><b>Una cosa que necesitamos de usted, en los próximos 5 días:</b> el resumen de su campaña. Pregunta por sus objetivos, sus clientes, las campañas que quiere, sus anuncios y su sitio web, para crear lo correcto desde la primera vez. Toma unos diez minutos.</p>` +
+      (page ? button(page, "Llenar el resumen de su campaña", "#0A4FD6") + `<p>Guarde este enlace. Es su página privada de configuración y muestra su avance.</p>` : `<p>Responda a este correo con ambas cosas.</p>`) +
+      `<p><b>Lo que recibirá de nosotros:</b> un correo cada vez que se termine un paso de la configuración, y uno cuando sus anuncios estén activos. Sus datos de acceso llegan en correos aparte una vez aprobada su cuenta. La plataforma de anuncios está en inglés; nuestro equipo y el chat le ayudan en español.</p>` +
+      `<p>¿Preguntas? Responda a este correo, en español, o visite <a href="${HELP_URL}">nuestro centro de ayuda</a>.</p>`, "es"));
+    return;
+  }
   await send(
     email,
     "Payment received. Your DSP Connect setup has started",

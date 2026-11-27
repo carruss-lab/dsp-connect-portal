@@ -34,12 +34,13 @@ export async function markPaid(session: Stripe.Checkout.Session): Promise<"paid"
       const amount = (session.amount_total ?? 0) / 100;
       const email = session.customer_details?.email || session.customer_email || "";
       // If they made an ad plan before signing up, the team sees it with the payment.
-      const st = await secretRpc<{ strategy_id: string | null; plan: Plan | null } | null>("client_status", { p_lead: lead }).catch(() => null);
+      const st = await secretRpc<{ strategy_id: string | null; plan: Plan | null; lang?: string } | null>("client_status", { p_lead: lead }).catch(() => null);
+      const lang = st?.lang === "es" || session.locale === "es" ? "es" : "en";
       const plan = st?.plan && st.strategy_id ? { ad_plan: `${siteOrigin()}/planner?plan=${st.strategy_id}`, plan_summary: planSummary(st.plan) } : {};
       await Promise.all([
-        email ? confirmPayment(email, amount, lead) : Promise.resolve(),
-        notifyTeam("paid", { email, amount, sign_up: lead, ...plan }),
-        email ? syncPerson({ email, role: "client", status: "paid_in_setup", setupDue: new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10), extra: { lead_stage: "paid" } }) : Promise.resolve(),
+        email ? confirmPayment(email, amount, lead, lang) : Promise.resolve(),
+        notifyTeam("paid", { email, amount, sign_up: lead, ...(lang === "es" ? { language: "Spanish" } : {}), ...plan }),
+        email ? syncPerson({ email, role: "client", lang, status: "paid_in_setup", setupDue: new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10), extra: { lead_stage: "paid" } }) : Promise.resolve(),
       ]);
       await runNotices({ lead }).catch((e) => console.error("notices failed", e));
     }

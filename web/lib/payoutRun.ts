@@ -5,7 +5,7 @@ import { secretRpc } from "./server";
 import { businessToday } from "./site";
 
 type Line = { id: string; partner_id: string; amount: number; release_on: string };
-type Partner = { id: string; name: string; email: string; stripe_account_id: string | null; payouts_ready: boolean };
+type Partner = { id: string; name: string; email: string; stripe_account_id: string | null; payouts_ready: boolean; lang?: string };
 type Queue = { lines: Line[]; partners: Partner[]; offsets: { partner_id: string; amount: number }[] };
 export type Held = { partner: string; amount: number; reason: string };
 export type PayoutResult = { paid: { partner: string; amount: number }[]; skipped: { partner: string; reason: string }[]; approved?: number; held?: Held[]; message?: string };

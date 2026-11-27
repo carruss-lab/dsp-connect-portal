@@ -1,4 +1,5 @@
-import { emailOn, esc, send, wrap } from "./email";
+import { button, emailOn, esc, send, wrap } from "./email";
+import { channelName } from "./plan";
 import { ensureAttributes, syncPerson } from "./intercom";
 import { refreshPayouts } from "./partnerStripe";
 import { secretRpc } from "./server";
@@ -14,14 +15,14 @@ type FeedLead = {
   id: string; email: string; name: string | null; business: string | null; industry: string | null; market: string | null;
   amount_paid: number | null; paid_at: string; setup_due: string | null;
   step_account_at: string | null; step_tracking_at: string | null; step_ads_at: string | null; step_audience_at: string | null; live_at: string | null;
-  partner_id: string | null; partner_name: string | null; partner_email: string | null;
+  partner_id: string | null; partner_name: string | null; partner_email: string | null; lang?: string; partner_lang?: string;
   spent_total: number; spent_7d: number; last_spend_day: string | null;
 };
-type Unpaid = { id: string; email: string; name: string | null; business: string | null; budget: number | null };
-type Demo = { id: string; email: string; name: string | null; business: string | null; industry: string | null; market: string | null; days: number; plan?: { id: string; website: string; plan: Plan } | null };
-type Agency = { id: string; email: string; name: string | null; business: string | null; days: number };
+type Unpaid = { id: string; email: string; name: string | null; business: string | null; budget: number | null; lang?: string };
+type Demo = { id: string; email: string; name: string | null; business: string | null; industry: string | null; market: string | null; days: number; lang?: string; plan?: { id: string; website: string; plan: Plan } | null };
+type Agency = { id: string; email: string; name: string | null; business: string | null; days: number; lang?: string };
 type Onboarding = {
-  id: string; name: string; email: string; status: string; invite_token: string; payouts_ready: boolean; company_name: string | null; stripe_account_id?: string | null;
+  id: string; name: string; email: string; lang?: string; status: string; invite_token: string; payouts_ready: boolean; company_name: string | null; stripe_account_id?: string | null;
   days_approved: number; days_signed: number | null; days_trained: number | null; trained: boolean; clients: number;
 };
 type Feed = { today: string; leads: FeedLead[]; unpaid?: Unpaid[]; demo?: Demo[]; agency?: Agency[]; partner_onboarding?: Onboarding[]; applications_waiting?: string[]; pending_commission: number; due_commission: number; partners_not_ready: string[] };
@@ -49,11 +50,11 @@ export function budget(l: FeedLead) {
   return { paid, spent, week, left, daysLeft, low: spent > 0 && paid > 0 && left <= paid * 0.25 };
 }
 
-async function deliver(r: Report, subject: string, type: "lead" | "partner" | "team", kind: string, to: string, title: string, html: string) {
+async function deliver(r: Report, subject: string, type: "lead" | "partner" | "team", kind: string, to: string, title: string, html: string, lang: "en" | "es" = "en") {
   if (!emailOn() || !to) return;
   const id = await secretRpc<string | null>("notice_claim", { p_subject: subject, p_type: type, p_kind: kind, p_to: to, p_title: title });
   if (!id) return; // already sent, or being sent right now
-  const out = await send(to, title, wrap(html));
+  const out = await send(to, title, wrap(html, lang));
   await secretRpc("notice_result", { p_id: id, p_ok: out.ok, p_error: out.error || null });
   (out.ok ? r.sent : r.failed).push(`${title} → ${to}`);
 }
@@ -64,6 +65,8 @@ function checklist(l: FeedLead) {
 }
 
 async function clientNotices(r: Report, l: FeedLead, today: string) {
+  await partnerClientPaid(r, l, today);
+  if (l.lang === "es") return clientNoticesEs(r, l, today);
   const done = STEPS.filter(([k]) => l[k]).length;
   const due = l.setup_due ? `Your ads will be live by <b>${longDay(l.setup_due)}</b>.` : `Your ads will be live within ${SETUP_DAYS} days of your payment.`;
 
@@ -97,11 +100,22 @@ async function clientNotices(r: Report, l: FeedLead, today: string) {
       (b.daysLeft !== null ? ` At your current pace that is about <b>${b.daysLeft} more day${b.daysLeft === 1 ? "" : "s"}</b> of advertising.` : "") + `</p>` +
       `<p>This is for your information. When the budget is used, your ads pause until you decide what to do next. Reply to this email if you have questions.</p>`);
   }
-  if (l.partner_id && l.partner_email && paidDays <= 3) {
-    await deliver(r, l.id, "lead", "partner_client_paid", l.partner_email, `New client: ${l.business || "a client you referred"} has opened an account`,
-      `<p>Hello${l.partner_name ? " " + esc(l.partner_name.split(" ")[0]) : ""},</p><p><b>${esc(l.business || "A client you referred")}</b> has paid and opened a DSP Connect account. They are credited to you.</p>` +
-      `<p>We are setting up their account now. ${due.replace("Your ads", "Their ads")} Your commission starts when their ads start spending.</p>`);
+}
+
+/** Tells the Sales Partner, in their language, that a client they brought has paid. */
+async function partnerClientPaid(r: Report, l: FeedLead, today: string) {
+  if (!l.partner_id || !l.partner_email || daysSince(l.paid_at, today) > 3) return;
+  if (l.partner_lang === "es") {
+    const due = l.setup_due ? `Sus anuncios estarán activos a más tardar el <b>${longDayEs(l.setup_due)}</b>.` : `Sus anuncios estarán activos en ${SETUP_DAYS} días desde su pago.`;
+    await deliver(r, l.id, "lead", "partner_client_paid", l.partner_email, `Nuevo cliente: ${l.business || "un cliente que usted presentó"} abrió una cuenta`,
+      `<p>Hola${l.partner_name ? ", " + esc(l.partner_name.split(" ")[0]) : ""}:</p><p><b>${esc(l.business || "Un cliente que usted presentó")}</b> pagó y abrió una cuenta de DSP Connect. Se le acredita a usted.</p>` +
+      `<p>Estamos configurando su cuenta ahora. ${due} Su comisión empieza cuando sus anuncios empiecen a invertir.</p>`, "es");
+    return;
   }
+  const due = l.setup_due ? `Their ads will be live by <b>${longDay(l.setup_due)}</b>.` : `Their ads will be live within ${SETUP_DAYS} days of their payment.`;
+  await deliver(r, l.id, "lead", "partner_client_paid", l.partner_email, `New client: ${l.business || "a client you referred"} has opened an account`,
+    `<p>Hello${l.partner_name ? " " + esc(l.partner_name.split(" ")[0]) : ""},</p><p><b>${esc(l.business || "A client you referred")}</b> has paid and opened a DSP Connect account. They are credited to you.</p>` +
+    `<p>We are setting up their account now. ${due} Your commission starts when their ads start spending.</p>`);
 }
 
 // Recommendations never include adding money. They are about getting more from the budget already there.
@@ -144,6 +158,7 @@ async function partnerBriefs(r: Report, f: Feed) {
   for (const l of f.leads) if (l.partner_id && l.partner_email) mine.set(l.partner_id, [...(mine.get(l.partner_id) || []), l]);
   for (const [pid, leads] of mine) {
     const first = leads[0];
+    if (first.partner_lang === "es") { await partnerBriefEs(r, pid, leads, f.today); continue; }
     const blocks = leads.map((l) => {
       const b = budget(l);
       const state = l.live_at ? `Live since ${longDay(l.live_at)} · ${usd(b.week)} ad spend in the last 7 days` : `In setup · ${STEPS.filter(([k]) => l[k]).length} of ${STEPS.length} steps done${l.setup_due ? ` · due live ${longDay(l.setup_due)}` : ""}`;
@@ -156,9 +171,240 @@ async function partnerBriefs(r: Report, f: Feed) {
   }
 }
 
+// ─── Spanish ─────────────────────────────────────────────────────────────────────────────────────
+// The same emails for people who use DSP Connect in Spanish: same timing, same rules, same caps
+// (each uses the same notice kind as its English twin, so nobody ever gets both).
+
+const STEPS_ES: Record<string, string> = {
+  account: "Su cuenta está creada y su presupuesto está cargado",
+  tracking: "El seguimiento está instalado en su sitio web",
+  ads: "Sus anuncios están revisados y aprobados",
+  audience: "Su audiencia está armada",
+};
+const longDayEs = (iso: string) => new Date(iso.slice(0, 10) + "T12:00:00Z").toLocaleDateString("es-US", { month: "long", day: "numeric", timeZone: "UTC" });
+const hola = (name: string | null) => `<p>Hola${name ? ", " + esc(name.split(" ")[0]) : ""}:</p>`;
+const loginLineEs = () => (LOGIN_URL.startsWith("http") ? `<p>Puede ver sus resultados en cualquier momento: <a href="${LOGIN_URL}">inicie sesión en su cuenta</a> (la plataforma está en inglés).</p>` : "");
+const ask = "¿Preguntas? Responda a este correo o use el chat de nuestro sitio web; le atendemos en español.";
+
+function checklistEs(l: FeedLead) {
+  const rows = STEPS.map(([k, key]) => `<li style="margin:4px 0">${l[k] ? "✅" : "⬜"} ${esc(STEPS_ES[key])}${l[k] ? "" : " <span style=\"color:#5B6577\">(en proceso)</span>"}</li>`).join("");
+  return `<ul style="list-style:none;padding:0">${rows}</ul>`;
+}
+
+async function clientNoticesEs(r: Report, l: FeedLead, today: string) {
+  const done = STEPS.filter(([k]) => l[k]).length;
+  const due = l.setup_due ? `Sus anuncios estarán activos a más tardar el <b>${longDayEs(l.setup_due)}</b>.` : `Sus anuncios estarán activos en ${SETUP_DAYS} días desde su pago.`;
+  const page = `${origin()}/es/welcome?id=${l.id}`;
+  for (const [k, key] of STEPS) {
+    if (!l[k] || l.live_at || daysSince(l[k] as string, today) > 3) continue;
+    const label = STEPS_ES[key];
+    await deliver(r, l.id, "lead", `step_${key}`, l.email, `Avance de su configuración: ${label.charAt(0).toLowerCase() + label.slice(1)}`,
+      hola(l.name) + `<p><b>${esc(label)}.</b> Ya van ${done} de ${STEPS.length} pasos.</p>` + checklistEs(l) + `<p>${done < STEPS.length ? due : "Los cuatro pasos están listos. Estamos haciendo las revisiones finales antes de activar sus anuncios."}</p>` +
+      `<p><a href="${page}">Vea el avance de su configuración</a>. ${ask}</p>`, "es");
+  }
+  if (l.live_at && daysSince(l.live_at, today) <= 3) {
+    await deliver(r, l.id, "lead", "live", l.email, "Sus anuncios están activos",
+      hola(l.name) + `<p><b>Sus anuncios ya están activos.</b></p>` +
+      `<p>Qué esperar:</p><ul><li>Las primeras dos semanas son un periodo de aprendizaje. El sistema está encontrando a las personas con más probabilidad de responder, así que los resultados suelen mejorar después.</li>` +
+      `<li>Cada lunes le enviaremos un resumen corto de su presupuesto y de lo que, en su caso, le recomendamos.</li>` +
+      `<li>Le avisaremos antes de que su presupuesto se esté acabando, para que sus anuncios no se detengan sin aviso.</li></ul>` + loginLineEs() +
+      `<p>${ask}</p>`, "es");
+  }
+  const paidDays = daysSince(l.paid_at, today);
+  if (!l.live_at && !l.step_ads_at && !l.intake_at && paidDays >= 3 && paidDays <= 10) {
+    await deliver(r, l.id, "lead", "need_ads", l.email, "El resumen de su campaña es el siguiente paso",
+      hola(l.name) + `<p>Para que su lanzamiento salga a tiempo, necesitamos el resumen de su campaña. Cubre sus objetivos, sus clientes, las campañas que quiere, sus anuncios y su sitio web, para crear lo correcto desde la primera vez.</p>` +
+      `<p><a href="${page}#brief">Llene el resumen de su campaña</a>. Toma unos diez minutos.</p>` +
+      `<p>¿Tiene dudas con alguna pregunta? Responda a este correo o pregunte en el chat de su página de configuración. ${due}</p>`, "es");
+  }
+  const b = budget(l);
+  if (l.live_at && b.low) {
+    await deliver(r, l.id, "lead", `low_budget_${Math.round(b.paid)}`, l.email, "Su presupuesto publicitario se está acabando",
+      hola(l.name) + `<p>Le quedan <b>${usd(b.left)}</b> de su presupuesto publicitario de ${usd(b.paid)}.` +
+      (b.daysLeft !== null ? ` Al ritmo actual, eso es aproximadamente <b>${b.daysLeft} día${b.daysLeft === 1 ? "" : "s"} más</b> de publicidad.` : "") + `</p>` +
+      `<p>Esto es solo para su información. Cuando se use el presupuesto, sus anuncios se pausan hasta que decida qué hacer. Si tiene preguntas, responda a este correo.</p>`, "es");
+  }
+}
+
+function clientTipsEs(l: FeedLead, today: string): string[] {
+  const live = daysSince(l.live_at, today);
+  const tips: string[] = [];
+  if (live < 14) tips.push(`<b>Deje sus anuncios como están por ahora.</b> Está en las primeras dos semanas, cuando el sistema todavía está aprendiendo quién responde. Los cambios ahora reinician ese aprendizaje.`);
+  if (live >= 14 && live < 21) tips.push(`<b>Confirme que estamos contando el resultado correcto.</b> Díganos cómo es un buen cliente potencial para usted (una llamada, un formulario, una cita), para dirigir sus anuncios a conseguir más.`);
+  if (live >= 42) tips.push(`<b>Envíenos anuncios nuevos.</b> Sus anuncios llevan seis semanas. La respuesta suele bajar cuando las mismas personas han visto el mismo anuncio muchas veces.`);
+  if (!tips.length) tips.push(`<b>No necesita hacer nada esta semana.</b>`);
+  return tips;
+}
+
+async function weeklyEs(r: Report, l: FeedLead, today: string) {
+  const b = budget(l);
+  await deliver(r, l.id, "lead", `weekly_${today}`, l.email, `Su resumen semanal: ${usd(b.week)} invertidos, ${usd(b.left)} disponibles`,
+    hola(l.name) + `<p>Así va su cuenta en los últimos 7 días.</p>` +
+    `<table style="border-collapse:collapse"><tr><td style="padding:4px 16px 4px 0;color:#5B6577">Invertido en los últimos 7 días</td><td><b>${usd(b.week)}</b></td></tr>` +
+    `<tr><td style="padding:4px 16px 4px 0;color:#5B6577">Invertido en total</td><td>${usd(b.spent)}</td></tr>` +
+    `<tr><td style="padding:4px 16px 4px 0;color:#5B6577">Presupuesto disponible</td><td><b>${usd(b.left)}</b></td></tr>` +
+    (b.daysLeft !== null ? `<tr><td style="padding:4px 16px 4px 0;color:#5B6577">Días restantes a este ritmo</td><td>Unos ${b.daysLeft}</td></tr>` : "") + `</table>` +
+    `<p><b>Lo que le recomendamos</b></p><ul>${clientTipsEs(l, today).map((t) => `<li>${t}</li>`).join("")}</ul>` + loginLineEs() +
+    `<p>${ask}</p>`, "es");
+}
+
+function partnerAdviceEs(l: FeedLead, today: string): string[] {
+  const out: string[] = [];
+  const who = esc(l.business || "el cliente");
+  if (!l.live_at) {
+    const left = l.setup_due ? Math.round((Date.parse(l.setup_due) - Date.parse(today)) / 86400000) : null;
+    if (!l.step_ads_at) out.push(`Sus anuncios todavía no están aprobados. Pídale a ${who} sus imágenes o video, su logotipo y la página web a la que debe llegar la gente. La falta de anuncios es la razón más común de que un lanzamiento se retrase.`);
+    if (!l.step_tracking_at) out.push(`El seguimiento todavía no está en su sitio web. Averigüe quién administra el sitio y preséntenos a esa persona.`);
+    if (left !== null && left <= 3) out.push(left < 0 ? `Su lanzamiento lleva ${-left} día${left === -1 ? "" : "s"} de retraso. Llámele hoy para que se entere por usted primero.` : `Su lanzamiento vence en ${left} día${left === 1 ? "" : "s"}. Confirme que nada está esperando de su parte.`);
+    if (!out.length) out.push(`La configuración va a tiempo. Explíquele cómo serán las primeras dos semanas, para que los primeros números no le preocupen.`);
+    return out;
+  }
+  const live = daysSince(l.live_at, today);
+  const b = budget(l);
+  if (live < 14) out.push(`Está en el periodo de aprendizaje de dos semanas. Explíquele que los resultados se estabilizan después, y recomiéndele no cambiar anuncios ni audiencia hasta entonces.`);
+  if (b.week <= 0 && live >= 3) out.push(`No hay gasto publicitario registrado en los últimos 7 días. Comuníquese: sus anuncios pueden estar pausados o esperando aprobación.`);
+  if (live >= 14 && live < 28) out.push(`Pregúntele qué cuenta como un buen cliente potencial para él, y confirme que eso es lo que mide el seguimiento. Los resultados solo se pueden mejorar con el objetivo correcto.`);
+  if (live >= 28) out.push(`Agende una revisión de resultados. Revisen qué anuncios y ubicaciones traen clientes potenciales, y acuerden un cambio para probar en las próximas dos semanas.`);
+  if (live >= 42) out.push(`Sus anuncios llevan seis semanas. Recomiéndele anuncios nuevos; la respuesta suele bajar cuando las mismas personas han visto el mismo anuncio muchas veces.`);
+  if (!out.length) out.push(`No hay nada que plantear esta semana. Una llamada corta de seguimiento siempre ayuda a la relación.`);
+  return out;
+}
+
+async function partnerBriefEs(r: Report, pid: string, leads: FeedLead[], today: string) {
+  const first = leads[0];
+  const blocks = leads.map((l) => {
+    const b = budget(l);
+    const state = l.live_at ? `Activo desde el ${longDayEs(l.live_at)} · ${usd(b.week)} de gasto publicitario en los últimos 7 días` : `En configuración · ${STEPS.filter(([k]) => l[k]).length} de ${STEPS.length} pasos listos${l.setup_due ? ` · activo a más tardar el ${longDayEs(l.setup_due)}` : ""}`;
+    return `<p style="margin:20px 0 4px"><b>${esc(l.business || l.email)}</b><br><span style="color:#5B6577">${state}</span></p><ul>${partnerAdviceEs(l, today).map((t) => `<li style="margin:4px 0">${t}</li>`).join("")}</ul>`;
+  }).join("");
+  await deliver(r, pid, "partner", `brief_${today}`, first.partner_email!, `Resumen de sus clientes: ${leads.length} cuenta${leads.length === 1 ? "" : "s"}`,
+    hola(first.partner_name) + `<p>Esto es lo que conviene plantear con cada uno de sus clientes esta semana.</p>${blocks}` +
+    `<p>¿Quiere ayuda para preparar una conversación con un cliente? Use el chat de su portal, en español.</p>`, "es");
+  await syncPerson({ email: first.partner_email!, name: first.partner_name, role: "sales_partner", lang: "es", extra: { partner_stage: "active", partner_clients: leads.length } });
+}
+
+const footEs = (id: string, last: string, q = `id=${id}`) =>
+  `<p style="color:#5B6577;font-size:12px;margin-top:28px">${last}${esc(LEGAL_ENTITY)}, ${esc(BUSINESS_ADDRESS)}. <a href="${origin()}/es/unsubscribe?${q}">Cancelar suscripción</a>.</p>`;
+
+async function finishSignupEs(r: Report, u: Unpaid) {
+  await deliver(r, u.id, "lead", "finish_signup", u.email, "Su cuenta de DSP Connect está a un paso de empezar",
+    hola(u.name) + `<p>Empezó a abrir una cuenta de DSP Connect${u.business ? ` para ${esc(u.business)}` : ""} y se detuvo antes del pago. No se le ha cobrado nada.</p>` +
+    `<p>Si quiere continuar, su configuración de ${SETUP_DAYS} días empieza el día en que se pague su presupuesto publicitario: <a href="${origin()}/es/open-account">termine de abrir su cuenta</a>.</p>` +
+    `<p>Si primero tiene preguntas, pregúntele a Fin en el chat de nuestro sitio web (en español) o responda a este correo. Nuestra <a href="${origin()}/es/refunds">política de reembolsos</a> explica qué pasa si cambia de opinión más adelante.</p>` +
+    footEs(u.id, "Este es el único recordatorio que le enviaremos. "), "es");
+}
+
+async function demoFollowUpsEs(r: Report, d: Demo, step: number) {
+  const hello = hola(d.name);
+  const foot = (last: boolean) => footEs(d.id, last ? "Este es el último correo que le enviaremos sobre su demostración. " : "");
+  const where = d.market ? ` en ${esc(d.market)}` : " en su propia zona";
+  if (d.plan?.plan) return planFollowUpsEs(r, d, step, hello, foot);
+  if (step === 1) {
+    await deliver(r, d.id, "lead", "demo_1", d.email, "Su demostración de DSP Connect está guardada",
+      hello + `<p>Gracias por abrir la demostración de DSP Connect. Le muestra cómo podrían verse sus anuncios en TV por streaming, sitios web y apps${where}, antes de gastar nada.</p>` +
+      `<p>Puede volver a ella cuando quiera: <a href="${origin()}/es/demo">abrir la demostración</a>.</p>` +
+      `<p>Cuando esté listo, las cuentas empiezan con un presupuesto publicitario de $${MIN_BUDGET}. Nosotros hacemos la configuración y sus anuncios están activos en ${SETUP_DAYS} días. Sin cuota mensual de plataforma y sin contrato a largo plazo.</p>` +
+      `<p>¿Tiene alguna pregunta antes? Responda a este correo, en español.</p>` + foot(false), "es");
+  } else if (step === 2) {
+    await deliver(r, d.id, "lead", "demo_2", d.email, `Qué pasa en los ${SETUP_DAYS} días después de empezar`,
+      hello + `<p>Algunas personas preguntan qué pasa entre abrir una cuenta y ver sus anuncios en marcha. Aquí está, en orden:</p>` +
+      `<ol><li>Se crea su cuenta y se carga su presupuesto publicitario.</li><li>Se coloca el seguimiento en su sitio web, para contar visitas y clientes potenciales.</li><li>Se revisan y aprueban sus anuncios.</li><li>Se arma su audiencia, para que los anuncios lleguen a las personas correctas${where}.</li></ol>` +
+      `<p>Nosotros hacemos los cuatro pasos y le avisamos por correo al terminar cada uno. Su parte es un resumen corto de su campaña y aprobar el plan de campaña que le enviamos.</p>` +
+      `<p>Antes de pagar puede leer nuestros <a href="${origin()}/es/terms">términos</a> y nuestra <a href="${origin()}/es/refunds">política de reembolsos</a>. Puede cancelar en cualquier momento.</p>` +
+      `<p><a href="${origin()}/es/open-account">Abra su cuenta</a> cuando esté listo, o responda con una pregunta.</p>` + foot(false), "es");
+  } else {
+    await deliver(r, d.id, "lead", "demo_3", d.email, "¿Tiene preguntas sobre su demostración?",
+      hello + `<p>Hace poco vio la demostración de DSP Connect. Si le quedaron dudas sobre si es para su negocio, pregunte en el chat de nuestro sitio web, a cualquier hora y en español, o responda a este correo.</p>` +
+      `<p>La demostración muestra las mismas pantallas que usted recibe: el creador de campañas, los endpoints de SSP donde pueden aparecer sus anuncios y los reportes por app, sitio y dispositivo.</p>` +
+      `<p>Si prefiere verla otra vez por su cuenta, <a href="${origin()}/es/demo">aquí está la demostración</a>${d.industry ? ` y hay ejemplos para su industria <a href="${origin()}/es/industries">aquí</a>` : ""}.</p>` + foot(true), "es");
+  }
+}
+
+async function planFollowUpsEs(r: Report, d: Demo, step: number, hello: string, foot: (last: boolean) => string) {
+  const p = d.plan!.plan, total = planBudget(p);
+  const where = d.market ? ` en ${esc(d.market)}` : "";
+  const link = `${origin()}/es/planner?plan=${d.plan!.id}`;
+  const host = esc(d.plan!.website.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, ""));
+  const mix = split(p.channels, total).map((c) => `<li>${esc(channelName(c.key, "es"))}: ${c.pct}% ($${c.usd.toLocaleString("en-US")}). ${esc(c.role)}</li>`).join("");
+  const formats = [...new Set(p.channels.map((c) => CHANNELS[c.key].format))].join(", ");
+  const open = `${origin()}/es/open-account?${new URLSearchParams({ plan: d.plan!.id, budget: String(total), formats, goals: `${p.goal}: ${p.learned.action}`, ...(d.industry ? { industry: d.industry } : {}), ...(d.market ? { market: d.market } : {}) })}`;
+  if (step === 1) {
+    await deliver(r, d.id, "lead", "demo_1", d.email, "Su plan de anuncios, y cómo verlo en acción",
+      hello + `<p>Su plan de anuncios para <b>${host}</b> está guardado. Esta es la combinación de canales para su presupuesto inicial de $${total.toLocaleString("en-US")}:</p><ul>${mix}</ul>` +
+      `<p>Para verlo en acción, <a href="${link}">abra su plan</a>, elija <b>Verlo en su cuenta de demostración</b> y luego <b>Crear esta campaña</b>. El creador de campañas se llena con su plan, para que vea exactamente lo que se publicaría.</p>` +
+      `<p>¿Preguntas sobre alguna parte? Responda a este correo o pregunte en el chat de nuestro sitio web.</p>` + foot(false), "es");
+  } else if (step === 2) {
+    await deliver(r, d.id, "lead", "demo_2", d.email, "De su plan de anuncios a anuncios activos: qué sigue",
+      hello + `<p>Si decide seguir adelante con su plan, esto es lo que pasa, en orden:</p>` +
+      `<ol><li>Abre su cuenta con el plan incluido y paga su presupuesto inicial.</li><li>Su plan se convierte en el inicio del resumen de su campaña, así que hay menos que llenar.</li><li>Creamos su cuenta, colocamos el seguimiento en su sitio web, revisamos sus anuncios y armamos su audiencia${where}.</li><li>Sus anuncios se activan en ${SETUP_DAYS} días, y le avisamos por correo al terminar cada paso.</li></ol>` +
+      `<p>Sin cuota mensual de plataforma. Nuestra tarifa está incluida en el precio de sus anuncios. Sin contrato a largo plazo; nuestra <a href="${origin()}/es/refunds">política de reembolsos</a> explica qué pasa si cambia de opinión.</p>` +
+      `<p><a href="${open}">Abra su cuenta con este plan</a> cuando esté listo. No hay prisa: su plan queda guardado.</p>` + foot(false), "es");
+  } else {
+    const qs = p.questions.length ? `<p>Antes de publicar nada, confirmaríamos algunas cosas con usted:</p><ul>${p.questions.map((q) => `<li>${esc(q)}</li>`).join("")}</ul><p>Si ya sabe las respuestas, solo responda a este correo con ellas.</p>` : "";
+    await deliver(r, d.id, "lead", "demo_3", d.email, "¿Tiene preguntas sobre su plan de anuncios?",
+      hello + `<p>Hace poco creó un plan de anuncios para <b>${host}</b>. Un plan es un punto de partida, y la mayoría de las personas tiene una o dos preguntas antes de actuar.</p>` + qs +
+      `<p>También puede preguntar en el chat de nuestro sitio web, a cualquier hora. <a href="${link}">Aquí está su plan</a> cuando lo necesite.</p>` + foot(true), "es");
+  }
+}
+
+async function agencyFollowUpsEs(r: Report, a: Agency, step: number) {
+  const hello = hola(a.name);
+  const foot = (last: boolean) => footEs(a.id, last ? "Este es el último correo que le enviaremos sobre su consulta. " : "");
+  if (step === 1) {
+    await deliver(r, a.id, "lead", "agency_1", a.email, "Su consulta de agencia en DSP Connect",
+      hello + `<p>Gracias por preguntar por un acuerdo para agencias${a.business ? ` para ${esc(a.business)}` : ""}. En resumen: usted maneja la publicidad de sus clientes en TV por streaming, sitios web y apps en DSP Connect, sus clientes siguen siendo suyos y gana el ${SHARE_PCT}% del gasto publicitario que administra.</p>` +
+      `<p>La forma más rápida de ver si le conviene es la <a href="${origin()}/es/demo?view=agency">demostración para agencias</a>: sus clientes, el gasto administrado y su parte, en las mismas pantallas que usan sus clientes.</p>` +
+      `<p>¿Preguntas? Solo responda a este correo.</p>` + foot(false), "es");
+  } else if (step === 2) {
+    await deliver(r, a.id, "lead", "agency_2", a.email, "Cómo manejan las agencias a sus clientes en DSP Connect",
+      hello + `<p>Así funciona en el día a día:</p>` +
+      `<ol><li><b>Sus clientes siguen siendo suyos.</b> Nunca los contactamos, les facturamos ni les vendemos.</li><li><b>Una cuenta para todos.</b> Cada cliente tiene su propio acceso, con los permisos que usted elija.</li><li><b>Configuramos a cada cliente.</b> Cuenta, seguimiento, revisión de anuncios y audiencia, activos en ${SETUP_DAYS} días.</li><li><b>Gana el ${SHARE_PCT}% del gasto publicitario que administra,</b> además de lo que ya les cobra.</li></ol>` +
+      `<p>¿Preguntas sobre el acuerdo? Responda a este correo o pregunte en el chat de nuestro sitio web.</p>` + foot(false), "es");
+  } else {
+    await deliver(r, a.id, "lead", "agency_3", a.email, "¿Sigue interesado en un acuerdo para agencias?",
+      hello + `<p>Una última nota sobre su consulta de agencia. Si no es el momento, no hay problema: <a href="${origin()}/es/agencies">los detalles quedan aquí</a> para cuando lo sea.</p>` +
+      `<p>Cualquier pregunta, responda a este correo.</p>` + foot(true), "es");
+  }
+}
+
+async function partnerOnboardingEs(r: Report, p: Onboarding) {
+  const portal = `${origin()}/es/partner`;
+  const hello = hola(p.name);
+  const foot = `<p style="color:#5B6577;font-size:12px;margin-top:28px">Recibe esto porque fue aprobado como Socio de Ventas Autorizado de DSP Connect. ${esc(LEGAL_ENTITY)}, ${esc(BUSINESS_ADDRESS)}. <a href="${origin()}/es/unsubscribe?partner=${p.id}">Cancelar estos recordatorios</a>.</p>`;
+  const help = `<p>¿Preguntas? Use el chat de su portal o responda a este correo, en español.</p>`;
+  const tools = `<ul><li><b>Su kit de ventas:</b> correos para prospectos con sus enlaces ya incluidos, un guion para la primera llamada y respuestas a preguntas comunes. <a href="${portal}#kit">Abrir su kit de ventas</a></li><li><b>Su hoja informativa:</b> una hoja de una página con su propio código QR, para imprimir o adjuntar como PDF.</li><li><b>Sus enlaces:</b> los enlaces a la demostración y a la cuenta que le acreditan clientes.</li><li><b>Ayuda:</b> el chat de su portal, donde Fin le ayuda a preparar una conversación con un cliente.</li></ul>`;
+  if (p.days_signed === null) {
+    const k = p.days_approved >= 6 && p.days_approved <= 8 ? "partner_sign_2" : p.days_approved >= 2 && p.days_approved <= 4 ? "partner_sign_1" : "";
+    if (!k) return;
+    await deliver(r, p.id, "partner", k, p.email, "Su Acuerdo de Socio de Ventas está listo para firmar",
+      hello + `<p>Su inscripción como Socio de Ventas Autorizado de DSP Connect${p.company_name ? ` para ${esc(p.company_name)}` : ""} está abierta. El siguiente paso es leer y firmar su acuerdo en línea. Toma unos diez minutos, lo puede leer en español y puede firmar a su nombre o en nombre de su empresa. Después verifíquese con Stripe y queda aprobado automáticamente.</p>` +
+      button(`${origin()}/es/partners/join/${p.invite_token}`, "Firmar su acuerdo") +
+      `<p>En cuanto lo firme recibe su kit de ventas, su hoja informativa y sus propios enlaces para clientes. Sus enlaces le acreditan desde el momento en que Stripe lo verifique.</p>` + help + foot, "es");
+    return;
+  }
+  const open: string[] = [];
+  if (!p.payouts_ready) open.push(`<li><b>Verifíquese con Stripe y configure sus pagos.</b> Esto es lo que lo aprueba: en cuanto Stripe lo verifique, sus enlaces empiezan a acreditarle y la comisión puede llegar a su banco. <a href="${portal}#pay">Verificarse con Stripe</a></li>`);
+  if (!p.trained) open.push(`<li><b>Termine la capacitación:</b> lecciones cortas sobre el producto, la demostración, la conversación y las reglas. <a href="${portal}#tr">Ir a la capacitación</a></li>`);
+  if (open.length) {
+    const k = p.days_signed >= 8 && p.days_signed <= 10 ? "partner_setup_2" : p.days_signed >= 3 && p.days_signed <= 5 ? "partner_setup_1" : "";
+    if (!k) return;
+    await deliver(r, p.id, "partner", k, p.email, open.length > 1 ? "Le faltan dos pasos antes de su primer cliente" : "Le falta un paso antes de su primer cliente",
+      hello + `<p>Su acuerdo está firmado. Esto es lo que falta:</p><ul>${open.join("")}</ul>` +
+      `<p>Sus herramientas ya están listas en su portal:</p>` + tools + button(portal, "Abrir su portal") + help + foot, "es");
+    return;
+  }
+  if (p.clients === 0 && p.days_trained !== null && p.days_trained >= 14 && p.days_trained <= 20) {
+    await deliver(r, p.id, "partner", "partner_first_client", p.email, "¿Listo para su primer cliente?",
+      hello + `<p>Ya está completamente configurado, y todo lo que necesita para traer a su primer cliente está en su portal:</p>` + tools +
+      `<p>Una forma sencilla de empezar: elija a tres dueños de negocio que ya conozca, envíeles el primer correo de su kit y muéstrele la demostración al primero que le responda.</p>` +
+      button(`${portal}#kit`, "Abrir su kit de ventas") + help + foot, "es");
+  }
+}
+
 async function weekly(r: Report, l: FeedLead, today: string) {
   const b = budget(l);
   if (!l.live_at || b.week <= 0) return; // no spend on record for the week: the team is told instead
+  if (l.lang === "es") return weeklyEs(r, l, today);
   const tips = clientTips(l, today);
   await deliver(r, l.id, "lead", `weekly_${today}`, l.email, `Your weekly summary: ${usd(b.week)} spent, ${usd(b.left)} left`,
     hi(l) + `<p>Here is your account for the last 7 days.</p>` +
@@ -201,6 +447,7 @@ const origin = siteOrigin;
 /** One reminder to someone who started opening an account and did not pay. Needs our mailing address, by law. */
 async function finishSignup(r: Report, u: Unpaid) {
   if (!BUSINESS_ADDRESS) return;
+  if (u.lang === "es") return finishSignupEs(r, u);
   await deliver(r, u.id, "lead", "finish_signup", u.email, "Your DSP Connect account is one step from starting",
     `<p>Hello${u.name ? " " + esc(u.name.split(" ")[0]) : ""},</p><p>You started opening a DSP Connect account${u.business ? ` for ${esc(u.business)}` : ""} and stopped before payment. Nothing has been charged.</p>` +
     `<p>If you would like to carry on, your ${SETUP_DAYS}-day setup starts the day your ad budget is paid: <a href="${origin()}/open-account">finish opening your account</a>.</p>` +
@@ -217,6 +464,7 @@ async function demoFollowUps(r: Report, d: Demo) {
   if (!BUSINESS_ADDRESS) return;
   const step = d.days >= 10 && d.days <= 15 ? 3 : d.days >= 4 && d.days <= 9 ? 2 : d.days >= 1 && d.days <= 3 ? 1 : 0;
   if (!step) return;
+  if (d.lang === "es") return demoFollowUpsEs(r, d, step);
   const hello = `<p>Hello${d.name ? " " + esc(d.name.split(" ")[0]) : ""},</p>`;
   const foot = (last: boolean) => `<p style="color:#5B6577;font-size:12px;margin-top:28px">${last ? "This is the last email we will send about your demo. " : ""}${esc(LEGAL_ENTITY)}, ${esc(BUSINESS_ADDRESS)}. <a href="${origin()}/unsubscribe?id=${d.id}">Unsubscribe</a>.</p>`;
   const where = d.market ? ` in ${esc(d.market)}` : " in your own area";
@@ -282,6 +530,7 @@ async function agencyFollowUps(r: Report, a: Agency) {
   if (!BUSINESS_ADDRESS) return;
   const step = a.days >= 13 && a.days <= 16 ? 3 : a.days >= 6 && a.days <= 9 ? 2 : a.days >= 2 && a.days <= 4 ? 1 : 0;
   if (!step) return;
+  if (a.lang === "es") return agencyFollowUpsEs(r, a, step);
   const hello = `<p>Hello${a.name ? " " + esc(a.name.split(" ")[0]) : ""},</p>`;
   const foot = (last: boolean) => `<p style="color:#5B6577;font-size:12px;margin-top:28px">${last ? "This is the last email we will send about your enquiry. " : ""}${esc(LEGAL_ENTITY)}, ${esc(BUSINESS_ADDRESS)}. <a href="${origin()}/unsubscribe?id=${a.id}">Unsubscribe</a>.</p>`;
   if (step === 1) {
@@ -317,8 +566,9 @@ function partnerStage(p: Onboarding) {
 async function partnerOnboarding(r: Report, p: Onboarding) {
   // Stripe's verification approves them: check it daily too, for anyone who has not come back to their portal since.
   if (!p.payouts_ready && p.stripe_account_id) p.payouts_ready = await refreshPayouts({ invite_token: p.invite_token, stripe_account_id: p.stripe_account_id, payouts_ready: false });
-  await syncPerson({ email: p.email, name: p.name, role: "sales_partner", extra: { partner_stage: partnerStage(p), partner_clients: p.clients } }).catch(() => {});
+  await syncPerson({ email: p.email, name: p.name, role: "sales_partner", ...(p.lang === "es" ? { lang: "es" as const } : {}), extra: { partner_stage: partnerStage(p), partner_clients: p.clients } }).catch(() => {});
   if (!BUSINESS_ADDRESS) return;
+  if (p.lang === "es") return partnerOnboardingEs(r, p);
   const portal = `${origin()}/partner`;
   const hello = `<p>Hello ${esc(p.name.split(" ")[0])},</p>`;
   const foot = `<p style="color:#5B6577;font-size:12px;margin-top:28px">You are getting this because you were approved as a DSP Connect Authorized Sales Partner. ${esc(LEGAL_ENTITY)}, ${esc(BUSINESS_ADDRESS)}. <a href="${origin()}/unsubscribe?partner=${p.id}">Unsubscribe from these reminders</a>.</p>`;
@@ -364,7 +614,7 @@ async function sync(l: FeedLead) {
     extra.budget_remaining = b.left; extra.spend_last_7_days = b.week;
     if (b.daysLeft !== null) extra.budget_days_left = b.daysLeft;
   }
-  await syncPerson({ email: l.email, name: l.name, role: "client", status: l.live_at ? "live" : "paid_in_setup", setupDue: l.setup_due, industry: l.industry, market: l.market, extra });
+  await syncPerson({ email: l.email, name: l.name, role: "client", ...(l.lang === "es" ? { lang: "es" as const } : {}), status: l.live_at ? "live" : "paid_in_setup", setupDue: l.setup_due, industry: l.industry, market: l.market, extra });
 }
 
 /**
@@ -395,8 +645,14 @@ export async function runNotices(opts: { lead?: string; weekly?: boolean; extra?
 }
 
 /** Tells a partner that a commission payment is on its way. */
-export async function notifyPayout(partner: { id: string; name: string; email: string }, amount: number, transfer: string) {
+export async function notifyPayout(partner: { id: string; name: string; email: string; lang?: string }, amount: number, transfer: string) {
   const r: Report = { sent: [], failed: [], emailOn: emailOn() };
+  if (partner.lang === "es") {
+    await deliver(r, partner.id, "partner", `payout_${transfer}`, partner.email, `Comisión pagada: ${usd(amount)}`,
+      `<p>Hola, ${esc(partner.name.split(" ")[0])}:</p><p>Enviamos <b>${usd(amount)}</b> de comisión a su cuenta de pagos de Stripe. Stripe lo depositará en su cuenta bancaria en su calendario habitual.</p>` +
+      `<p>¿Preguntas sobre este pago? Responda a este correo.</p>`, "es");
+    return r;
+  }
   await deliver(r, partner.id, "partner", `payout_${transfer}`, partner.email, `Commission paid: ${usd(amount)}`,
     `<p>Hello ${esc(partner.name.split(" ")[0])},</p><p>We have sent <b>${usd(amount)}</b> in commission to your Stripe payout account. Stripe will deposit it in your bank account on its usual schedule.</p>` +
     `<p>Questions about this payment? Reply to this email.</p>`);

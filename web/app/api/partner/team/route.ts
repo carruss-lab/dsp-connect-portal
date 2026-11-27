@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { esc, notifyTeam, send, wrap } from "@/lib/email";
+import { button, esc, notifyTeam, send, wrap } from "@/lib/email";
+import { bodyLang, setLang } from "@/lib/reqLang";
 import { syncPerson } from "@/lib/intercom";
 import { isUuid, secretRpc } from "@/lib/server";
 import { session } from "@/lib/partner";
@@ -10,6 +11,13 @@ import { siteOrigin } from "@/lib/site";
 // can add or remove reps; a rep's session is refused by the database.
 type Invite = { status: string; token?: string; member?: { id: string; name: string; email: string; code: string }; company?: string; owner?: string };
 
+const MESSAGES_ES: Record<string, string> = {
+  signed_out: "Solo el socio dueño de esta cuenta puede administrar el equipo. Inicie sesión de nuevo.",
+  invalid: "Escriba el nombre completo del representante y un correo electrónico válido.",
+  is_partner: "Ese correo ya pertenece a una cuenta de Socio de Ventas, así que no se puede agregar como representante.",
+  exists: "Ese correo ya está en un equipo de Socio de Ventas.",
+  limit: "Puede tener hasta 50 representantes en su equipo. Elimine a alguien primero, o pregúntenos en el chat.",
+};
 const MESSAGES: Record<string, string> = {
   signed_out: "Only the partner who owns this account can manage the team. Please sign in again.",
   invalid: "Please give the rep's full name and a valid email address.",
@@ -19,28 +27,38 @@ const MESSAGES: Record<string, string> = {
 };
 
 export async function POST(req: Request) {
-  const b = (await req.json().catch(() => ({}))) as { action?: string; name?: string; email?: string; id?: string };
+  const b = (await req.json().catch(() => ({}))) as { action?: string; name?: string; email?: string; id?: string; lang?: string };
+  const lang = bodyLang(b); const es = lang === "es"; const M = es ? MESSAGES_ES : MESSAGES;
   const s = await session();
-  if (!/^[0-9a-f]{64}$/.test(s)) return NextResponse.json({ error: MESSAGES.signed_out }, { status: 401 });
+  if (!/^[0-9a-f]{64}$/.test(s)) return NextResponse.json({ error: M.signed_out }, { status: 401 });
 
   if (b.action === "remove") {
-    if (!isUuid(b.id || "")) return NextResponse.json({ error: "Unknown rep." }, { status: 400 });
+    if (!isUuid(b.id || "")) return NextResponse.json({ error: es ? "Representante desconocido." : "Unknown rep." }, { status: 400 });
     const ok = await secretRpc<boolean>("partner_member_remove", { p_session: s, p_member: b.id }).catch((e) => { console.error("team remove failed", e); return false; });
-    return ok ? NextResponse.json({ ok: true }) : NextResponse.json({ error: "We could not remove that rep. Please sign in again and retry." }, { status: 400 });
+    return ok ? NextResponse.json({ ok: true }) : NextResponse.json({ error: es ? "No pudimos eliminar a ese representante. Inicie sesión de nuevo e inténtelo otra vez." : "We could not remove that rep. Please sign in again and retry." }, { status: 400 });
   }
 
   const name = String(b.name || "").trim().replace(/\s+/g, " ").slice(0, 120);
   const email = String(b.email || "").trim().toLowerCase().slice(0, 200);
   let out: Invite;
   try { out = await secretRpc<Invite>("partner_member_invite", { p_session: s, p_name: name, p_email: email }); }
-  catch (err) { console.error("team invite failed", err); return NextResponse.json({ error: "We could not add that rep just now. Please try again." }, { status: 502 }); }
+  catch (err) { console.error("team invite failed", err); return NextResponse.json({ error: es ? "No pudimos agregar a ese representante en este momento. Inténtelo de nuevo." : "We could not add that rep just now. Please try again." }, { status: 502 }); }
   if (out.status !== "invited" || !out.token || !out.member) {
-    return NextResponse.json({ error: MESSAGES[out.status] || "We could not add that rep." }, { status: out.status === "signed_out" ? 401 : 400 });
+    return NextResponse.json({ error: M[out.status] || (es ? "No pudimos agregar a ese representante." : "We could not add that rep.") }, { status: out.status === "signed_out" ? 401 : 400 });
   }
 
-  const link = `${siteOrigin()}/partner/auth?t=${out.token}`;
-  const company = out.company || "your team";
+  // A rep added from the Spanish portal gets Spanish emails and a Spanish portal.
+  await setLang("member_email", out.member.email, lang);
+  const link = `${siteOrigin()}/partner/auth?t=${out.token}${es ? "&lang=es" : ""}`;
+  const company = out.company || (es ? "su equipo" : "your team");
   await Promise.all([
+    es ? send(out.member.email, `${out.owner || company} lo agregó a su equipo de ventas de DSP Connect`,
+      wrap(`<p>Hola, ${esc(out.member.name.split(" ")[0])}:</p>` +
+        `<p>${esc(out.owner || "Su gerente")} lo agregó al equipo de <b>${esc(company)}</b>, Socio de Ventas Autorizado de DSP Connect.</p>` +
+        `<p>Su portal tiene sus propios enlaces al planificador de anuncios gratis, a la demostración y al registro de cuentas, un kit de ventas y videos cortos de capacitación. Los dueños de negocio que traiga con sus enlaces se acreditan a ${esc(company)} y aparecen bajo su nombre.</p>` +
+        button(link, "Abrir su portal") +
+        `<p>Este enlace funciona una vez, durante los próximos 7 días. Después, inicie sesión cuando quiera en ${siteOrigin()}/es/partner con este correo.</p>` +
+        `<p style="color:#5B6577;font-size:13px">La comisión se le paga a ${esc(company)}, no a cada representante. Las preguntas sobre su pago van con ${esc(out.owner || "su gerente")}.</p>`, "es")) :
     send(out.member.email, `${out.owner || company} added you to their DSP Connect sales team`,
       wrap(`<p>Hello ${esc(out.member.name.split(" ")[0])},</p>` +
         `<p>${esc(out.owner || "Your manager")} added you to the <b>${esc(company)}</b> team, an Authorized Sales Partner of DSP Connect.</p>` +
@@ -49,7 +67,7 @@ export async function POST(req: Request) {
         `<p>This link works once, for the next 7 days. After that, sign in any time at ${siteOrigin()}/partner with this email address.</p>` +
         `<p style="color:#5B6577;font-size:13px">Commission is paid to ${esc(company)}, not to individual reps. Questions about your pay go to ${esc(out.owner || "your manager")}.</p>`)),
     notifyTeam("Sales Partner added a team member", { name: out.member.name, email: out.member.email, business: company, partner: out.owner, code: out.member.code }),
-    syncPerson({ email: out.member.email, name: out.member.name, role: "sales_partner", extra: { partner_stage: "team_member", business_name: company } }),
+    syncPerson({ email: out.member.email, name: out.member.name, role: "sales_partner", lang, extra: { partner_stage: "team_member", business_name: company } }),
   ]).catch((err) => console.error("team invite follow-up failed", err));
 
   return NextResponse.json({ ok: true, member: out.member });

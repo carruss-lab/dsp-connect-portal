@@ -4,18 +4,20 @@ import { stripe } from "@/lib/payments";
 import { isUuid, secretRpc } from "@/lib/server";
 import { LEGAL_ENTITY, siteOrigin } from "@/lib/site";
 
-type Partner = { id: string; name: string; email: string; status: string; code: string; stripe_account_id: string | null; payouts_ready: boolean; entity_type: string | null; company_name: string | null };
+type Partner = { id: string; name: string; email: string; status: string; code: string; stripe_account_id: string | null; payouts_ready: boolean; entity_type: string | null; company_name: string | null; lang?: string };
 
 // Starts (or resumes) a partner's Stripe payout account setup. Bank and tax details go to Stripe, never to us.
 export async function POST(req: Request) {
-  const { token } = (await req.json().catch(() => ({}))) as { token?: string };
+  const { token, lang } = (await req.json().catch(() => ({}))) as { token?: string; lang?: string };
+  const es = lang === "es";
   const client = stripe();
-  if (!token || !isUuid(token)) return NextResponse.json({ error: "This invitation link is not valid." }, { status: 400 });
-  if (!client) return NextResponse.json({ error: "Payout setup is not connected yet." }, { status: 503 });
+  const invalid = es ? "Este enlace de invitación no es válido." : "This invitation link is not valid.";
+  if (!token || !isUuid(token)) return NextResponse.json({ error: invalid }, { status: 400 });
+  if (!client) return NextResponse.json({ error: es ? "La configuración de pagos aún no está conectada." : "Payout setup is not connected yet." }, { status: 503 });
   let who: Partner | undefined;
   try {
     const [partner] = await secretRpc<Partner[]>("partner_by_token", { p_token: token });
-    if (!partner || ["ended", "applied", "declined"].includes(partner.status)) return NextResponse.json({ error: "This invitation link is not valid." }, { status: 404 });
+    if (!partner || ["ended", "applied", "declined"].includes(partner.status)) return NextResponse.json({ error: invalid }, { status: 404 });
     who = partner;
     let account = partner.stripe_account_id;
     if (!account) {
@@ -34,7 +36,8 @@ export async function POST(req: Request) {
       await secretRpc("partner_set_payouts", { p_token: token, p_account: account, p_ready: false });
     }
     // Stripe sends the partner back to their portal, which re-checks their payout status on load.
-    const portal = `${siteOrigin()}/partner`;
+    // Stripe shows its own pages in the language of their browser; they come back to the portal in theirs.
+    const portal = `${siteOrigin()}${es || partner.lang === "es" ? "/es" : ""}/partner`;
     const link = await client.accountLinks.create({
       account, type: "account_onboarding", refresh_url: `${portal}?payouts=retry#pay`, return_url: `${portal}?payouts=back#pay`,
     });
@@ -45,6 +48,6 @@ export async function POST(req: Request) {
     await notifyTeam("Sales Partner could not start payout setup", {
       name: who?.name, email: who?.email, code: who?.code, error: err instanceof Error ? err.message.slice(0, 300) : String(err).slice(0, 300),
     }).catch(() => {});
-    return NextResponse.json({ error: "We could not start payout setup. Please try again, or contact us." }, { status: 502 });
+    return NextResponse.json({ error: es ? "No pudimos iniciar la configuración de pagos. Inténtelo de nuevo o comuníquese con nosotros." : "We could not start payout setup. Please try again, or contact us." }, { status: 502 });
   }
 }
