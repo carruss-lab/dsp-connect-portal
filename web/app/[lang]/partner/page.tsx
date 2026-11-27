@@ -181,7 +181,7 @@ function Dashboard({ portal, lang }: { portal: Portal; lang: Lang }) {
               )}
               <details className="card stack g12" style={{ background: "var(--ground)" }} open={team.length === 0}>
                 <summary style={{ cursor: "pointer", fontWeight: 600 }}>{t("Watch: build your sales team", "Vea: arme su equipo de ventas")} <span className="small" style={{ fontWeight: 400 }}>· 1 min 37 s</span></summary>
-                <VideoEmbed id={VIDEOS.teamOwners.id} title={VIDEOS.teamOwners.title} poster={VIDEOS.teamOwners.poster} />
+                <VideoEmbed id={forLang(VIDEOS.teamOwners, lang).id} title={forLang(VIDEOS.teamOwners, lang).title} poster={forLang(VIDEOS.teamOwners, lang).poster} />
               </details>
               <TeamInvite />
               <p className="small">{t("You are responsible for your reps following the Operating Rules. Removing a rep stops their sign-in and their links; clients they already brought stay credited to you.", "Usted es responsable de que sus representantes sigan las Reglas de Operación. Al eliminar a un representante se desactivan su inicio de sesión y sus enlaces; los clientes que ya trajo siguen acreditados a usted.")}</p>

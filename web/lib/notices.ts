@@ -337,6 +337,7 @@ async function planFollowUpsEs(r: Report, d: Demo, step: number, hello: string, 
     await deliver(r, d.id, "lead", "demo_2", d.email, "De su plan de anuncios a anuncios activos: qué sigue",
       hello + `<p>Si decide seguir adelante con su plan, esto es lo que pasa, en orden:</p>` +
       `<ol><li>Abre su cuenta con el plan incluido y paga su presupuesto inicial.</li><li>Su plan se convierte en el inicio del resumen de su campaña, así que hay menos que llenar.</li><li>Creamos su cuenta, colocamos el seguimiento en su sitio web, revisamos sus anuncios y armamos su audiencia${where}.</li><li>Sus anuncios se activan en ${SETUP_DAYS} días, y le avisamos por correo al terminar cada paso.</li></ol>` +
+      `<p>¿Prefiere la versión corta? <a href="https://www.youtube.com/watch?v=0GoHR6bVzpA">Este video de un minuto y medio</a> recorre un plan de principio a fin.</p>` +
       `<p>Sin cuota mensual de plataforma. Nuestra tarifa está incluida en el precio de sus anuncios. Sin contrato a largo plazo; nuestra <a href="${origin()}/es/refunds">política de reembolsos</a> explica qué pasa si cambia de opinión.</p>` +
       `<p><a href="${open}">Abra su cuenta con este plan</a> cuando esté listo. No hay prisa: su plan queda guardado.</p>` + foot(false), "es");
   } else {

@@ -169,7 +169,7 @@ function agencyEmail(name: string, lang: "en" | "es" = "en") {
     `<li>Regístrese en PartnerStack (unos dos minutos).</li>` +
     `<li>Le respondemos en un día hábil para configurar la cuenta de su agencia.</li>` +
     `<li>Cada cliente tiene su propio acceso. Usted gana el ${SHARE_PCT}% del gasto publicitario que administra, pagado a través de PartnerStack.</li>` +
-    `<li>¿Tiene un equipo de ventas? Invite a sus representantes desde su panel de PartnerStack. Cada uno tiene su propio enlace, cada cliente se registra a nombre del representante que lo trajo, y toda la comisión llega a su agencia. <a href="https://youtu.be/au5qCF-bXws">Vea cómo, paso a paso</a> (1.5 minutos, en inglés).</li></ol>` +
+    `<li>¿Tiene un equipo de ventas? Invite a sus representantes desde su panel de PartnerStack. Cada uno tiene su propio enlace, cada cliente se registra a nombre del representante que lo trajo, y toda la comisión llega a su agencia. <a href="https://youtu.be/bJeYQWhbDOY">Vea cómo, paso a paso</a> (2 minutos).</li></ol>` +
     `<p>Mientras tanto, puede recorrer la <a href="${site}/es/demo?view=agency">demostración para agencias</a> o crear un plan de anuncios gratis para un prospecto con el <a href="${site}/es/planner">planificador de anuncios</a>.</p>` +
     `<p>¿Preguntas? Responda a este correo o escríbanos en el chat del sitio.</p>`, "es");
   return wrap(
