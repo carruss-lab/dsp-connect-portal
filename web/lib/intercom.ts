@@ -5,6 +5,8 @@ type Person = {
   status?: "lead" | "paid_in_setup" | "live" | "paused"; setupDue?: string | null; industry?: string | null; market?: string | null;
   /** Extra facts for Fin, for example setup progress and budget left. */
   extra?: Record<string, string | number>;
+  /** Their language. When given, Intercom replies to them in it (Fin, emails, the Messenger). */
+  lang?: "en" | "es";
 };
 
 export async function syncPerson(p: Person) {
@@ -21,7 +23,7 @@ export async function syncPerson(p: Person) {
   // Everyone is a "user" keyed by their email, so the browser chat (which identifies by the same id) and
   // the server always land on one contact instead of a lead and a user.
   const email = p.email.trim().toLowerCase();
-  const body = { role: "user", external_id: email, email, ...(p.name ? { name: p.name } : {}), custom_attributes };
+  const body = { role: "user", external_id: email, email, ...(p.name ? { name: p.name } : {}), ...(p.lang ? { language_override: p.lang } : {}), custom_attributes };
   try {
     const found = await fetch("https://api.intercom.io/contacts/search", {
       method: "POST", headers, body: JSON.stringify({ query: { field: "email", operator: "=", value: email } }),

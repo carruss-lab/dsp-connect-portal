@@ -31,8 +31,12 @@ export async function send(to: string, subject: string, html: string, replyTo?: 
   }
 }
 
-export const wrap = (body: string) =>
-  `<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#0B1220;max-width:560px">${body}<p style="color:#5B6577;font-size:13px;margin-top:28px">DSP Connect, a service of ${LEGAL_ENTITY}</p></div>`;
+export const wrap = (body: string, lang: "en" | "es" = "en") =>
+  `<div${lang === "es" ? ' lang="es"' : ""} style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#0B1220;max-width:560px">${body}<p style="color:#5B6577;font-size:13px;margin-top:28px">${lang === "es" ? `DSP Connect, un servicio de ${LEGAL_ENTITY}` : `DSP Connect, a service of ${LEGAL_ENTITY}`}</p></div>`;
+
+/** The standard call-to-action button in an email. */
+export const button = (href: string, label: string, color = "#1A14D4") =>
+  `<p><a href="${href}" style="display:inline-block;background:${color};color:#fff;padding:12px 18px;border-radius:6px;text-decoration:none;font-weight:600">${label}</a></p>`;
 
 type Lead = Record<string, string | number | null | undefined>;
 
