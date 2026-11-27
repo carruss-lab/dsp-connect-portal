@@ -9,7 +9,7 @@ export const VIDEOS = {
     description: "How DSP Connect gives any business the same kind of buying big brands do: streaming TV, apps and websites, from a $750 ad budget, set up for you and live within 14 days." },
   agencies: { id: "NXtGfd19rnw", seconds: 94, poster: "/video/vsl-agencies.jpg", title: "Keep your clients. Earn 10% of what they spend.",
     description: "How agencies run their clients' streaming TV and programmatic advertising on DSP Connect and earn 10% of the ad spend they manage." },
-  partners: { id: "HdU6y3ly3fM", seconds: 104, poster: "/video/vsl-partners.jpg", title: "Become a DSP Connect Authorized Sales Partner",
+  partners: { id: "36otYEzW9Ts", seconds: 103, poster: "/video/vsl-partners.jpg", title: "Become a DSP Connect Authorized Sales Partner",
     description: "How ISOs and local sales pros introduce DSP Connect to the business owners they already call on, and earn 7% of their clients' ad spend for life." },
   // How to use the free ad planner (/planner), for each audience.
   plannerOwners: { id: "xgLxVnZ55c0", seconds: 80, poster: "/video/plan-owners.jpg", uploaded: "2026-11-25", title: "Get a free streaming TV ad plan for your business in 30 seconds",
