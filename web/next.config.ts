@@ -3,6 +3,8 @@ import path from "node:path";
 
 const nextConfig: NextConfig = {
   turbopack: { root: path.join(__dirname) },
+  // The site's root layout sits under [lang], so addresses that match no page get one 404 page of their own.
+  experimental: { globalNotFound: true },
   // Addresses from the old site that people may still have saved or that search engines still list.
   async redirects() {
     return [

@@ -3,6 +3,7 @@ import { getLang } from "@/lib/lang";
 import { tr, localePath, type Lang } from "@/lib/i18n";
 import Image from "next/image";
 import ConnectButton from "@/components/ConnectButton";
+import LangSwitch from "@/components/LangSwitch";
 import IdentifyClient from "@/components/IdentifyClient";
 import { messengerJwt } from "@/lib/chatId";
 import { CopyLink, CopyTemplate, LessonDone, LoginForm, RemoveRep, SignDocs, TeamInvite } from "@/components/partner/PartnerBits";
@@ -31,6 +32,7 @@ function Top({ name, lang }: { name?: string; lang: Lang }) {
     <header className="header"><div className="wrap">
       <span className="brand"><Image src="/logo.png" alt="" width={30} height={30} />DSP Connect</span>
       <span className="small" style={{ flexGrow: 1 }}>{t("Sales Partner portal", "Portal del Socio de Ventas")}</span>
+      <LangSwitch />
       {name && <form action="/api/partner/logout" method="post"><span className="small" style={{ marginRight: 12 }}>{name}</span><button className="btn btn-line" style={{ minHeight: 34 }}>{t("Sign out", "Cerrar sesión")}</button></form>}
     </div></header>
   );

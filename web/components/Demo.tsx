@@ -278,7 +278,7 @@ export default function Demo({ industry, market, agency = false }: { industry: s
           </div>
         </header>
         <div className="dm-note">{es
-          ? (agency ? "Cuenta de agencia de demostración con clientes y datos de ejemplo. No son resultados reales." : `Cuenta de demostración con datos de ejemplo para un negocio de ${industryName(industry, "es").toLowerCase()} en ${market === "your area" ? "su zona" : market}. No son resultados reales.`) + " La plataforma de anuncios está en inglés; el chat le ayuda en español."
+          ? (agency ? "Cuenta de agencia de demostración con clientes y datos de ejemplo. No son resultados reales." : `Cuenta de demostración con datos de ejemplo para un negocio en ${market === "your area" ? "su zona" : market}${industry === "Local" ? "" : ` (${industryName(industry, "es")})`}. No son resultados reales.`) + " La plataforma de anuncios está en inglés; el chat le ayuda en español."
           : agency ? "Demo agency account with sample clients and sample data. Not real results." : `Demo account with sample data for a ${industry.toLowerCase()} business in ${market}. Not real results.`}</div>
 
         <div className="dm-body">
